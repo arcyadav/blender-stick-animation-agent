@@ -76,7 +76,12 @@ def colour_name(rgb):
 def _world_bounds(o):
     """(min, max) corners of the object's world-space bounding box at the current frame."""
     bpy.context.view_layer.update()
-    pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
+    if o.type == "MESH" and 0 < len(o.data.vertices) <= 20000:
+        # exact for rotated shapes (a rolling ball's rotated box would poke into the floor)
+        mw = o.matrix_world
+        pts = [mw @ v.co for v in o.data.vertices]
+    else:
+        pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
     lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     return lo, hi
@@ -265,24 +270,98 @@ def add_primitive(type, name, location=(0, 0, 0), size=1.0, colour=None, preset=
     o["kind"] = type
     bpy.context.scene.collection.objects.link(o)
     _place(o, location)
-    if colour or preset:
-        set_material(name, colour=colour or "white", preset=preset or "plastic")
-    else:
-        set_material(name, colour="white", preset="plastic")
+    set_material(name, colour=colour or "white", preset=preset or "plastic")
     return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions)}
+
+
+# Props are built from primitives: one flat style with the stick figures, no downloads, and an exact
+# support height (top_z, from the bottom) for things that hold other things.
+# part = (shape, bottom-centre, size, material slot[, top radius ratio for cylinders])
+WOOD, CARDBOARD, LEAF, BARK = (0.45, 0.27, 0.12), (0.5, 0.3, 0.15), (0.15, 0.5, 0.15), (0.3, 0.18, 0.08)
+ASSETS = {
+    "table": {"top_z": 0.75, "colours": [WOOD], "parts": [
+        ("box", (0, 0, 0.7), (1.2, 0.8, 0.05), 0),
+        *[("box", (x, y, 0), (0.06, 0.06, 0.7), 0) for x in (-0.55, 0.55) for y in (-0.35, 0.35)]]},
+    "chair": {"top_z": 0.46, "colours": [WOOD], "parts": [
+        ("box", (0, 0, 0.42), (0.45, 0.45, 0.04), 0),
+        ("box", (0, 0.205, 0.46), (0.45, 0.04, 0.45), 0),
+        *[("box", (x, y, 0), (0.04, 0.04, 0.42), 0) for x in (-0.2, 0.2) for y in (-0.2, 0.2)]]},
+    "bench": {"top_z": 0.45, "colours": [WOOD], "parts": [
+        ("box", (0, 0, 0.4), (1.5, 0.4, 0.05), 0),
+        *[("box", (x, 0, 0), (0.06, 0.36, 0.4), 0) for x in (-0.65, 0.65)]]},
+    "box": {"top_z": 0.5, "colours": [CARDBOARD], "parts": [("box", (0, 0, 0), (0.5, 0.5, 0.5), 0)]},
+    "lamp": {"colours": [(0.95, 0.9, 0.75), (0.1, 0.1, 0.1)], "parts": [
+        ("cyl", (0, 0, 0), (0.18, 0.18, 0.03), 1),
+        ("cyl", (0, 0, 0.03), (0.03, 0.03, 0.27), 1),
+        ("cyl", (0, 0, 0.28), (0.25, 0.25, 0.18), 0, 0.6)]},
+    "tree": {"colours": [LEAF, BARK], "parts": [
+        ("cyl", (0, 0, 0), (0.25, 0.25, 1.2), 1),
+        ("sphere", (0, 0, 0.9), (1.4, 1.4, 1.8), 0)]},
+}
+
+
+def _asset_mesh(name, asset):
+    from mathutils import Matrix
+    bm = bmesh.new()
+    for part in ASSETS[asset]["parts"]:
+        shape, (x, y, z0), (sx, sy, sz), slot = part[:4]
+        m = Matrix.Translation((x, y, z0 + sz / 2)) @ Matrix.Diagonal((sx, sy, sz, 1))
+        before = set(bm.faces)
+        if shape == "box":
+            bmesh.ops.create_cube(bm, size=1.0, matrix=m)
+        elif shape == "cyl":
+            top = part[4] if len(part) > 4 else 1.0
+            bmesh.ops.create_cone(bm, cap_ends=True, segments=24, radius1=0.5, radius2=0.5 * top,
+                                  depth=1.0, matrix=m)
+        else:
+            bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=12, radius=0.5, matrix=m)
+        for f in set(bm.faces) - before:
+            f.material_index = slot
+            f.smooth = shape == "sphere"
+    # origin at the bounding-box centre, like the primitives
+    zs = [v.co.z for v in bm.verts]
+    shift = Vector((0, 0, (min(zs) + max(zs)) / 2))
+    for v in bm.verts:
+        v.co -= shift
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    return me
+
+
+def add_asset(asset, name, location=(0, 0, 0), scale=1.0, colour=None):
+    if bpy.data.objects.get(name):
+        raise ToolError(f"an object named '{name}' already exists; pick another name or use set_transform")
+    spec = ASSETS[asset]
+    o = bpy.data.objects.new(name, _asset_mesh(name, asset))
+    o["kind"] = asset
+    if "top_z" in spec:
+        o["top_z"] = spec["top_z"]
+    o.scale = [scale] * 3
+    bpy.context.scene.collection.objects.link(o)
+    for i, rgb in enumerate(spec["colours"]):
+        m = bpy.data.materials.new(f"{name}_mat{i}")
+        m.use_nodes = True
+        m["preset"] = "matte"
+        _bsdf(m).inputs["Roughness"].default_value = 0.8
+        _apply_colour(m, rgb)
+        o.data.materials.append(m)
+    if colour:
+        _apply_colour(o.data.materials[0], _rgb(colour))
+    _place(o, location)
+    return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions),
+            **({"top_height": round(_support_top(o), 2)} if "top_z" in spec else {})}
 
 
 def set_transform(name, location=None, rotation=None, scale=None):
     o = _obj(name)
+    standing = _bottom_centre(o)
     if rotation is not None:
         o.rotation_euler = [math.radians(a) for a in rotation]
     if scale is not None:
         o.scale = [scale] * 3 if isinstance(scale, (int, float)) else scale
-    if location is not None:
-        _place(o, location)
-    elif rotation is not None or scale is not None:
-        # keep the object standing where it was
-        bpy.context.view_layer.update()
+    # without a new location, keep the object standing where it was
+    _place(o, location if location is not None else list(standing))
     return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions),
             "rotation": _r([math.degrees(a) for a in o.rotation_euler], 1)}
 
@@ -347,6 +426,9 @@ def set_camera(location=None, look_at=None, focal_length=None):
     cam = bpy.context.scene.camera
     target = bpy.data.objects["camera_target"]
     if location is not None:
+        # a fixed placement replaces earlier camera moves
+        cam.animation_data_clear()
+        target.animation_data_clear()
         cam.location = location
     if focal_length is not None:
         cam.data.lens = focal_length
@@ -367,6 +449,80 @@ def set_camera(location=None, look_at=None, focal_length=None):
 def _look_at(cam):
     v = cam.get("look_at")
     return v if isinstance(v, str) else _r(v) if v is not None else None
+
+
+def _smooth(t):
+    return t * t * (3 - 2 * t)
+
+
+def _point(target):
+    if isinstance(target, str):
+        lo, hi = _world_bounds(_obj(target))
+        return (lo + hi) / 2
+    return Vector(target)
+
+
+def _key_linear(id_data, path):
+    for fc in _fcurves(id_data):
+        if fc.data_path == path:
+            for k in fc.keyframe_points:
+                k.interpolation = "LINEAR"
+
+
+def camera_move(kind, target=None, start_frame=None, end_frame=None, degrees=90, amount=None):
+    """orbit / dolly_in / dolly_out / follow / pan, eased in and out between start and end frame."""
+    scn = bpy.context.scene
+    cam = scn.camera
+    s = scn.frame_start if start_frame is None else start_frame
+    e = scn.frame_end if end_frame is None else end_frame
+    if e <= s:
+        raise ToolError(f"end_frame ({e}) must be after start_frame ({s})")
+    if target is None:
+        target = cam.get("look_at")
+        target = target if isinstance(target, str) else list(target)
+    if kind == "follow" and not isinstance(target, str):
+        raise ToolError("follow needs the name of the object to follow as target")
+    scn.frame_set(s)
+    start = cam.location.copy()
+
+    if kind == "pan":
+        old = cam.get("look_at")
+        p0 = _point(old if isinstance(old, str) else list(old))
+        set_camera(look_at=list(p0))
+        tgt = bpy.data.objects["camera_target"]
+        for f, p in ((s, p0), (e, _point(target))):
+            tgt.location = p
+            tgt.keyframe_insert("location", frame=f)
+        cam["look_at"] = target if isinstance(target, str) else list(target)
+    else:
+        set_camera(look_at=target)
+        if kind == "orbit":
+            c = _point(target)
+            rel = start - c
+            r, a0 = math.hypot(rel.x, rel.y), math.atan2(rel.y, rel.x)
+            for f in range(s, e + 1):
+                a = a0 + math.radians(degrees) * _smooth((f - s) / (e - s))
+                cam.location = (c.x + r * math.cos(a), c.y + r * math.sin(a), start.z)
+                cam.keyframe_insert("location", frame=f)
+            _key_linear(cam, "location")
+        elif kind in ("dolly_in", "dolly_out"):
+            c = _point(target)
+            factor = amount or (0.6 if kind == "dolly_in" else 1.5)
+            for f, p in ((s, start), (e, c + (start - c) * factor)):
+                cam.location = p
+                cam.keyframe_insert("location", frame=f)
+        elif kind == "follow":
+            o = _obj(target)
+            offset = start - _bottom_centre(o)
+            for f in range(s, e + 1):
+                scn.frame_set(f)
+                b = _bottom_centre(o)
+                cam.location = (b.x + offset.x, b.y + offset.y, start.z)
+                cam.keyframe_insert("location", frame=f)
+            _key_linear(cam, "location")
+    scn.frame_set(s)
+    return {"kind": kind, "target": target if isinstance(target, str) else _r(target),
+            "frames": [s, e], "camera_start": _r(start)}
 
 
 def keyframe(name, property, frame, value):
@@ -476,7 +632,9 @@ def scene_state():
         "frames": {"start": scn.frame_start, "end": scn.frame_end, "fps": scn.render.fps,
                    "seconds": round((scn.frame_end - scn.frame_start + 1) / scn.render.fps, 2)},
         "objects": objs,
-        "camera": {"location": _r(cam.location), "look_at": _look_at(cam), "focal_length": cam.data.lens},
+        "camera": {"location": _r(cam.location), "look_at": _look_at(cam), "focal_length": cam.data.lens,
+                   **({"moves_between_frames": [min(keys), max(keys)]}
+                      if (keys := [int(k.co.x) for fc in _fcurves(cam) for k in fc.keyframe_points]) else {})},
         "light": scn.get("light_preset"),
         "note": "bottom_centre = [x, y, height of the object's bottom] at the first frame",
     }
@@ -525,6 +683,110 @@ def render_final(engine="eevee", filename="final.mp4"):
     return {"video": scn.render.filepath, "engine": scn.render.engine, "seconds": round(time.time() - t, 1)}
 
 
+def _visible_fraction(o, cam_pos, deps):
+    """Share of up to 12 points on o's camera-facing faces that the camera can see (nothing else in
+    between). Points are face centres nudged 2 mm outward, so faces resting on the ground or a
+    table don't count as hidden, and sparse shapes (a table's legs) are sampled where they are.
+    None if o has no size or no face toward the camera."""
+    lo, hi = _world_bounds(o)
+    if (hi - lo).length < 1e-3:
+        return None
+    mw = o.matrix_world
+    nm = mw.to_3x3().inverted_safe().transposed()
+    pts = []
+    for poly in o.data.polygons:
+        c = mw @ poly.center
+        n = (nm @ poly.normal).normalized()
+        if n.z > -0.5 and n.dot(cam_pos - c) > 0:
+            pts.append(c + n * 0.002)
+    if not pts:
+        return None
+    pts = pts[::max(1, len(pts) // 12)][:12]
+    seen = 0
+    for p in pts:
+        d = p - cam_pos
+        ok, _loc, _n, _i, hit, _m = bpy.context.scene.ray_cast(deps, cam_pos, d.normalized(),
+                                                               distance=d.length - 0.001)
+        seen += (not ok) or (hit is not None and hit.original.name == o.name)
+    return seen / len(pts)
+
+
+def _world_bvh(o, deps):
+    """BVH of o in world space, shrunk 1 cm per side so resting contact doesn't count as a collision."""
+    from mathutils.bvhtree import BVHTree
+    eo = o.evaluated_get(deps)
+    me = eo.to_mesh()
+    lo, hi = _world_bounds(o)
+    c, d = (lo + hi) / 2, hi - lo
+    s = Vector([max(0.0, 1 - 0.02 / x) if x > 0 else 1.0 for x in d])
+    verts = []
+    for v in me.vertices:
+        p = o.matrix_world @ v.co - c
+        verts.append(c + Vector((p.x * s.x, p.y * s.y, p.z * s.z)))
+    polys = [tuple(p.vertices) for p in me.polygons]
+    eo.to_mesh_clear()
+    return BVHTree.FromPolygons(verts, polys)
+
+
+def sample_scene(vis_step=6):
+    """Per-frame data the checker needs (checks/ evaluates it outside Blender)."""
+    from bpy_extras.object_utils import world_to_camera_view
+    scn = bpy.context.scene
+    cam = scn.camera
+    objs = [o for o in _scene_objects() if o.type == "MESH" and o.get("kind") != "ground"]
+    out = {"start": scn.frame_start, "end": scn.frame_end, "fps": scn.render.fps,
+           "light": scn.get("light_preset"), "frames": [], "camera": [], "collisions": [],
+           "objects": {o.name: {"kind": o.get("kind", "mesh"),
+                                "top_z": o.get("top_z"), "frames": []} for o in objs}}
+    for f in range(scn.frame_start, scn.frame_end + 1):
+        scn.frame_set(f)
+        deps = bpy.context.evaluated_depsgraph_get()
+        key = (f - scn.frame_start) % vis_step == 0 or f == scn.frame_end
+        out["frames"].append(f)
+        q = cam.matrix_world.to_quaternion()
+        cam_pos = cam.matrix_world.translation.copy()
+        out["camera"].append({"loc": _r(cam_pos, 3), "fwd": _r(q @ Vector((0, 0, -1)), 3),
+                              "right": _r(q @ Vector((1, 0, 0)), 3)})
+        for o in objs:
+            lo, hi = _world_bounds(o)
+            sc = [world_to_camera_view(scn, cam, o.matrix_world @ Vector(c)) for c in o.bound_box]
+            m = o.data.materials[0] if o.data.materials else None
+            e = {"lo": _r(lo, 3), "hi": _r(hi, 3),
+                 "rot": _r([math.degrees(a) for a in o.rotation_euler], 1), "scale": _r(o.scale, 3),
+                 "colour": _r(m.diffuse_color[:3], 3) if m else None,
+                 "screen": _r([min(p.x for p in sc), min(p.y for p in sc), max(p.x for p in sc),
+                               max(p.y for p in sc)], 3),
+                 "in_front": all(p.z > 0 for p in sc)}
+            if key:
+                e["visible"] = _visible_fraction(o, cam_pos, deps)
+            out["objects"][o.name]["frames"].append(e)
+        if key:
+            boxes = {o.name: _world_bounds(o) for o in objs}
+            pairs = [(a, b) for i, a in enumerate(objs) for b in objs[i + 1:]
+                     if all(boxes[a.name][0][k] < boxes[b.name][1][k] - 0.01 and
+                            boxes[b.name][0][k] < boxes[a.name][1][k] - 0.01 for k in range(3))]
+            if pairs:
+                bvh = {}
+                for a, b in pairs:
+                    for o in (a, b):
+                        if o.name not in bvh:
+                            bvh[o.name] = _world_bvh(o, deps)
+                    if bvh[a.name].overlap(bvh[b.name]):
+                        out["collisions"].append([a.name, b.name, f])
+    scn.frame_set(scn.frame_start)
+    return out
+
+
+def set_output(subdir=""):
+    """Internal (not offered to the agent): where renders and .blend files of the next task go."""
+    global OUT_DIR, _render_count, _BASE_OUT
+    _BASE_OUT = globals().get("_BASE_OUT") or OUT_DIR
+    OUT_DIR = os.path.join(_BASE_OUT, subdir)
+    os.makedirs(OUT_DIR, exist_ok=True)
+    _render_count = 0
+    return {"out": OUT_DIR}
+
+
 def save_blend(filename="scene.blend"):
     path = os.path.join(OUT_DIR, filename)
     bpy.ops.wm.save_as_mainfile(filepath=path, copy=True)
@@ -532,5 +794,6 @@ def save_blend(filename="scene.blend"):
 
 
 TOOLS = {f.__name__: f for f in (
-    scene_reset, scene_state, add_primitive, set_transform, set_material, add_light, set_camera,
-    keyframe, set_easing, set_frames, render_check, render_final, save_blend)}
+    scene_reset, scene_state, add_primitive, add_asset, set_transform, set_material, add_light, set_camera,
+    camera_move, keyframe, set_easing, set_frames, render_check, render_final, sample_scene, set_output,
+    save_blend)}

@@ -14,7 +14,7 @@
   "defaults": {
     "about": "added to every task automatically",
     "checks": [
-      {"in_view": "all_roles", "frames": "all"},
+      {"in_view": "all_roles", "frames": "most"},
       {"not_hidden": "all_roles", "frames": "key"},
       {"on_surface": "all_static_roles"},
       {"grounded": "all_figures"},
@@ -28,7 +28,7 @@
 
   "check_types": {
     "count":            "{role, n}: exactly n objects match the role",
-    "in_view":          "role(s) inside the camera frame (projected bounds) on the given frames",
+    "in_view":          "role(s) inside the camera frame (≥ 90% of the projected bounds) on the given frames; 'most' = at least 75% of frames (things may enter or leave)",
     "not_hidden":       "camera ray casts reach the role on the given frames",
     "on_surface":       "{role, surface}: role rests on surface (role or 'ground'), ±1 cm; checked at the last frame unless 'frame' given",
     "row":              "{roles, order}: roles lie on one line, roughly evenly spaced (±25%), in this left→right order",

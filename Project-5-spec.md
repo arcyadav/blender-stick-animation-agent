@@ -60,7 +60,7 @@ Blender is free and open source (GPL), runs on Windows, and **everything is scri
 | Area | In scope? |
 |---|---|
 | Primitives (cube, sphere, cylinder, plane, cone, torus) | ✅ |
-| glTF import (CC0 props, e.g. Poly Haven) | ✅ 6–8 props (table, chair, box, lamp, tree, ball, wall) |
+| Props | ✅ 6 props (table, chair, bench, box, lamp, tree) **built from primitives** instead of CC0 glTF: one flat style with the stick figures, no download/cleanup, and an exact support height (`top_z`) for things that hold others |
 | Materials (Principled BSDF presets) | ✅ |
 | Lights, world colour | ✅ presets |
 | Camera (placement, look-at, orbit, dolly, follow) | ✅ |
@@ -140,7 +140,18 @@ request ──► Agent (LLM, tool-calling loop)
 `{"in_front_of": obj, "distance": m}`, so the model needn't do coordinate maths.
 
 **Camera rule:** `set_camera(look_at)` adds a Track-To constraint; `camera_move` keys the camera's position
-and keeps the constraint. One mechanism, no conflict.
+and keeps the constraint. One mechanism, no conflict. A new fixed `set_camera(location)` clears earlier moves.
+
+**As built (Day 1, 22 Oct):**
+- `location` z is the height of the object's **bottom** (z = 0 = standing on the ground); x, y its centre.
+  This removes a whole class of floating/sunk mistakes.
+- `add_primitive` also takes `colour` / `preset` (both models put the colour there on Day 0).
+- `set_easing` has a **`gravity`** mode: falling segments speed up, rising ones slow down, sideways travel
+  stays linear. One call gives a believable bounce or jump.
+- Extra internal tools (not offered to the agent): `sample_scene` (per-frame data for the checker),
+  `set_output`, `save_blend`.
+- Validation runs outside Blender (`blender_worker/schema.py`) and names the wrong field, e.g.
+  *"unknown field 'colour'. Hint: 'colour' is a separate argument of this tool"*.
 
 Stretch tools: `pose` (name, joint, angle, frame: custom gestures), new actions (`jump`, `sit`, `run`),
 3D armature version of the stick figure, `image_plane` (P3 character parts as a 2.5D cut-out).
@@ -184,6 +195,14 @@ Stretch tools: `pose` (name, joint, angle, frame: custom gestures), new actions 
 - **staging:** angle between the camera's view and the action's motion plane is ≤ 45° (side actions seen from
   the side, front actions from the front)
 - two figures don't walk through each other or through props
+
+**As built (Day 1):** the worker's `sample_scene` records every frame (exact vertex bounds, screen box,
+camera vectors; visibility and collisions every 6th frame) and `checks/checker.py` evaluates it in plain
+Python. Visibility = share of camera-facing face points the camera reaches (a table is sampled on its legs
+and top, not through the gap between them). Collisions = BVH overlap with each mesh shrunk 1 cm, so resting
+contact doesn't count. Roles are bound to objects by kind + colour, trying every assignment and keeping the best.
+`tests/test_checker.py` builds 9 deliberately broken scenes; each fails exactly the expected check.
+Known gap: an object moving sideways in mid-air ("hovering") isn't caught yet.
 
 **Visual check (optional):** a small local VLM via Ollama (e.g. `qwen2.5vl:3b`) answers 3–5 yes/no questions
 on the check renders. One vote, never the only check (as in Project 3).

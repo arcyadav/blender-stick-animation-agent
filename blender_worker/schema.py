@@ -50,6 +50,13 @@ TOOLS = [
            "colour": COLOUR,
            "preset": {"type": "string", "enum": ["matte", "plastic", "metal", "glass", "glow", "wood"]}},
           ["type", "name"]),
+    _tool("add_asset", "Add a ready-made prop. Tables, chairs, benches and boxes can hold things "
+                       "({\"on_top_of\": name}). Sizes: table 1.2×0.8×0.75 m, chair seat 0.46 m high, "
+                       "bench 1.5 m long, box 0.5 m, lamp 0.46 m (a table lamp), tree 3 m.",
+          {"asset": {"type": "string", "enum": ["table", "chair", "bench", "box", "lamp", "tree"]},
+           "name": {"type": "string"}, "location": LOCATION,
+           "scale": {"type": "number", "minimum": 0.1, "maximum": 10}, "colour": COLOUR},
+          ["asset", "name"]),
     _tool("set_transform", "Move, rotate (degrees) or scale an existing object.",
           {"name": {"type": "string"}, "location": LOCATION,
            "rotation": dict(VEC3, description="[x, y, z] in degrees"),
@@ -64,6 +71,16 @@ TOOLS = [
     _tool("set_camera", "Place the camera and aim it at an object (by name) or a point [x, y, z].",
           {"location": VEC3, "look_at": {"oneOf": [{"type": "string"}, VEC3]},
            "focal_length": {"type": "number", "minimum": 10, "maximum": 200, "description": "mm, default 35"}}),
+    _tool("camera_move", "Animate the camera between two frames (eased in and out). orbit: circle around "
+                         "the target by `degrees`; dolly_in / dolly_out: move toward / away from the target "
+                         "(`amount` = distance factor, default 0.6 / 1.5); follow: keep the same offset from a "
+                         "moving object; pan: turn to look from the current point to the target.",
+          {"kind": {"type": "string", "enum": ["orbit", "dolly_in", "dolly_out", "follow", "pan"]},
+           "target": {"oneOf": [{"type": "string"}, VEC3]},
+           "start_frame": {"type": "integer", "minimum": 0}, "end_frame": {"type": "integer", "minimum": 1},
+           "degrees": {"type": "number", "minimum": -720, "maximum": 720},
+           "amount": {"type": "number", "minimum": 0.1, "maximum": 5}},
+          ["kind"]),
     _tool("keyframe", "Set a property of an object at a frame and record a keyframe. Between keyframes "
                       "Blender interpolates smoothly.",
           {"name": {"type": "string"},
