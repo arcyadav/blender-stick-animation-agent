@@ -1,0 +1,195 @@
+"""Tool definitions the LLM sees (Ollama / OpenAI function format) and a validator with clear messages.
+
+Validation happens here, outside Blender, so a bad call never reaches the worker and the model gets
+an error it can act on. Numeric strings ("1.5") are accepted but recorded as warnings, so the
+valid-tool-call rate in the evaluation still sees them.
+"""
+import copy
+
+COLOUR_NAMES = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "white", "black", "grey", "brown"]
+
+VEC3 = {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
+COLOUR = {"oneOf": [{"type": "string"}, VEC3],
+          "description": f"a name ({', '.join(COLOUR_NAMES)}), '#rrggbb' or [r, g, b] in 0..1"}
+PLACEMENT = {
+    "type": "object",
+    "properties": {
+        "on_top_of": {"type": "string"},
+        "offset": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "next_to": {"type": "string"},
+        "side": {"type": "string", "enum": ["left", "right", "front", "back"]},
+        "gap": {"type": "number", "minimum": 0},
+        "in_front_of": {"type": "string"},
+        "distance": {"type": "number", "minimum": 0},
+    },
+    "oneOf_keys": ["on_top_of", "next_to", "in_front_of"],
+}
+LOCATION = {
+    "oneOf": [VEC3, PLACEMENT],
+    "description": "[x, y, z] with z = height of the object's BOTTOM (0 = on the ground), or a placement: "
+                   "{\"on_top_of\": name}, {\"next_to\": name, \"side\": \"left|right|front|back\"}, "
+                   "{\"in_front_of\": name, \"distance\": metres}. Screen-left is -x, screen-right is +x.",
+}
+
+
+def _tool(name, description, props=None, required=()):
+    return {"type": "function", "function": {
+        "name": name, "description": description,
+        "parameters": {"type": "object", "properties": props or {}, "required": list(required)}}}
+
+
+TOOLS = [
+    _tool("scene_reset", "Start an empty scene: ground at z = 0, default camera, day light, frames 1-72 at 24 fps."),
+    _tool("scene_state", "Describe the current scene: objects (kind, colour, bottom_centre, size, keyframes), "
+                         "camera, light and frame range."),
+    _tool("add_primitive", "Add a basic shape. It rests at `location` (bottom of the shape at z).",
+          {"type": {"type": "string", "enum": ["cube", "sphere", "cylinder", "plane", "cone", "torus"]},
+           "name": {"type": "string", "description": "unique name, e.g. 'ball'"},
+           "location": LOCATION,
+           "size": {"type": "number", "minimum": 0.01, "maximum": 20, "description": "largest dimension in metres"},
+           "colour": COLOUR,
+           "preset": {"type": "string", "enum": ["matte", "plastic", "metal", "glass", "glow", "wood"]}},
+          ["type", "name"]),
+    _tool("set_transform", "Move, rotate (degrees) or scale an existing object.",
+          {"name": {"type": "string"}, "location": LOCATION,
+           "rotation": dict(VEC3, description="[x, y, z] in degrees"),
+           "scale": {"oneOf": [{"type": "number", "minimum": 0}, VEC3]}},
+          ["name"]),
+    _tool("set_material", "Set an object's colour and surface preset.",
+          {"name": {"type": "string"}, "colour": COLOUR,
+           "preset": {"type": "string", "enum": ["matte", "plastic", "metal", "glass", "glow", "wood"]}},
+          ["name"]),
+    _tool("add_light", "Replace the lighting with a preset.",
+          {"preset": {"type": "string", "enum": ["day", "studio", "sunset", "night"]}}, ["preset"]),
+    _tool("set_camera", "Place the camera and aim it at an object (by name) or a point [x, y, z].",
+          {"location": VEC3, "look_at": {"oneOf": [{"type": "string"}, VEC3]},
+           "focal_length": {"type": "number", "minimum": 10, "maximum": 200, "description": "mm, default 35"}}),
+    _tool("keyframe", "Set a property of an object at a frame and record a keyframe. Between keyframes "
+                      "Blender interpolates smoothly.",
+          {"name": {"type": "string"},
+           "property": {"type": "string", "enum": ["location", "rotation", "scale", "colour"]},
+           "frame": {"type": "integer", "minimum": 0, "maximum": 2000},
+           "value": {"description": "location: like `location` of add_primitive; rotation: [x, y, z] degrees; "
+                                    "scale: number or [x, y, z]; colour: like `colour`"}},
+          ["name", "property", "frame", "value"]),
+    _tool("set_easing", "Choose how a property moves between its keyframes. 'gravity' is for bounces, "
+                        "jumps and falls (speeds up falling, slows down rising).",
+          {"name": {"type": "string"},
+           "property": {"type": "string", "enum": ["location", "rotation", "scale", "colour"]},
+           "interpolation": {"type": "string", "enum": ["linear", "ease_in_out", "ease_in", "ease_out",
+                                                        "gravity", "bounce", "elastic", "constant"]},
+           "from_frame": {"type": "integer"}, "to_frame": {"type": "integer"}},
+          ["name", "property", "interpolation"]),
+    _tool("set_frames", "Set the clip's frame range and frame rate.",
+          {"start": {"type": "integer", "minimum": 0}, "end": {"type": "integer", "minimum": 1, "maximum": 2000},
+           "fps": {"type": "integer", "minimum": 1, "maximum": 60}},
+          ["start", "end"]),
+    _tool("render_check", "Render quick preview images of some frames and return the check report.",
+          {"frames": {"type": "array", "items": {"type": "integer"}, "minItems": 1, "maxItems": 8}},
+          ["frames"]),
+    _tool("render_final", "Render the final video. Call once, when the scene is done."),
+]
+BY_NAME = {t["function"]["name"]: t["function"] for t in TOOLS}
+
+# values for keyframe.value, chosen by keyframe.property
+KEYFRAME_VALUE = {"location": LOCATION, "rotation": VEC3,
+                  "scale": {"oneOf": [{"type": "number", "minimum": 0}, VEC3]}, "colour": COLOUR}
+
+
+class ValidationError(Exception):
+    pass
+
+
+def _check(value, schema, path, warnings, top_props):
+    if "oneOf" in schema:
+        errors = []
+        for option in schema["oneOf"]:
+            try:
+                return _check(value, option, path, warnings, top_props)
+            except ValidationError as e:
+                errors.append((option, str(e)))
+        # if the value's shape picks one option (a dict → placement), its error is the useful one
+        same_shape = [msg for opt, msg in errors if _shape_matches(value, opt)]
+        detail = same_shape[0] if len(same_shape) == 1 else f"{path}: got {value!r}"
+        hint = schema.get("description") or " or ".join(m for _, m in errors)
+        raise ValidationError(f"{detail}. Expected {hint}")
+    t = schema.get("type")
+    if t == "number" or t == "integer":
+        if isinstance(value, str):
+            try:
+                value = float(value) if t == "number" else int(value)
+                warnings.append(f"{path}: number given as a string")
+            except ValueError:
+                raise ValidationError(f"{path}: expected a number, got {value!r}")
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValidationError(f"{path}: expected a number, got {value!r}")
+        if t == "integer":
+            if value != int(value):
+                raise ValidationError(f"{path}: expected a whole number, got {value!r}")
+            value = int(value)
+        if "minimum" in schema and value < schema["minimum"]:
+            raise ValidationError(f"{path}: must be ≥ {schema['minimum']}, got {value}")
+        if "maximum" in schema and value > schema["maximum"]:
+            raise ValidationError(f"{path}: must be ≤ {schema['maximum']}, got {value}")
+        return value
+    if t == "string":
+        if not isinstance(value, str):
+            raise ValidationError(f"{path}: expected text, got {value!r}")
+        if "enum" in schema and value not in schema["enum"]:
+            raise ValidationError(f"{path}: must be one of {schema['enum']}, got {value!r}")
+        return value
+    if t == "array":
+        if not isinstance(value, list):
+            raise ValidationError(f"{path}: expected a list, got {value!r}")
+        n = len(value)
+        if n < schema.get("minItems", 0) or n > schema.get("maxItems", 10 ** 6):
+            lo, hi = schema.get("minItems"), schema.get("maxItems")
+            size = f"{lo}" if lo == hi else f"{lo}–{hi}"
+            raise ValidationError(f"{path}: expected a list of {size} items, got {n}")
+        return [_check(v, schema["items"], f"{path}[{i}]", warnings, top_props) for i, v in enumerate(value)]
+    if t == "object":
+        if not isinstance(value, dict):
+            raise ValidationError(f"{path}: expected an object, got {value!r}")
+        props = schema.get("properties", {})
+        for k in value:
+            if k not in props:
+                raise ValidationError(f"{path}: unknown field '{k}'" + _misplaced_hint({k: 0}, top_props))
+        keys = schema.get("oneOf_keys")
+        if keys and sum(k in value for k in keys) != 1:
+            raise ValidationError(f"{path}: use exactly one of {keys}")
+        return {k: _check(v, props[k], f"{path}.{k}", warnings, top_props) for k, v in value.items()}
+    return value
+
+
+def _shape_matches(value, schema):
+    kind = {dict: "object", list: "array", str: "string"}.get(type(value), "number")
+    return schema.get("type") == kind or (kind == "number" and schema.get("type") == "integer")
+
+
+def _misplaced_hint(value, top_props):
+    if isinstance(value, dict):
+        stray = [k for k in value if k in top_props]
+        if stray:
+            return f". Hint: {', '.join(repr(k) for k in stray)} is a separate argument of this tool, not part of this field"
+    return ""
+
+
+def validate(tool, args):
+    """Return (clean_args, warnings) or raise ValidationError with a message for the model."""
+    if tool not in BY_NAME:
+        raise ValidationError(f"unknown tool '{tool}'. Tools: {', '.join(BY_NAME)}")
+    params = BY_NAME[tool]["parameters"]
+    props = params["properties"]
+    args = copy.deepcopy(args or {})
+    if not isinstance(args, dict):
+        raise ValidationError(f"{tool}: arguments must be an object")
+    for r in params["required"]:
+        if r not in args:
+            raise ValidationError(f"{tool}: missing required argument '{r}'")
+    warnings, clean = [], {}
+    for k, v in args.items():
+        if k not in props:
+            raise ValidationError(f"{tool}: unknown argument '{k}'. Arguments: {', '.join(props)}")
+        schema = KEYFRAME_VALUE[args["property"]] if (tool, k) == ("keyframe", "value") else props[k]
+        clean[k] = _check(v, schema, f"{tool}.{k}", warnings, props)
+    return clean, warnings

@@ -1,0 +1,356 @@
+{
+  "version": "draft-1 (21 Oct 2026)",
+  "about": "30 requests for UMC301 Project 5, written before building. Each task names roles (what must be in the scene) and machine-checkable checks. The checker binds scene objects to roles by kind + colour, so the agent may name objects anything.",
+
+  "conventions": {
+    "units": "metres, seconds; scene fps from the agent (default 24)",
+    "directions": "left / right / toward / away are camera-relative, judged from the final camera at the frame the check refers to",
+    "colours": "a colour name matches if the object's base colour is closest (in hue) to that name among: red, orange, yellow, green, blue, purple, pink, white, black, grey, brown",
+    "figure_actions": "action names match the motion library; 'walk' matches walk, walk_happy, walk_sad, walk_worried; a mood walk (walk_sad, …) only matches itself",
+    "library_actions": ["idle", "walk", "walk_happy", "walk_sad", "walk_worried", "wave", "react", "look_down"],
+    "library_assets": ["table", "chair", "box", "lamp", "tree", "bench"]
+  },
+
+  "defaults": {
+    "about": "added to every task automatically",
+    "checks": [
+      {"in_view": "all_roles", "frames": "all"},
+      {"not_hidden": "all_roles", "frames": "key"},
+      {"on_surface": "all_static_roles"},
+      {"grounded": "all_figures"},
+      {"no_foot_slide": "all_figures", "max_cm_per_frame": 0.5},
+      {"no_pops": "all_figures", "max_speed_ratio": 3.0},
+      {"staging": "all_figures", "max_angle_deg": 45},
+      {"no_collision": "all_roles"},
+      {"clip_length_s": {"min": 2, "max": 20}}
+    ]
+  },
+
+  "check_types": {
+    "count":            "{role, n}: exactly n objects match the role",
+    "in_view":          "role(s) inside the camera frame (projected bounds) on the given frames",
+    "not_hidden":       "camera ray casts reach the role on the given frames",
+    "on_surface":       "{role, surface}: role rests on surface (role or 'ground'), ±1 cm; checked at the last frame unless 'frame' given",
+    "row":              "{roles, order}: roles lie on one line, roughly evenly spaced (±25%), in this left→right order",
+    "relation":         "{a, rel, b}: rel ∈ left_of, right_of, next_to (gap ≤ 0.5 m), on_top_of, in_front_of, behind; at the last frame",
+    "bounces":          "{role, n, surface}: n local height minima touching the surface",
+    "spins":            "{role, turns, axis, seconds}: total rotation = turns × 360° (±10%) within seconds (±20%)",
+    "moves":            "{role, direction, min_m}: net displacement in that camera-relative direction ≥ min_m",
+    "scale_change":     "{role, from, to}: scale factor at start / end (±10%)",
+    "colour_change":    "{role, from, to}: base colour at start / end",
+    "light":            "{preset}: the scene light preset",
+    "camera_move":      "{kind, target}: kind ∈ orbit (≥ 90° around target), dolly_in (distance to target falls ≥ 20%), follow (target stays within the middle third), pan",
+    "grounded":         "lowest foot point within ±1 cm of the floor on contact frames, never below it",
+    "no_foot_slide":    "a planted foot moves ≤ max_cm_per_frame",
+    "no_pops":          "no joint speed above max_speed_ratio × that action's median speed at action boundaries",
+    "staging":          "angle between the camera view and the current action's motion plane ≤ max_angle_deg",
+    "actions_in_order": "{role, actions}: these actions appear in the figure's timeline in this order (others may be between)",
+    "action_duration":  "{role, action, min_s, max_s}: total time spent in that action",
+    "speed":            "{role, action, relative}: relative ∈ slow (speed ≤ 0.85), normal, fast (≥ 1.2), from play_action's speed",
+    "reaches":          "{role, target, within_m, facing}: figure stops within_m of the target, optionally facing it",
+    "faces":            "{a, b}: at the last frame a's forward direction points at b (±30°)",
+    "returns":          "{role, within_m}: figure ends within within_m of where it started, after moving ≥ 1 m away",
+    "same_time":        "{roles, action}: the roles perform the action in overlapping time ranges",
+    "no_collision":     "no two roles' bounds overlap on any frame (figures vs props, figures vs figures)",
+    "clip_length_s":    "{min, max}: frame range ÷ fps",
+    "middle_of_row":    "{role, row}: role is the middle object of that row",
+    "distance_end":     "{a, b, min_m, max_m}: distance between a and b at the last frame",
+    "start_near":       "{role, target, within_m}: figure starts within within_m of target; 'boxes.left' / 'boxes.right' = leftmost / rightmost match of a role, camera-relative",
+    "passes":           "{role, target}: the figure starts on one side of the target and ends on the other (camera-relative)",
+    "in_view (region)": "optional 'region': 'middle_third' requires the role's centre in the middle third of the frame"
+  },
+
+  "tasks": [
+    {
+      "id": "s01", "category": "static_layout",
+      "request": "three cubes in a row, the middle one blue",
+      "roles": {"cubes": {"kind": "cube"}, "mid": {"kind": "cube", "colour": "blue"}},
+      "checks": [
+        {"count": {"role": "cubes", "n": 3}},
+        {"row": {"roles": "cubes"}},
+        {"middle_of_row": {"role": "mid", "row": "cubes"}}
+      ]
+    },
+    {
+      "id": "s02", "category": "static_layout",
+      "request": "a red ball on a table, with a chair next to the table",
+      "roles": {"ball": {"kind": "sphere", "colour": "red"}, "table": {"kind": "table"}, "chair": {"kind": "chair"}},
+      "checks": [
+        {"on_surface": {"role": "ball", "surface": "table"}},
+        {"relation": {"a": "chair", "rel": "next_to", "b": "table"}}
+      ]
+    },
+    {
+      "id": "s03", "category": "static_layout",
+      "request": "a lamp on a table and a green box on the floor to the left of the table, in sunset light",
+      "roles": {"lamp": {"kind": "lamp"}, "table": {"kind": "table"}, "box": {"kind": "box", "colour": "green"}},
+      "checks": [
+        {"on_surface": {"role": "lamp", "surface": "table"}},
+        {"on_surface": {"role": "box", "surface": "ground"}},
+        {"relation": {"a": "box", "rel": "left_of", "b": "table"}},
+        {"light": {"preset": "sunset"}}
+      ]
+    },
+
+    {
+      "id": "m01", "category": "object_motion",
+      "request": "a red ball bounces three times on the floor",
+      "roles": {"ball": {"kind": "sphere", "colour": "red"}},
+      "checks": [
+        {"bounces": {"role": "ball", "n": 3, "surface": "ground"}}
+      ]
+    },
+    {
+      "id": "m02", "category": "object_motion",
+      "request": "a cube spins around once in 2 seconds",
+      "roles": {"cube": {"kind": "cube"}},
+      "checks": [
+        {"spins": {"role": "cube", "turns": 1, "axis": "z", "seconds": 2}}
+      ]
+    },
+    {
+      "id": "m03", "category": "object_motion",
+      "request": "a yellow ball rolls from left to right across a table and drops onto the floor",
+      "roles": {"ball": {"kind": "sphere", "colour": "yellow"}, "table": {"kind": "table"}},
+      "checks": [
+        {"on_surface": {"role": "ball", "surface": "table", "frame": "first"}},
+        {"moves": {"role": "ball", "direction": "right", "min_m": 0.5}},
+        {"on_surface": {"role": "ball", "surface": "ground", "frame": "last"}}
+      ]
+    },
+    {
+      "id": "m04", "category": "object_motion",
+      "request": "a blue sphere grows from nothing to full size, then turns red",
+      "roles": {"sphere": {"kind": "sphere"}},
+      "checks": [
+        {"scale_change": {"role": "sphere", "from": 0.0, "to": 1.0}},
+        {"colour_change": {"role": "sphere", "from": "blue", "to": "red"}}
+      ]
+    },
+    {
+      "id": "m05", "category": "object_motion",
+      "request": "the camera slowly orbits around a table with a ball on it",
+      "roles": {"table": {"kind": "table"}, "ball": {"kind": "sphere"}},
+      "checks": [
+        {"on_surface": {"role": "ball", "surface": "table"}},
+        {"camera_move": {"kind": "orbit", "target": "table"}}
+      ]
+    },
+
+    {
+      "id": "f01", "category": "figure_single",
+      "request": "a stick man walks to the right for 4 seconds",
+      "roles": {"man": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "man", "actions": ["walk"]}},
+        {"action_duration": {"role": "man", "action": "walk", "min_s": 3.5, "max_s": 4.5}},
+        {"moves": {"role": "man", "direction": "right", "min_m": 2.0}}
+      ]
+    },
+    {
+      "id": "f02", "category": "figure_single",
+      "request": "a stick figure waves at the camera",
+      "roles": {"fig": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "fig", "actions": ["wave"]}},
+        {"faces": {"a": "fig", "b": "camera"}}
+      ]
+    },
+    {
+      "id": "f03", "category": "figure_single",
+      "request": "a stick figure stands still, just breathing, for 3 seconds",
+      "roles": {"fig": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "fig", "actions": ["idle"]}},
+        {"action_duration": {"role": "fig", "action": "idle", "min_s": 2.5, "max_s": 3.5}}
+      ]
+    },
+    {
+      "id": "f04", "category": "figure_single",
+      "request": "a sad stick figure walks slowly to the left",
+      "roles": {"fig": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "fig", "actions": ["walk_sad"]}},
+        {"speed": {"role": "fig", "action": "walk_sad", "relative": "slow"}},
+        {"moves": {"role": "fig", "direction": "left", "min_m": 1.0}}
+      ]
+    },
+    {
+      "id": "f05", "category": "figure_single",
+      "request": "a happy stick woman walks from the left side of the screen to the right",
+      "roles": {"woman": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "woman", "actions": ["walk_happy"]}},
+        {"moves": {"role": "woman", "direction": "right", "min_m": 2.0}}
+      ]
+    },
+    {
+      "id": "f06", "category": "figure_single",
+      "request": "a red stick figure gets a sudden fright",
+      "roles": {"fig": {"kind": "figure", "colour": "red"}},
+      "checks": [
+        {"actions_in_order": {"role": "fig", "actions": ["react"]}}
+      ]
+    },
+
+    {
+      "id": "q01", "category": "figure_sequence",
+      "request": "a stick man walks in from the left, stops in the middle and waves",
+      "roles": {"man": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "man", "actions": ["walk", "wave"]}},
+        {"moves": {"role": "man", "direction": "right", "min_m": 1.5}},
+        {"in_view": "man", "frames": "last", "region": "middle_third"}
+      ]
+    },
+    {
+      "id": "q02", "category": "figure_sequence",
+      "request": "she walks in, stops, looks down, then walks away sadly",
+      "roles": {"she": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "she", "actions": ["walk", "look_down", "walk_sad"]}}
+      ]
+    },
+    {
+      "id": "q03", "category": "figure_sequence",
+      "request": "a stick figure stands around, gets startled, then hurries off to the right",
+      "roles": {"fig": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "fig", "actions": ["idle", "react", "walk"]}},
+        {"speed": {"role": "fig", "action": "walk", "relative": "fast"}},
+        {"moves": {"role": "fig", "direction": "right", "min_m": 1.0}}
+      ]
+    },
+    {
+      "id": "q04", "category": "figure_sequence",
+      "request": "a stick man walks to the right, turns around and walks back to where he started",
+      "roles": {"man": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "man", "actions": ["walk", "walk"]}},
+        {"returns": {"role": "man", "within_m": 0.4}}
+      ]
+    },
+    {
+      "id": "q05", "category": "figure_sequence",
+      "request": "a worried stick figure walks a few steps, stops, and looks down for 2 seconds",
+      "roles": {"fig": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "fig", "actions": ["walk_worried", "look_down"]}},
+        {"action_duration": {"role": "fig", "action": "look_down", "min_s": 1.5, "max_s": 2.5}}
+      ]
+    },
+    {
+      "id": "q06", "category": "figure_sequence",
+      "request": "she waves at the camera, then walks off happily to the left",
+      "roles": {"she": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "she", "actions": ["wave", "walk_happy"]}},
+        {"moves": {"role": "she", "direction": "left", "min_m": 1.0}}
+      ]
+    },
+
+    {
+      "id": "p01", "category": "figure_props",
+      "request": "a stick man walks to the table and waves",
+      "roles": {"man": {"kind": "figure"}, "table": {"kind": "table"}},
+      "checks": [
+        {"actions_in_order": {"role": "man", "actions": ["walk", "wave"]}},
+        {"reaches": {"role": "man", "target": "table", "within_m": 0.5}}
+      ]
+    },
+    {
+      "id": "p02", "category": "figure_props",
+      "request": "a stick figure walks up to a chair with a ball on it and looks down at the ball",
+      "roles": {"fig": {"kind": "figure"}, "chair": {"kind": "chair"}, "ball": {"kind": "sphere"}},
+      "checks": [
+        {"on_surface": {"role": "ball", "surface": "chair"}},
+        {"actions_in_order": {"role": "fig", "actions": ["walk", "look_down"]}},
+        {"reaches": {"role": "fig", "target": "chair", "within_m": 0.6, "facing": true}}
+      ]
+    },
+    {
+      "id": "p03", "category": "figure_props",
+      "request": "she walks around a big box to reach the tree behind it",
+      "roles": {"she": {"kind": "figure"}, "box": {"kind": "box"}, "tree": {"kind": "tree"}},
+      "checks": [
+        {"actions_in_order": {"role": "she", "actions": ["walk"]}},
+        {"reaches": {"role": "she", "target": "tree", "within_m": 0.6}},
+        {"no_collision": ["she", "box"]}
+      ]
+    },
+    {
+      "id": "p04", "category": "figure_props",
+      "request": "a red ball sits on a table; a stick figure walks up to it, gets a fright and walks back",
+      "roles": {"fig": {"kind": "figure"}, "ball": {"kind": "sphere", "colour": "red"}, "table": {"kind": "table"}},
+      "checks": [
+        {"on_surface": {"role": "ball", "surface": "table"}},
+        {"actions_in_order": {"role": "fig", "actions": ["walk", "react", "walk"]}},
+        {"returns": {"role": "fig", "within_m": 0.6}}
+      ]
+    },
+    {
+      "id": "p05", "category": "figure_props",
+      "request": "two boxes stand on the floor; a stick man walks from the left box to the right box",
+      "roles": {"man": {"kind": "figure"}, "boxes": {"kind": "box"}},
+      "checks": [
+        {"count": {"role": "boxes", "n": 2}},
+        {"start_near": {"role": "man", "target": "boxes.left", "within_m": 0.6}},
+        {"reaches": {"role": "man", "target": "boxes.right", "within_m": 0.6}}
+      ]
+    },
+    {
+      "id": "p06", "category": "figure_props",
+      "request": "a stick figure walks past a tree while the camera follows him",
+      "roles": {"fig": {"kind": "figure"}, "tree": {"kind": "tree"}},
+      "checks": [
+        {"actions_in_order": {"role": "fig", "actions": ["walk"]}},
+        {"passes": {"role": "fig", "target": "tree"}},
+        {"camera_move": {"kind": "follow", "target": "fig"}}
+      ]
+    },
+
+    {
+      "id": "t01", "category": "two_figures_camera",
+      "request": "two stick figures walk toward each other and stop face to face; the camera slowly dollies in",
+      "roles": {"a": {"kind": "figure"}, "b": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "a", "actions": ["walk"]}},
+        {"actions_in_order": {"role": "b", "actions": ["walk"]}},
+        {"faces": {"a": "a", "b": "b"}},
+        {"faces": {"a": "b", "b": "a"}},
+        {"distance_end": {"a": "a", "b": "b", "min_m": 0.4, "max_m": 1.2}},
+        {"camera_move": {"kind": "dolly_in", "target": "a"}}
+      ]
+    },
+    {
+      "id": "t02", "category": "two_figures_camera",
+      "request": "a red and a blue stick figure stand side by side and wave together",
+      "roles": {"red": {"kind": "figure", "colour": "red"}, "blue": {"kind": "figure", "colour": "blue"}},
+      "checks": [
+        {"relation": {"a": "red", "rel": "next_to", "b": "blue"}},
+        {"same_time": {"roles": ["red", "blue"], "action": "wave"}}
+      ]
+    },
+    {
+      "id": "t03", "category": "two_figures_camera",
+      "request": "one stick man waves, and the other one walks over to him",
+      "roles": {"waver": {"kind": "figure"}, "walker": {"kind": "figure"}},
+      "checks": [
+        {"actions_in_order": {"role": "waver", "actions": ["wave"]}},
+        {"actions_in_order": {"role": "walker", "actions": ["walk"]}},
+        {"reaches": {"role": "walker", "target": "waver", "within_m": 1.0, "facing": true}}
+      ]
+    },
+    {
+      "id": "t04", "category": "two_figures_camera",
+      "request": "two stick figures walk side by side from left to right, and the camera follows them",
+      "roles": {"a": {"kind": "figure"}, "b": {"kind": "figure"}},
+      "checks": [
+        {"same_time": {"roles": ["a", "b"], "action": "walk"}},
+        {"moves": {"role": "a", "direction": "right", "min_m": 2.0}},
+        {"moves": {"role": "b", "direction": "right", "min_m": 2.0}},
+        {"camera_move": {"kind": "follow", "target": "a"}}
+      ]
+    }
+  ]
+}

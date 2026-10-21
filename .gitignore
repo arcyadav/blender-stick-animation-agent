@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# renders, .blend files, logs — final showcase clips get added explicitly (git add -f)
+outputs/
+*.blend1
+
+# secrets
+.env
+*.key
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
