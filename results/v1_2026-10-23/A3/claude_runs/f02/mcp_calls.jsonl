@@ -1,0 +1,4 @@
+{"t": 1792691102.23, "tool": "add_stick_figure", "args": {"name": "figure", "facing": "front", "location": [0, 0]}, "warnings": []}
+{"t": 1792691104.67, "tool": "play_action", "args": {"name": "figure", "action": "wave"}, "warnings": []}
+{"t": 1792691107.06, "tool": "set_camera", "args": {"look_at": [0, 1], "width": 5}, "warnings": []}
+{"t": 1792691109.79, "check": 1, "passed": true, "report": "All 11 checks pass."}

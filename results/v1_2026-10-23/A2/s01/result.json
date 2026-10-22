@@ -1,0 +1,438 @@
+{
+ "id": "s01",
+ "category": "static_layout",
+ "request": "three cubes in a row, the middle one blue",
+ "agent": "A2",
+ "passed": true,
+ "error": null,
+ "seconds": 25.8,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 10,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 25.8,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "count",
+    "ok": true,
+    "detail": "3 object(s) match 'cubes', expected 3",
+    "default": false
+   },
+   {
+    "check": "row",
+    "ok": true,
+    "detail": "row ['cube_left', 'cube_middle', 'cube_right']: off the line by 0.00 m, gaps [1.0, 1.0]",
+    "default": false
+   },
+   {
+    "check": "middle_of_row",
+    "ok": true,
+    "detail": "middle of the row is cube_middle, 'mid' is cube_middle",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "cubes": [
+    "cube_left",
+    "cube_middle",
+    "cube_right"
+   ],
+   "mid": "cube_middle"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_primitive",
+   "args": {
+    "name": "cube_left",
+    "type": "cube",
+    "location": {
+     "x": -1,
+     "z": 0
+    },
+    "size": 0.5,
+    "layer": "middle"
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "size": 0.5,
+    "layer": "middle",
+    "name": "cube_middle",
+    "colour": "blue",
+    "type": "cube",
+    "location": {
+     "x": 0,
+     "z": 0
+    }
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "cube",
+    "location": {
+     "x": 1,
+     "z": 0
+    },
+    "size": 0.5,
+    "layer": "middle",
+    "name": "cube_right"
+   }
+  },
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -1,
+     "z": 0
+    },
+    "name": "cube_left",
+    "size": 0.5,
+    "type": "cube"
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "cube",
+    "colour": "blue",
+    "layer": "middle",
+    "location": {
+     "x": 0,
+     "z": 0
+    },
+    "name": "cube_middle",
+    "size": 0.5
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "location": {
+     "x": 1,
+     "z": 0
+    },
+    "name": "cube_right",
+    "size": 0.5,
+    "type": "cube",
+    "layer": "middle"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "width": 3,
+    "look_at": {
+     "x": 0,
+     "z": 0
+    }
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 72,
+    "fps": 24
+   }
+  },
+  {
+   "tool": "scene_state",
+   "args": {}
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 10
+  }
+ ],
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You direct a short 2D animation in Blender by calling tools. The scene is already empty and ready (ground line at z = 0, white background, 24 fps). Make exactly what the request asks for: no extra objects, no stick figures unless the request has one.\n\nThe world is 2D, seen from the side like paper:\n- positions are [x, z]: x = left/right (screen-left is negative, about -4 to 4 is on screen), z = height of the object's BOTTOM (0 = standing on the ground). Or use a placement: {\"on_top_of\": \"table\"}, {\"next_to\": \"table\", \"side\": \"left\"}.\n- props (table, chair, bench, box, lamp, tree) come from add_asset; shapes (ball = sphere, cube, cone, ...) from add_primitive. Depth is only a layer: \"back\", \"middle\" (default) or \"front\".\n- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look_down, react). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at. Figures are animated only with play_action. Put props a figure walks past in the back layer.\n- moving objects: keyframe (location, rotation, scale, colour) at frames, then set_easing (gravity for bounces and falls), and set_frames to cover the motion.\n- camera: set_camera(look_at, width) frames the shot; camera_move does pan / zoom_in / zoom_out / follow.\n\nMake the objects, animate them, then frame the camera so everything is in view. When the scene is finished, reply with a short summary and no tool call."
+  },
+  {
+   "role": "user",
+   "content": "three cubes in a row, the middle one blue"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_2zat2347",
+     "function": {
+      "index": 0,
+      "name": "add_primitive",
+      "arguments": {
+       "name": "cube_left",
+       "type": "cube",
+       "location": {
+        "x": -1,
+        "z": 0
+       },
+       "size": 0.5,
+       "layer": "middle"
+      }
+     }
+    },
+    {
+     "id": "call_ojc1vcfl",
+     "function": {
+      "index": 1,
+      "name": "add_primitive",
+      "arguments": {
+       "size": 0.5,
+       "layer": "middle",
+       "name": "cube_middle",
+       "colour": "blue",
+       "type": "cube",
+       "location": {
+        "x": 0,
+        "z": 0
+       }
+      }
+     }
+    },
+    {
+     "id": "call_ki257ie2",
+     "function": {
+      "index": 2,
+      "name": "add_primitive",
+      "arguments": {
+       "type": "cube",
+       "location": {
+        "x": 1,
+        "z": 0
+       },
+       "size": 0.5,
+       "layer": "middle",
+       "name": "cube_right"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_left\",\"bottom_centre\":[-1.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_middle\",\"bottom_centre\":[0.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_right\",\"bottom_centre\":[1.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_hdood9zl",
+     "function": {
+      "index": 0,
+      "name": "scene_reset",
+      "arguments": {}
+     }
+    },
+    {
+     "id": "call_4xxq5asu",
+     "function": {
+      "index": 1,
+      "name": "add_primitive",
+      "arguments": {
+       "layer": "middle",
+       "location": {
+        "x": -1,
+        "z": 0
+       },
+       "name": "cube_left",
+       "size": 0.5,
+       "type": "cube"
+      }
+     }
+    },
+    {
+     "id": "call_reikojmu",
+     "function": {
+      "index": 2,
+      "name": "add_primitive",
+      "arguments": {
+       "type": "cube",
+       "colour": "blue",
+       "layer": "middle",
+       "location": {
+        "x": 0,
+        "z": 0
+       },
+       "name": "cube_middle",
+       "size": 0.5
+      }
+     }
+    },
+    {
+     "id": "call_nfjyhq4g",
+     "function": {
+      "index": 3,
+      "name": "add_primitive",
+      "arguments": {
+       "location": {
+        "x": 1,
+        "z": 0
+       },
+       "name": "cube_right",
+       "size": 0.5,
+       "type": "cube",
+       "layer": "middle"
+      }
+     }
+    },
+    {
+     "id": "call_j8mrp07p",
+     "function": {
+      "index": 4,
+      "name": "set_camera",
+      "arguments": {
+       "width": 3,
+       "look_at": {
+        "x": 0,
+        "z": 0
+       }
+      }
+     }
+    },
+    {
+     "id": "call_75k7ih0n",
+     "function": {
+      "index": 5,
+      "name": "set_frames",
+      "arguments": {
+       "start": 1,
+       "end": 72,
+       "fps": 24
+      }
+     }
+    },
+    {
+     "id": "call_qpb147ql",
+     "function": {
+      "index": 6,
+      "name": "scene_state",
+      "arguments": {}
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"message\":\"empty 2D scene: ground line at z = 0, camera centred on [0, 1.6] showing 8 m across, white background, frames 1\\u201372 at 24 fps\"}",
+   "tool_name": "scene_reset"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_left\",\"bottom_centre\":[-1.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_middle\",\"bottom_centre\":[0.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_right\",\"bottom_centre\":[1.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,0.0],\"width\":3.0,\"height\":1.69,\"shows_x\":[-1.5,1.5],\"shows_z\":[-0.84,0.84]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "tool",
+   "content": "{\"start\":1,\"end\":72,\"fps\":24,\"seconds\":3.0}",
+   "tool_name": "set_frames"
+  },
+  {
+   "role": "tool",
+   "content": "{\"frames\":{\"start\":1,\"end\":72,\"fps\":24,\"seconds\":3.0},\"objects\":[{\"name\":\"ground\",\"kind\":\"ground\"},{\"name\":\"cube_left\",\"kind\":\"cube\",\"colour\":\"grey\",\"bottom_centre\":[-1.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"},{\"name\":\"cube_middle\",\"kind\":\"cube\",\"colour\":\"blue\",\"bottom_centre\":[0.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"},{\"name\":\"cube_right\",\"kind\":\"cube\",\"colour\":\"grey\",\"bottom_centre\":[1.0,0.0,0.0],\"size\":[0.5,0.5,0.5],\"layer\":\"middle\"}],\"camera\":{\"centre\":[0.0,0.0],\"width\":3.0,\"shows_x\":[-1.5,1.5]},\"background\":\"day\",\"note\":\"bottom_centre = [x, depth, height of the object's bottom] at the first frame; the camera looks from the front, screen-left is -x\"}",
+   "tool_name": "scene_state"
+  },
+  {
+   "role": "assistant",
+   "content": "The scene has been set up with three cubes in a row, with the middle cube being blue. The cubes are positioned at x = -1, 0, and 1 on the ground plane. The camera is centered on the middle cube, showing a width of 3 meters across. The background is set to a day scene, and the frame range is from 1 to 72 at 24 frames per second."
+  }
+ ]
+}

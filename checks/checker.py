@@ -6,6 +6,7 @@ expected 3") because the report is what the fix loop sends back.
 """
 import itertools
 import math
+import re
 
 from checks import figure_checks
 
@@ -401,7 +402,11 @@ def c_no_hover(S, a, b):
     limit = max(3, round(0.25 * S.fps))
     for n in names:
         run = 0
+        held = _held_frames(S, n)
         for i in range(1, S.n):
+            if S.frames[i] in held:              # in someone's hand: carried, not hanging
+                run = 0
+                continue
             dz = abs(S.f(n, i)["lo"][2] - S.f(n, i - 1)["lo"][2])
             floating = S.support_under(n, i) is None and dz < 0.002
             run = run + 1 if floating else 0
@@ -413,10 +418,30 @@ def c_no_hover(S, a, b):
     return not bad, "; ".join(bad) or "nothing hangs in the air"
 
 
+def _carried(S):
+    """{(figure, object): frames the object is in that figure's hand, with a margin for the grab}."""
+    out = {}
+    for fig, F in S.s.get("figures", {}).items():
+        for h in F.get("holds", []):
+            end = h["to"] if h["to"] is not None else S.frames[-1]
+            out.setdefault((fig, h["obj"]), set()).update(range(h["from"] - 12, end + 13))
+    return out
+
+
+def _held_frames(S, name):
+    frames = set()
+    for (fig, obj), fs in _carried(S).items():
+        if obj == name:
+            frames |= fs
+    return frames
+
+
 def c_no_collision(S, a, b):
     names = set(_many(b, a)) if isinstance(a, list) else {
         x for v in b.values() if v for x in (v if isinstance(v, list) else [v])}
-    hits = [c for c in S.s["collisions"] if c[0] in names and c[1] in names]
+    carried = _carried(S)
+    hits = [c for c in S.s["collisions"] if c[0] in names and c[1] in names
+            and c[2] not in carried.get((c[0], c[1]), carried.get((c[1], c[0]), set()))]
     if not hits:
         return True, "no collisions"
     pairs = sorted({(c[0], c[1]) for c in hits})
@@ -501,7 +526,24 @@ def check_task(task, sample, defaults=None):
         if best is None or score > best[0]:
             best = (score, results, b)
     _, results, b = best
+    for r in results:                       # say how to make what's missing, so the agent can act on it
+        m = re.match(r"nothing in the scene matches '(\w+)'", r["detail"])
+        if m and m.group(1) in task.get("roles", {}):
+            r["detail"] += f": the request needs {_how_to_make(task['roles'][m.group(1)])}"
     return {"passed": all(r["ok"] for r in results), "results": results, "binding": b}
+
+
+ASSET_KINDS = {"table", "chair", "bench", "box", "lamp", "tree"}
+
+
+def _how_to_make(spec):
+    kind, colour = spec["kind"], spec.get("colour")
+    c = f", colour='{colour}'" if colour else ""
+    if kind == "figure":
+        return f"a stick figure (add_stick_figure{'(colour=' + repr(colour) + ')' if colour else ''})"
+    if kind in ASSET_KINDS:
+        return f"a {colour + ' ' if colour else ''}{kind} (add_asset(asset='{kind}'{c}))"
+    return f"a {colour + ' ' if colour else ''}{kind} (add_primitive(type='{kind}'{c}))"
 
 
 def report_text(report):

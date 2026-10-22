@@ -1,0 +1,100 @@
+{
+ "id": "p02",
+ "category": "figure_props",
+ "request": "a stick figure walks up to a chair with a ball on it and looks down at the ball",
+ "agent": "A1",
+ "passed": false,
+ "error": "HTTPError: HTTP Error 530: <none>",
+ "seconds": 16.8,
+ "passed_first": false,
+ "fix_rounds_used": 0,
+ "tool_calls": 0,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": false,
+  "results": [
+   {
+    "check": "on_surface",
+    "ok": false,
+    "detail": "nothing in the scene matches 'ball': the request needs a sphere (add_primitive(type='sphere'))",
+    "default": false
+   },
+   {
+    "check": "actions_in_order",
+    "ok": false,
+    "detail": "nothing in the scene matches 'fig': the request needs a stick figure (add_stick_figure)",
+    "default": false
+   },
+   {
+    "check": "reaches",
+    "ok": false,
+    "detail": "nothing in the scene matches 'fig': the request needs a stick figure (add_stick_figure)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "fig": null,
+   "chair": null,
+   "ball": null
+  }
+ },
+ "calls": [],
+ "rounds": []
+}

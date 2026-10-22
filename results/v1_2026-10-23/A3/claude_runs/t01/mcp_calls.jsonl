@@ -1,0 +1,7 @@
+{"t": 1792691536.49, "tool": "add_stick_figure", "args": {"name": "left_figure", "location": [-3, 0], "facing": "right", "colour": "blue"}, "warnings": []}
+{"t": 1792691537.14, "tool": "add_stick_figure", "args": {"name": "right_figure", "location": [3, 0], "facing": "left", "colour": "red"}, "warnings": []}
+{"t": 1792691539.28, "tool": "play_action", "args": {"name": "left_figure", "action": "walk", "to": -0.4, "direction": "right", "start_frame": 1}, "warnings": []}
+{"t": 1792691539.97, "tool": "play_action", "args": {"name": "right_figure", "action": "walk", "to": 0.4, "direction": "left", "start_frame": 1}, "warnings": []}
+{"t": 1792691541.47, "tool": "set_camera", "args": {"look_at": [0, 1], "width": 8}, "warnings": []}
+{"t": 1792691542.34, "tool": "camera_move", "args": {"kind": "zoom_in", "target": [0, 1], "start_frame": 1, "end_frame": 97, "amount": 0.6}, "warnings": []}
+{"t": 1792691546.11, "check": 1, "passed": true, "report": "All 15 checks pass."}

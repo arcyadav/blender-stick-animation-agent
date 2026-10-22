@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 13425,
+ "stop_reason": "end_turn",
+ "session_id": "3ff567d2-ad3f-4810-917d-ea038db6497a",
+ "total_cost_usd": 0.0542532,
+ "usage": {
+  "input_tokens": 10,
+  "cache_creation_input_tokens": 3564,
+  "cache_read_input_tokens": 51306,
+  "output_tokens": 772,
+  "output_tokens_details": {
+   "thinking_tokens": 0
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 3564,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 98,
+    "cache_read_input_tokens": 11455,
+    "cache_creation_input_tokens": 72,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 72
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 10,
+   "outputTokens": 772,
+   "cacheReadInputTokens": 51306,
+   "cacheCreationInputTokens": 3564,
+   "webSearchRequests": 0,
+   "costUSD": 0.0542532,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 0,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 8,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "I made the scene and all 12 checks passed: one stick man waves at x = 2 for frames 1\u201372, while a blue stick man starts walking from x = \u20133 at frame 12 and stops beside him at frame 138. The clip runs frames 1\u2013150 and the camera shows both figures the whole time.",
+ "ttft_ms": 2751,
+ "type": "result",
+ "duration_ms": 16983,
+ "uuid": "05ed1eb4-f569-4a38-a7ae-d70d8a4dfd8e",
+ "ttft_stream_ms": 2006,
+ "time_to_request_ms": 257,
+ "first_content_frame_ms": 2007,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

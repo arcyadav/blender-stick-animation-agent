@@ -1,0 +1,5 @@
+{"t": 1792691349.06, "tool": "add_stick_figure", "args": {"name": "figure", "location": [-2, 0], "facing": "right"}, "warnings": []}
+{"t": 1792691351.53, "tool": "play_action", "args": {"name": "figure", "action": "walk_worried", "distance": 2, "direction": "right"}, "warnings": []}
+{"t": 1792691354.11, "tool": "play_action", "args": {"name": "figure", "action": "look_down", "seconds": 2}, "warnings": []}
+{"t": 1792691356.06, "tool": "set_camera", "args": {"look_at": [-1, 1.2], "width": 6}, "warnings": []}
+{"t": 1792691358.73, "check": 1, "passed": true, "report": "All 11 checks pass."}

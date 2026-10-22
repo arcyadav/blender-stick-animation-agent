@@ -1,0 +1,5 @@
+{"t": 1792691125.36, "tool": "add_stick_figure", "args": {"name": "figure", "location": [0, 0], "facing": "front"}, "warnings": []}
+{"t": 1792691128.3, "tool": "play_action", "args": {"name": "figure", "action": "idle", "seconds": 3, "start_frame": 1}, "warnings": []}
+{"t": 1792691130.95, "tool": "set_frames", "args": {"start": 1, "end": 72}, "warnings": []}
+{"t": 1792691131.39, "tool": "set_camera", "args": {"look_at": [0, 1], "width": 5}, "warnings": []}
+{"t": 1792691133.61, "check": 1, "passed": true, "report": "All 11 checks pass."}

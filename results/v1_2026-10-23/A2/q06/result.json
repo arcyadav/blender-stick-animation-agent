@@ -1,0 +1,202 @@
+{
+ "id": "q06",
+ "category": "figure_sequence",
+ "request": "she waves at the camera, then walks off happily to the left",
+ "agent": "A2",
+ "passed": true,
+ "error": null,
+ "seconds": 13.6,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 3,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 12.7,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "figure does ['wave', 'walk_happy']; expected ['wave', 'walk_happy'] in this order",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "figure moves 3.06 m left (as seen by the camera), at least 1.0 m needed",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "figure's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "figure's planted feet slide at most 0.06 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "figure moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 9.4 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "she": "figure"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "facing": "front",
+    "height": 1.7,
+    "location": [
+     0,
+     0
+    ],
+    "name": "figure"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "wave",
+    "name": "figure"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "walk_happy",
+    "direction": "left",
+    "name": "figure",
+    "to": -3
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 11 checks pass.",
+   "tool_calls": 3
+  }
+ ],
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You direct a short 2D animation in Blender by calling tools. The scene is already empty and ready (ground line at z = 0, white background, 24 fps). Make exactly what the request asks for: no extra objects, no stick figures unless the request has one.\n\nThe world is 2D, seen from the side like paper:\n- positions are [x, z]: x = left/right (screen-left is negative, about -4 to 4 is on screen), z = height of the object's BOTTOM (0 = standing on the ground). Or use a placement: {\"on_top_of\": \"table\"}, {\"next_to\": \"table\", \"side\": \"left\"}.\n- props (table, chair, bench, box, lamp, tree) come from add_asset; shapes (ball = sphere, cube, cone, ...) from add_primitive. Depth is only a layer: \"back\", \"middle\" (default) or \"front\".\n- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look_down, react). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at. Figures are animated only with play_action. Put props a figure walks past in the back layer.\n- moving objects: keyframe (location, rotation, scale, colour) at frames, then set_easing (gravity for bounces and falls), and set_frames to cover the motion.\n- camera: set_camera(look_at, width) frames the shot; camera_move does pan / zoom_in / zoom_out / follow.\n\nMake the objects, animate them, then frame the camera so everything is in view. When the scene is finished, reply with a short summary and no tool call."
+  },
+  {
+   "role": "user",
+   "content": "she waves at the camera, then walks off happily to the left"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_wiiwr1qc",
+     "function": {
+      "index": 0,
+      "name": "add_stick_figure",
+      "arguments": {
+       "facing": "front",
+       "height": 1.7,
+       "location": [
+        0,
+        0
+       ],
+       "name": "figure"
+      }
+     }
+    },
+    {
+     "id": "call_ggs1ea71",
+     "function": {
+      "index": 1,
+      "name": "play_action",
+      "arguments": {
+       "action": "wave",
+       "name": "figure"
+      }
+     }
+    },
+    {
+     "id": "call_nparkvru",
+     "function": {
+      "index": 2,
+      "name": "play_action",
+      "arguments": {
+       "action": "walk_happy",
+       "direction": "left",
+       "name": "figure",
+       "to": -3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"figure\",\"x\":0,\"facing\":\"front\",\"height\":1.7,\"layer\":\"middle\",\"width\":0.52,\"actions\":[\"walk\",\"walk_happy\",\"walk_sad\",\"walk_worried\",\"run\",\"wave\",\"idle\",\"look_down\",\"react\"]}",
+   "tool_name": "add_stick_figure"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"figure\",\"action\":\"wave\",\"frames\":[1,124],\"facing\":\"front\",\"start_x\":0.0,\"end_x\":0.0,\"seconds\":5.17,\"clip_end_frame\":136}",
+   "tool_name": "play_action"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"figure\",\"action\":\"walk_happy\",\"frames\":[125,213],\"facing\":\"left\",\"start_x\":0.0,\"end_x\":-3.01,\"seconds\":3.71,\"clip_end_frame\":225}",
+   "tool_name": "play_action"
+  },
+  {
+   "role": "assistant",
+   "content": "The scene now includes a stick figure who waves at the camera and then walks off happily to the left. The stick figure's actions have been set, and the camera will frame the stick figure's movement. Next, I will frame the camera to ensure the stick figure is fully visible during both actions.\n\nHere is a summary of the scene:\n- A stick figure named \"figure\" is added and positioned at [0, 0] facing the camera.\n- The stick figure performs a \"wave\" action at the start of the scene.\n- The stick figure then walks off happily to the left, stopping at approximately -3 meters.\n- The camera will be set to frame the stick figure's actions.\n\nI will now frame the camera to capture the stick figure's actions."
+  }
+ ]
+}

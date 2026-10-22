@@ -14,7 +14,7 @@ def main():
         w.call("scene_reset")
         print(w.call("add_asset", asset="tree", name="tree", location=[-3.2, 0], layer="back"))
         print(w.call("add_asset", asset="table", name="table", location=[2.2, 0]))
-        print(w.call("add_primitive", type="sphere", name="ball", location={"on_top_of": "table"}, size=0.25,
+        print(w.call("add_primitive", type="sphere", name="ball", location={"on_top_of": "table"}, size=0.18,
                      colour="red"))
         print(w.call("add_stick_figure", name="man", location=[-2.5, 0], facing="right"))
         print(w.call("play_action", name="man", action="walk", to="table"))

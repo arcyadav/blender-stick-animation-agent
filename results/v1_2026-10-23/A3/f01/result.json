@@ -1,0 +1,135 @@
+{
+ "id": "f01",
+ "category": "figure_single",
+ "request": "a stick man walks to the right for 4 seconds",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 15.7,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 3,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 15.6,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "man does ['walk']; expected ['walk'] in this order",
+    "default": false
+   },
+   {
+    "check": "action_duration",
+    "ok": true,
+    "detail": "man does walk for 4.1 s (allowed 3.5\u20134.5 s)",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "man moves 2.89 m right (as seen by the camera), at least 1.5 m needed",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "man's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "man's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "man moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 4.6 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "man": "man"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "man",
+    "location": [
+     -3,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "man",
+    "action": "walk",
+    "seconds": 4,
+    "direction": "right"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     -1.5,
+     1.2
+    ],
+    "width": 8
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 3
+  }
+ ]
+}

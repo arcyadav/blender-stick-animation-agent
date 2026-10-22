@@ -1,0 +1,5 @@
+{"t": 1792691371.21, "tool": "add_stick_figure", "args": {"name": "woman", "location": [0, 0], "facing": "front"}, "warnings": []}
+{"t": 1792691372.9, "tool": "play_action", "args": {"name": "woman", "action": "wave"}, "warnings": []}
+{"t": 1792691373.73, "tool": "play_action", "args": {"name": "woman", "action": "walk_happy", "direction": "left", "distance": 5}, "warnings": []}
+{"t": 1792691375.84, "tool": "set_camera", "args": {"look_at": [0, 1.6], "width": 8}, "warnings": []}
+{"t": 1792691379.52, "check": 1, "passed": true, "report": "All 11 checks pass."}

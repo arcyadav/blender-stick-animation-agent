@@ -1,0 +1,164 @@
+{
+ "id": "t03",
+ "category": "two_figures_camera",
+ "request": "one stick man waves, and the other one walks over to him",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 19.9,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 6,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 19.8,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "waver does ['wave']; expected ['wave'] in this order",
+    "default": false
+   },
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "walker does ['walk']; expected ['walk'] in this order",
+    "default": false
+   },
+   {
+    "check": "reaches",
+    "ok": true,
+    "detail": "walker ends 0.57 m from waver (within 1.0 m needed), facing right",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "walker's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm); waver's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "walker's planted feet slide at most 0.00 cm per frame (allowed 0.5); waver's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "walker moves smoothly (no joint jumps or spikes); waver moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 6.2 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "waver": "waver",
+   "walker": "walker"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "waver",
+    "location": [
+     2,
+     0
+    ],
+    "facing": "front"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "walker",
+    "location": [
+     -3,
+     0
+    ],
+    "facing": "right",
+    "colour": "blue"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "waver",
+    "action": "wave",
+    "start_frame": 1,
+    "seconds": 3
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "walker",
+    "action": "walk",
+    "to": "waver",
+    "start_frame": 12
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 150
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     -0.5,
+     1.2
+    ],
+    "width": 8
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 6
+  }
+ ]
+}

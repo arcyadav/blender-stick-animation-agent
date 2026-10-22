@@ -1,0 +1,7 @@
+{"t": 1792691059.02, "tool": "add_asset", "args": {"asset": "tree", "name": "tree", "location": [-6, 0]}, "warnings": []}
+{"t": 1792691059.48, "tool": "add_asset", "args": {"asset": "table", "name": "table", "location": [6, 0]}, "warnings": []}
+{"t": 1792691062.25, "tool": "add_primitive", "args": {"type": "sphere", "name": "ball", "size": 0.3, "colour": "red", "location": {"on_top_of": "table"}}, "warnings": []}
+{"t": 1792691062.68, "tool": "set_camera", "args": {"look_at": "tree", "width": 6}, "warnings": []}
+{"t": 1792691063.0, "tool": "set_frames", "args": {"start": 1, "end": 96}, "warnings": []}
+{"t": 1792691065.92, "tool": "camera_move", "args": {"kind": "pan", "target": "table", "start_frame": 12, "end_frame": 84}, "warnings": []}
+{"t": 1792691069.02, "check": 1, "passed": true, "report": "All 13 checks pass."}

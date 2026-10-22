@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 28943,
+ "stop_reason": "end_turn",
+ "session_id": "0e554562-662e-49de-b105-7834a4a873cd",
+ "total_cost_usd": 0.0957388,
+ "usage": {
+  "input_tokens": 10,
+  "cache_creation_input_tokens": 5053,
+  "cache_read_input_tokens": 53774,
+  "output_tokens": 2226,
+  "output_tokens_details": {
+   "thinking_tokens": 332
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 5053,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 368,
+    "cache_read_input_tokens": 12893,
+    "cache_creation_input_tokens": 123,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 123
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 10,
+   "outputTokens": 2226,
+   "cacheReadInputTokens": 53774,
+   "cacheCreationInputTokens": 5053,
+   "webSearchRequests": 0,
+   "costUSD": 0.0957388,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 332,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 15,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "A yellow ball now rolls left to right across a table, from x = -0.45 to the edge at x = 0.6 over frames 1\u201336. It then drops to the floor at x = 1.0 by frame 50, and all 12 checks in `check_scene` pass.\n\n- **Rolling:** the ball spins clockwise as it moves, about 400\u00b0 on the tabletop and 550\u00b0 by the time it lands.\n- **Easing:** I set the roll to linear and the drop to gravity. Both easing calls reported changing all 3 location keys, so the gravity setting may have replaced the linear one on the tabletop part too. The checks don't test for that, so I can't confirm the roll is still a steady speed.\n- **Clip and camera:** the clip runs frames 1\u201360, so the ball sits on the floor for 10 frames at the end. The camera is centred on [0.3, 0.8] and is 5 m wide, so the table and the whole path stay in view.",
+ "ttft_ms": 5158,
+ "type": "result",
+ "duration_ms": 30399,
+ "uuid": "916445af-c9ca-4eb1-869d-d9266e0d4f78",
+ "ttft_stream_ms": 2417,
+ "time_to_request_ms": 240,
+ "first_content_frame_ms": 2418,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

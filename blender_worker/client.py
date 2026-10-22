@@ -23,19 +23,20 @@ class BlenderWorker:
         self.out_dir = Path(out_dir).resolve()
         self.blender = blender
         self.proc = self.sock = None
+        self.port = None
         self._id = 0
 
-    def start(self):
-        self.out_dir.mkdir(parents=True, exist_ok=True)
-        port = _free_port()
-        self.log = open(self.out_dir / "blender.log", "w", encoding="utf-8")
-        self.proc = subprocess.Popen(
-            [self.blender, "-b", "--factory-startup", "--python", str(config.WORKER_SCRIPT),
-             "--", "--port", str(port), "--out", str(self.out_dir)],
-            stdout=self.log, stderr=subprocess.STDOUT)
-        deadline = time.time() + config.WORKER_START_TIMEOUT_S
+    @classmethod
+    def attach(cls, port, out_dir="."):
+        """Connect to a worker someone else started (e.g. the evaluation), sharing its scene."""
+        w = cls(out_dir)
+        w.port = port
+        w._connect(port, time.time() + 10)
+        return w
+
+    def _connect(self, port, deadline):
         while True:
-            if self.proc.poll() is not None:
+            if self.proc is not None and self.proc.poll() is not None:
                 raise RuntimeError(f"Blender exited during start-up; see {self.out_dir / 'blender.log'}")
             try:
                 self.sock = socket.create_connection(("127.0.0.1", port), timeout=1)
@@ -48,6 +49,16 @@ class BlenderWorker:
         self.sock.settimeout(None)
         self._r = self.sock.makefile("r", encoding="utf-8")
         self._w = self.sock.makefile("w", encoding="utf-8")
+
+    def start(self):
+        self.out_dir.mkdir(parents=True, exist_ok=True)
+        port = self.port = _free_port()
+        self.log = open(self.out_dir / "blender.log", "w", encoding="utf-8")
+        self.proc = subprocess.Popen(
+            [self.blender, "-b", "--factory-startup", "--python", str(config.WORKER_SCRIPT),
+             "--", "--port", str(port), "--out", str(self.out_dir)],
+            stdout=self.log, stderr=subprocess.STDOUT)
+        self._connect(port, time.time() + config.WORKER_START_TIMEOUT_S)
         return self
 
     def call(self, tool, **args):
@@ -65,10 +76,11 @@ class BlenderWorker:
 
     def close(self):
         if self.sock:
-            try:
-                self.call("shutdown")
-            except Exception:
-                pass
+            if self.proc:                          # our own worker: stop it; an attached one keeps running
+                try:
+                    self.call("shutdown")
+                except Exception:
+                    pass
             self.sock.close()
             self.sock = None
         if self.proc:
@@ -81,7 +93,11 @@ class BlenderWorker:
             self.log.close()
 
     def __enter__(self):
-        return self.start()
+        try:
+            return self.start()
+        except RuntimeError:                       # a rare start-up race on Windows: try once more
+            self.close()
+            return self.start()
 
     def __exit__(self, *exc):
         self.close()

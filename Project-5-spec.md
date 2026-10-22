@@ -229,6 +229,34 @@ Stretch tools: `pose` (name, joint, angle, frame: custom gestures), new actions 
 - **Grounding:** every frame the lowest foot point is put on the ground, so `grounded` fails only if the
   agent/tooling misplaces a figure.
 
+**After the user's review of the first clips (22 Oct):**
+- **Standing legs are straight** (pelvis at full leg length); only the upper body bends.
+- **`look_down` looks at something:** `play_action(look_down, to="ball")` turns toward it and bends just
+  enough to see it; the bend is shared waist 20% / neck 40% / head 40%, so the head turns on the neck.
+- **`run`** (new, keyed in code): foot-path cycle with a flight phase, 14° lean, arms bent ~95° pumping,
+  heel kick and knee drive (keyed swing paths, heel lands first with no speed), pose evaluated exactly at
+  any time. It starts slowly (speeds up over the first cycle, like walks now do) and stops with a
+  **braking step** (every joint carries its speed into the stop, then settles). A fright followed by a run
+  faces the scare, turns, and runs away. `grounded` lets a run leave the ground but never sink.
+- **Round palms** (small discs past the wrists) and a **smaller ball** (0.18 m on tables, 0.4 m on the
+  floor); a ball dropping off a table now bounces twice before rolling to a stop. Primitives default to
+  grey (white vanished on the white background).
+- **Pop check redefined** as real discontinuities: a *jump* (one frame moves > 3× both neighbours) or a
+  *spike* (out and straight back). The acceleration version flagged legitimate starts from rest (a heel
+  kick off a planted foot). Blends now use a quintic ease (no jolt at either end).
+- Requested durations include the speed-up and the stop; f01 / t04 `moves` thresholds were lowered from
+  2.0 m to 1.5 m (the P3 walk is a slow 0.6 m/s; the check is about direction).
+- A0: 30/30.
+
+**Second review (22 Oct), against reference stick-figure images:** the look moved to bold strokes
+(half-width 4.2 cm for a 1.7 m figure) with **round ends and round joints** (a disc at every joint), a
+slightly bigger head, **short feet** (the front half of the foot bone is drawn; the shin runs to it) and
+no separate palms (arms end round). Front-facing figures stand with feet apart (an upside-down V) and
+limbs spring from near one point (narrow hips and shoulders). Walks play at **1.3× the P3 tempo** (P3's
+1.5 s cycle is a stroll; now ~1.15 s, feet still planted), and walks speed up from 55% over the first step
+instead of 30% over a cycle. The run's push-off now pivots on the toe over the second half of the stance
+(a 2-frame pivot made the knee jump).
+
 ### 4.4 Self-check (the agent's critic)
 **Scene checks** (exact, from scene data):
 - every requested object / figure exists and is **inside the camera view** (projected bounds)
@@ -290,6 +318,31 @@ Failure → the report goes back to the agent → it fixes with tools (max 3 rou
 | A3 | Claude via an MCP server with the same tools, scripted with `claude -p` | subscription, no API spend |
 
 Same tools and checks for all. A3's time per task isn't comparable (remote model, rate limits), so its timing is reported as indicative only.
+
+**As built (Day 3, 22–23 Oct):**
+- **A1/A2** (`agent/llm_agent.py`): Ollama `/api/chat` with the tool definitions (render tools left out:
+  the model can't see images), temperature 0, seed 0, 8k context. Every call is validated first; errors come
+  back as tool messages. When the model replies without a tool call, the checker runs; a failing report
+  goes back as a user message and the model fixes the scene, up to 3 rounds. **With temperature 0 the first
+  round is exactly a no-fix run**, so Study 2 (with vs without the fix loop) reads `passed_first` vs `passed`
+  from one run. A **repeat guard** answers a third identical call with "already done, move on" (qwen 3b made
+  36 identical `set_camera` calls in one trial).
+- **Hardware:** on the laptop CPU (Iris Xe isn't used by Ollama) qwen 3b took 3.5–9.5 min per task, so the
+  full runs use **Ollama on a Kaggle T4 GPU** behind a Cloudflare quick tunnel (`kaggle/ollama_gpu_server.ipynb`,
+  `P5_OLLAMA_URL`): same model files and settings, 58 tok/s (3b) / 39 tok/s (7b). Blender, tools and checks
+  stay on the laptop. Timings are therefore GPU timings.
+- **A3** (`agent/claude_agent.py`, `blender_worker/mcp_server.py`): a small hand-written MCP server (JSON-RPC
+  over stdio, no SDK) offers the same validated tools plus `check_scene`. It **attaches to the evaluation's
+  Blender worker** (the worker now accepts several clients and serves them one request at a time), so the
+  checker sees exactly Claude's scene. `claude -p` runs with built-in tools off (`--tools ""`), only this MCP
+  server (`--strict-mcp-config`), in an empty folder; the prompt is A1/A2's system prompt plus "call
+  check_scene when done, fix, at most 3 fixes".
+- **Tool-layer changes from the A1 trial** (apply to every agent): names default to the kind
+  (`table`, `ball`, `figure`, then `table2`…), since the 3b model left `name` out 7 times in one task; a
+  failing "nothing matches 'table'" now says how to make it ("add_asset(asset='table')"); the system prompt
+  says to make only what is asked (the 3b model added a walking figure to a static scene).
+- **Results so far:** A0 30/30; **A3 30/30 (27 first try**; m01, p06, t02 fixed after `check_scene`), 0 invalid
+  calls, 15–40 s per task; A1 (CPU trial, before the guard) 0/3.
 
 ---
 

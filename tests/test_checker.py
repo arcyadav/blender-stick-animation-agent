@@ -26,7 +26,7 @@ def bounce(w, n):
 
 def table_and_ball(w, ball_loc):
     w.call("add_asset", asset="table", name="table", location=[0, 0, 0])
-    w.call("add_primitive", type="sphere", name="ball", location=ball_loc, size=0.25, colour="red")
+    w.call("add_primitive", type="sphere", name="ball", location=ball_loc, size=0.18, colour="red")
     w.call("add_asset", asset="chair", name="chair", location={"next_to": "table"})
 
 
@@ -54,7 +54,7 @@ CASES = [
         w.call("keyframe", name="ball", property="location", frame=40, value=[1.5, 0.6])), "no_collision"),
     ("ball hangs in the air past the table edge", "m03", lambda w: (
         w.call("add_asset", asset="table", name="table", location=[0, 0]),
-        w.call("add_primitive", type="sphere", name="ball", location={"on_top_of": "table"}, size=0.25,
+        w.call("add_primitive", type="sphere", name="ball", location={"on_top_of": "table"}, size=0.18,
                colour="yellow"),
         w.call("keyframe", name="ball", property="location", frame=1, value={"on_top_of": "table"}),
         w.call("keyframe", name="ball", property="location", frame=30, value=[1.2, 0.75]),

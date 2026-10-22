@@ -1,0 +1,175 @@
+{
+ "id": "p04",
+ "category": "figure_props",
+ "request": "a red ball sits on a table; a stick figure walks up to it, gets a fright and walks back",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 25.5,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 7,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 25.5,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "ball rests on table at frame 315, expected table",
+    "default": false
+   },
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "figure does ['walk', 'react', 'walk']; expected ['walk', 'react', 'walk'] in this order",
+    "default": false
+   },
+   {
+    "check": "returns",
+    "ok": true,
+    "detail": "figure goes 3.90 m away (\u2265 1 m needed) and ends 0.00 m from its start (within 0.6 m needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "figure's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "figure's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "figure moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 13.1 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "fig": "figure",
+   "ball": "ball",
+   "table": "table"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "table",
+    "name": "table",
+    "location": [
+     2,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "figure",
+    "location": [
+     -3,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "sphere",
+    "name": "ball",
+    "colour": "red",
+    "size": 0.3,
+    "location": {
+     "on_top_of": "table"
+    }
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "figure",
+    "action": "walk",
+    "to": "table"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "figure",
+    "action": "react"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "figure",
+    "action": "walk",
+    "to": -3,
+    "direction": "left"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     -0.4,
+     1.4
+    ],
+    "width": 8
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 7
+  }
+ ]
+}

@@ -116,7 +116,7 @@ class Template:
 
     name = "A0"
 
-    def run(self, request, w, log=None):
+    def run(self, request, w, log=None, check=None, task_id=None):
         text = request.lower()
         calls = []
 
@@ -124,7 +124,7 @@ class Template:
             calls.append({"tool": tool, "args": args})
             r = w.call(tool, **args)
             if log:
-                log(tool, args, r)
+                log(tool, args, None)
             return r
 
         call("scene_reset")
@@ -164,7 +164,8 @@ class Template:
                 results[o.name] = call("add_asset", asset=o.noun, **args)
             else:
                 small = isinstance(o.place, dict) and "on_top_of" in o.place
-                results[o.name] = call("add_primitive", type=o.kind, size=0.25 if small else 0.6, **args)
+                size = (0.18 if small else 0.4) if o.kind == "sphere" else (0.25 if small else 0.6)
+                results[o.name] = call("add_primitive", type=o.kind, size=size, **args)
             done.add(o.name)
 
         for word in ("sunset", "night", "studio"):
@@ -214,7 +215,16 @@ class Template:
                 call("keyframe", name=o.name, property="location", frame=f, value=[round(x, 2), round(z, 2)])
                 pts.append((x, z + size))
             call("set_easing", name=o.name, property="location", interpolation="gravity")
-            return f + 12
+            # after the last bounce it keeps rolling a little and slows to a stop
+            rad = r["size"][0] / 2
+            roll = 0.35
+            call("keyframe", name=o.name, property="location", frame=f + 18, value=[round(x + roll, 2), 0])
+            call("set_easing", name=o.name, property="location", interpolation="ease_out", from_frame=f)
+            call("keyframe", name=o.name, property="rotation", frame=f, value=0)
+            call("keyframe", name=o.name, property="rotation", frame=f + 18, value=round(math.degrees(roll / rad)))
+            call("set_easing", name=o.name, property="rotation", interpolation="ease_out")
+            pts.append((x + roll, size))
+            return f + 30
 
         m = re.search(r"spins?|rotates?|turns? around", text)
         if m:
@@ -239,7 +249,11 @@ class Template:
                 xs = [sx - sign * (half - 0.15), sx + sign * (half + 0.5 * rad)]
                 keys = [(1, xs[0], top), (40, xs[1], top)]
                 if re.search(r"(drops|falls)", text):
-                    keys += [(50, xs[1] + sign * 0.3, 0.0), (68, xs[1] + sign * 0.8, 0.0)]
+                    # falls (gravity), bounces twice, losing height, then rolls to a stop
+                    x = xs[1]
+                    for f, dx, z in ((50, 0.25, 0.0), (55, 0.4, 0.2), (60, 0.55, 0.0), (63, 0.63, 0.06),
+                                     (66, 0.71, 0.0), (80, 0.95, 0.0)):
+                        keys.append((f, x + sign * dx, z))
             else:
                 keys = [(1, x0 - sign * 2, 0.0), (60, x0 + sign * 2, 0.0)]
             for f, x, z in keys:
@@ -380,8 +394,14 @@ class _Figures:
             self._add(figs[0], -3.0, "right")
             self._add(figs[1], 3.0, "left")
             path += [(-3.4, 1.7), (3.4, 1.7)]
-            self.call("play_action", name=figs[0]["name"], action="walk", to=-0.45)
+            ra = self.call("play_action", name=figs[0]["name"], action="walk", to=-0.45)
             r = self.call("play_action", name=figs[1]["name"], action="walk", to=0.45)
+            if re.search(r"shake hands|handshake", t):
+                start = max(ra["frames"][1], r["frames"][1]) + 1
+                self.call("play_action", name=figs[0]["name"], action="handshake", to=figs[1]["name"],
+                          start_frame=start)
+                r = self.call("play_action", name=figs[1]["name"], action="handshake", to=figs[0]["name"],
+                              start_frame=start)
             return self._end(r), path
         if len(figs) == 2 and re.search(r"side by side", t) and re.search(rf"\b({WALK_WORDS})\b", t):
             d = "left" if re.search(r"right to (the )?left", t) else "right"
@@ -471,14 +491,15 @@ class _Figures:
         start_x = x0
         here = x0
         r = None
+        last_target = None
         for kind, clause in events:
             secs = _seconds(clause)
             if kind == "walk":
                 args = {"name": name, "action": self._walk_kind(clause, fig.get("mood"))}
                 if re.search(r"\bslow(ly)?\b", clause):
                     args["speed"] = 0.7
-                if re.search(r"hurr(y|ies)|quickly|fast|runs?", clause):
-                    args["speed"] = 1.5
+                if re.search(r"hurr(y|ies)|quickly|fast|\bruns?\b", clause):
+                    args["action"] = "run"
                 target = re.search(r"\b(?:to|up to|over to|towards?) (?:a|the) (\w+)", clause) or re.search(
                     r"\bpast (?:a|the) (\w+)", clause)
                 prop = self._prop(target.group(1)) if target else None
@@ -496,7 +517,7 @@ class _Figures:
                 elif re.search(r"\baway\b|\boff\b", clause):
                     args["direction"] = "left" if "left" in clause else "right" if "right" in clause else (
                         "right" if here >= 0 else "left")
-                    args["seconds"] = 2.5
+                    args["distance"] = 4.0 if args["action"] == "run" else 2.5
                 elif re.search(r"walks in", clause):
                     args["to"] = 0.0
                 elif re.search(r"a few steps", clause):
@@ -505,10 +526,10 @@ class _Figures:
                 else:
                     if secs:
                         args["seconds"] = secs
-                    elif re.search(r"to the (left|right) of the screen|to the right$|to the left$|across", clause):
+                    elif re.search(r"to the (left|right) of the screen|across", clause):
                         args["to"] = round(-here * 0.9, 2)
                     else:
-                        args["seconds"] = 3
+                        args["distance"] = 2.5
                     if "to" not in args:
                         args["direction"] = "left" if re.search(r"\bleft\b", clause) and not re.search(
                             r"from the left", clause) else "right" if re.search(r"\bright\b", clause) else (
@@ -518,12 +539,27 @@ class _Figures:
                 r = self.call("play_action", **args)
                 here = r["end_x"]
                 path.append((here, 1.7))
+                last_target = args["to"] if isinstance(args.get("to"), str) else last_target
             else:
                 args = {"name": name, "action": kind}
                 if secs and kind in ("idle", "look_down", "wave"):
                     args["seconds"] = secs
                 elif kind == "idle":
                     args["seconds"] = 2.5
+                if kind == "react":
+                    # a fright faces the scare; the figure then turns and gets away from it
+                    nxt = events[events.index((kind, clause)) + 1:]
+                    away = next((c for k, c in nxt if k == "walk"), "")
+                    if re.search(r"\bright\b", away):
+                        args["direction"] = "left"
+                    elif re.search(r"\bleft\b", away):
+                        args["direction"] = "right"
+                if kind == "look_down":
+                    # "looks down at the ball" / "at it": look at that thing
+                    at = re.search(r"\bat (?:a|the) (\w+)", clause)
+                    thing = self._prop(at.group(1)) if at else (last_target if re.search(r"\bat it\b", clause) else None)
+                    if thing:
+                        args["to"] = thing
                 r = self.call("play_action", **args)
         if r is None:
             r = self.call("play_action", name=name, action="idle", seconds=3)

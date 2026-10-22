@@ -1,0 +1,157 @@
+{
+ "id": "s01",
+ "category": "static_layout",
+ "request": "three cubes in a row, the middle one blue",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 28.7,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 4,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 28.6,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "count",
+    "ok": true,
+    "detail": "3 object(s) match 'cubes', expected 3",
+    "default": false
+   },
+   {
+    "check": "row",
+    "ok": true,
+    "detail": "row ['cube_left', 'cube_middle', 'cube_right']: off the line by 0.00 m, gaps [1.5, 1.5]",
+    "default": false
+   },
+   {
+    "check": "middle_of_row",
+    "ok": true,
+    "detail": "middle of the row is cube_middle, 'mid' is cube_middle",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "cubes": [
+    "cube_left",
+    "cube_middle",
+    "cube_right"
+   ],
+   "mid": "cube_middle"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "cube",
+    "name": "cube_left",
+    "location": [
+     -1.5,
+     0
+    ],
+    "size": 1
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "cube",
+    "name": "cube_middle",
+    "location": [
+     0,
+     0
+    ],
+    "size": 1,
+    "colour": "blue"
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "cube",
+    "name": "cube_right",
+    "location": [
+     1.5,
+     0
+    ],
+    "size": 1
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1
+    ],
+    "width": 8
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 4
+  }
+ ]
+}

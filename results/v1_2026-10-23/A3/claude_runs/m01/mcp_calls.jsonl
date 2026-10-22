@@ -1,0 +1,17 @@
+{"t": 1792690931.38, "tool": "add_primitive", "args": {"type": "sphere", "name": "ball", "colour": "red", "size": 0.4, "location": [0, 2]}, "warnings": []}
+{"t": 1792690933.32, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 1, "value": [0, 2]}, "warnings": []}
+{"t": 1792690933.92, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 14, "value": [0, 0]}, "warnings": []}
+{"t": 1792690934.66, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 25, "value": [0, 1.2]}, "warnings": []}
+{"t": 1792690935.46, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 36, "value": [0, 0]}, "warnings": []}
+{"t": 1792690936.26, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 44, "value": [0, 0.6]}, "warnings": []}
+{"t": 1792690937.06, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 52, "value": [0, 0]}, "warnings": []}
+{"t": 1792690937.66, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 60, "value": [0, 0]}, "warnings": []}
+{"t": 1792690939.57, "tool": "set_easing", "args": {"name": "ball", "property": "location", "interpolation": "gravity"}, "warnings": []}
+{"t": 1792690939.73, "tool": "set_frames", "args": {"start": 1, "end": 72}, "warnings": []}
+{"t": 1792690940.09, "tool": "set_camera", "args": {"look_at": [0, 1.2], "width": 6}, "warnings": []}
+{"t": 1792690942.02, "check": 1, "passed": false, "report": "1 of 10 checks fail:\n- bounces: ball bounces 2 time(s) (frames [14, 36]), expected 3"}
+{"t": 1792690944.54, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 57, "value": [0, 0.25]}, "warnings": []}
+{"t": 1792690945.14, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 62, "value": [0, 0]}, "warnings": []}
+{"t": 1792690948.39, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 60, "value": [0, 0.12]}, "warnings": []}
+{"t": 1792690948.89, "tool": "set_easing", "args": {"name": "ball", "property": "location", "interpolation": "gravity"}, "warnings": []}
+{"t": 1792690950.57, "check": 2, "passed": true, "report": "All 10 checks pass."}

@@ -1,0 +1,7 @@
+{"t": 1792691266.28, "tool": "add_stick_figure", "args": {"name": "woman", "location": [-4.5, 0], "facing": "right"}, "warnings": []}
+{"t": 1792691269.21, "tool": "play_action", "args": {"name": "woman", "action": "walk", "to": 0, "direction": "right"}, "warnings": []}
+{"t": 1792691269.6, "tool": "play_action", "args": {"name": "woman", "action": "idle", "seconds": 1}, "warnings": []}
+{"t": 1792691270.18, "tool": "play_action", "args": {"name": "woman", "action": "look_down", "seconds": 1.5}, "warnings": []}
+{"t": 1792691271.03, "tool": "play_action", "args": {"name": "woman", "action": "walk_sad", "to": 4.5, "direction": "right"}, "warnings": []}
+{"t": 1792691272.57, "tool": "set_camera", "args": {"look_at": [0, 1.6], "width": 10}, "warnings": []}
+{"t": 1792691281.27, "check": 1, "passed": true, "report": "All 10 checks pass."}

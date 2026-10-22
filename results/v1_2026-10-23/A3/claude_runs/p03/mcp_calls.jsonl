@@ -1,0 +1,8 @@
+{"t": 1792691432.69, "tool": "add_asset", "args": {"asset": "box", "name": "box", "location": [0, 0], "layer": "back"}, "warnings": []}
+{"t": 1792691433.28, "tool": "add_asset", "args": {"asset": "tree", "name": "tree", "location": [3, 0], "layer": "back"}, "warnings": []}
+{"t": 1792691433.93, "tool": "add_stick_figure", "args": {"name": "she", "location": [-3, 0], "facing": "right"}, "warnings": []}
+{"t": 1792691436.38, "tool": "play_action", "args": {"name": "she", "action": "walk", "to": "box", "start_frame": 1}, "warnings": []}
+{"t": 1792691436.95, "tool": "play_action", "args": {"name": "she", "action": "look_down", "to": "box"}, "warnings": []}
+{"t": 1792691437.2, "tool": "play_action", "args": {"name": "she", "action": "walk", "to": "tree", "direction": "right"}, "warnings": []}
+{"t": 1792691439.34, "tool": "set_camera", "args": {"look_at": [0, 1.4], "width": 9}, "warnings": []}
+{"t": 1792691444.45, "check": 1, "passed": true, "report": "All 12 checks pass."}

@@ -59,6 +59,15 @@ def main():
     print("ok " if not ok else "BAD", "teleporting arm fails no_pops ->", detail)
     bad += [] if not ok else ["pop"]
 
+    # a jump: from frame 60 on the whole figure is 20 cm further right (teleports and stays)
+    s = copy.deepcopy(good)
+    for tr in s["figures"]["man"]["joints"].values():
+        for p in tr[60:]:
+            p[0] += 0.2
+    ok, detail = run(s, FC.c_no_pops)
+    print("ok " if not ok else "BAD", "figure that jumps 20 cm fails no_pops ->", detail)
+    bad += [] if not ok else ["jump"]
+
     # floating 5 cm above the ground
     s = copy.deepcopy(good)
     for tr in s["figures"]["man"]["joints"].values():

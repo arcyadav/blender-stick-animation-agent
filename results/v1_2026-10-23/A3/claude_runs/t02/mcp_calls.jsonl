@@ -1,0 +1,14 @@
+{"t": 1792691553.6, "tool": "add_stick_figure", "args": {"name": "red_figure", "colour": "red", "location": [-0.6, 0], "facing": "front"}, "warnings": []}
+{"t": 1792691554.26, "tool": "add_stick_figure", "args": {"name": "blue_figure", "colour": "blue", "location": [0.6, 0], "facing": "front"}, "warnings": []}
+{"t": 1792691556.46, "tool": "play_action", "args": {"name": "red_figure", "action": "wave", "start_frame": 1, "cycles": 2}, "warnings": []}
+{"t": 1792691557.08, "tool": "play_action", "args": {"name": "blue_figure", "action": "wave", "start_frame": 1, "cycles": 2}, "warnings": []}
+{"t": 1792691557.19, "tool": "set_camera", "args": {"look_at": [0, 1], "width": 5}, "warnings": []}
+{"t": 1792691560.8, "check": 1, "passed": false, "report": "1 of 11 checks fail:\n- relation: gap between red_figure and blue_figure is 0.68 m (max 0.5)"}
+{"t": 1792691563.02, "tool": "add_stick_figure", "args": {"name": "blue_figure", "colour": "blue", "location": [0.3, 0], "facing": "front"}, "error": "an object named 'blue_figure' already exists; pick another name"}
+{"t": 1792691564.64, "tool": "scene_reset", "args": {}, "warnings": []}
+{"t": 1792691565.64, "tool": "add_stick_figure", "args": {"name": "red_figure", "colour": "red", "location": [-0.4, 0], "facing": "front"}, "warnings": []}
+{"t": 1792691566.18, "tool": "add_stick_figure", "args": {"name": "blue_figure", "colour": "blue", "location": [0.4, 0], "facing": "front"}, "warnings": []}
+{"t": 1792691568.74, "tool": "play_action", "args": {"name": "red_figure", "action": "wave", "start_frame": 1, "cycles": 2}, "warnings": []}
+{"t": 1792691569.35, "tool": "play_action", "args": {"name": "blue_figure", "action": "wave", "start_frame": 1, "cycles": 2}, "warnings": []}
+{"t": 1792691569.45, "tool": "set_camera", "args": {"look_at": [0, 1], "width": 5}, "warnings": []}
+{"t": 1792691573.19, "check": 2, "passed": true, "report": "All 11 checks pass."}

@@ -1,0 +1,218 @@
+{
+ "id": "f04",
+ "category": "figure_single",
+ "request": "a sad stick figure walks slowly to the left",
+ "agent": "A2",
+ "passed": true,
+ "error": null,
+ "seconds": 19.7,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 3,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 18.0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "figure does ['walk_sad']; expected ['walk_sad'] in this order",
+    "default": false
+   },
+   {
+    "check": "speed",
+    "ok": true,
+    "detail": "figure does walk_sad at speed 0.70 (slow \u2264 0.85, fast \u2265 1.2), expected slow",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "figure moves 1.87 m left (as seen by the camera), at least 1.0 m needed",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "figure's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "figure's planted feet slide at most 0.31 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "figure moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 6.4 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "fig": "figure"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "height": 1.7,
+    "location": [
+     -2,
+     0
+    ],
+    "name": "figure",
+    "colour": "blue",
+    "facing": "left"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "figure",
+    "speed": 0.7,
+    "to": -4,
+    "action": "walk_sad",
+    "direction": "left"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "figure",
+    "width": 8
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 3
+  }
+ ],
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You direct a short 2D animation in Blender by calling tools. The scene is already empty and ready (ground line at z = 0, white background, 24 fps). Make exactly what the request asks for: no extra objects, no stick figures unless the request has one.\n\nThe world is 2D, seen from the side like paper:\n- positions are [x, z]: x = left/right (screen-left is negative, about -4 to 4 is on screen), z = height of the object's BOTTOM (0 = standing on the ground). Or use a placement: {\"on_top_of\": \"table\"}, {\"next_to\": \"table\", \"side\": \"left\"}.\n- props (table, chair, bench, box, lamp, tree) come from add_asset; shapes (ball = sphere, cube, cone, ...) from add_primitive. Depth is only a layer: \"back\", \"middle\" (default) or \"front\".\n- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look_down, react). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at. Figures are animated only with play_action. Put props a figure walks past in the back layer.\n- moving objects: keyframe (location, rotation, scale, colour) at frames, then set_easing (gravity for bounces and falls), and set_frames to cover the motion.\n- camera: set_camera(look_at, width) frames the shot; camera_move does pan / zoom_in / zoom_out / follow.\n\nMake the objects, animate them, then frame the camera so everything is in view. When the scene is finished, reply with a short summary and no tool call."
+  },
+  {
+   "role": "user",
+   "content": "a sad stick figure walks slowly to the left"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_thhm8sbt",
+     "function": {
+      "index": 0,
+      "name": "add_stick_figure",
+      "arguments": {
+       "height": 1.7,
+       "location": [
+        -2,
+        0
+       ],
+       "name": "figure",
+       "colour": "blue",
+       "facing": "left"
+      }
+     }
+    },
+    {
+     "id": "call_ijo4u9sk",
+     "function": {
+      "index": 1,
+      "name": "play_action",
+      "arguments": {
+       "name": "figure",
+       "speed": 0.7,
+       "to": -4,
+       "action": "walk_sad",
+       "direction": "left"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"figure\",\"x\":-2,\"facing\":\"left\",\"height\":1.7,\"layer\":\"middle\",\"width\":0.33,\"actions\":[\"walk\",\"walk_happy\",\"walk_sad\",\"walk_worried\",\"run\",\"wave\",\"idle\",\"look_down\",\"react\"]}",
+   "tool_name": "add_stick_figure"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"figure\",\"action\":\"walk_sad\",\"frames\":[1,141],\"facing\":\"left\",\"start_x\":-2.01,\"end_x\":-3.94,\"seconds\":5.88,\"clip_end_frame\":153}",
+   "tool_name": "play_action"
+  },
+  {
+   "role": "assistant",
+   "content": "The scene now includes a blue stick figure facing left, who walks slowly to the left from x = -2 to x = -4 over 5.88 seconds. The figure's walk_sad action is set from frame 1 to frame 141, with the animation ending at frame 153.\n\nTo frame the camera, I will set it to look at the stick figure and show a wide enough view of the scene.\n\n",
+   "tool_calls": [
+    {
+     "id": "call_uq95mti9",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "figure",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[-2.13,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-6.13,1.87],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "The camera is now framed to centre on the stick figure, showing a width of 8 meters across, which translates to a height of 4.5 meters on the screen. The camera view includes the stick figure's walk and provides a clear view of the scene from frame 1 to frame 153.\n\nHere is a summary of the scene:\n- A blue stick figure, 1.7 meters tall, is walking slowly to the left from x = -2 to x = -4 over 5.88 seconds.\n- The camera is set to look at the stick figure, showing a width of 8 meters across and a height of 4.5 meters, covering the stick figure's entire walk and more.\n\nThe scene is complete."
+  }
+ ]
+}

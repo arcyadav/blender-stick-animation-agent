@@ -1,0 +1,4 @@
+{"t": 1792691213.76, "tool": "add_stick_figure", "args": {"name": "figure", "colour": "red", "facing": "front", "location": [0, 0]}, "warnings": []}
+{"t": 1792691217.7, "tool": "play_action", "args": {"name": "figure", "action": "react"}, "warnings": []}
+{"t": 1792691219.53, "tool": "set_camera", "args": {"look_at": [0, 1], "width": 5}, "warnings": []}
+{"t": 1792691221.06, "check": 1, "passed": true, "report": "All 10 checks pass."}

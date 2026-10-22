@@ -9,6 +9,7 @@ Protocol: one JSON object per line.
 import argparse
 import json
 import os
+import selectors
 import socket
 import sys
 import traceback
@@ -39,29 +40,48 @@ def main():
 
     srv = socket.create_server(("127.0.0.1", a.port))
     print(f"P5_WORKER_READY port={a.port}", flush=True)
-    conn, _ = srv.accept()
-    rf, wf = conn.makefile("r", encoding="utf-8"), conn.makefile("w", encoding="utf-8")
-    for line in rf:
-        if not line.strip():
-            continue
-        req = json.loads(line)
-        if req.get("tool") == "shutdown":
-            wf.write(json.dumps({"id": req.get("id"), "ok": True, "result": {}}) + "\n")
+    # several clients may connect (the evaluation, and an MCP server driving the same scene for an
+    # LLM); requests are handled one at a time in this thread (bpy is not thread-safe). The worker
+    # stops on "shutdown" or when its first client (the one that started it) has gone.
+    sel = selectors.DefaultSelector()
+    sel.register(srv, selectors.EVENT_READ, None)
+    owner = None
+    running = True
+    while running:
+        for key, _ in sel.select():
+            if key.data is None:
+                conn, _ = srv.accept()
+                conn.setblocking(True)
+                files = (conn.makefile("r", encoding="utf-8"), conn.makefile("w", encoding="utf-8"))
+                sel.register(conn, selectors.EVENT_READ, files)
+                owner = owner or conn
+                continue
+            conn, (rf, wf) = key.fileobj, key.data
+            line = rf.readline()
+            if not line:
+                sel.unregister(conn)
+                conn.close()
+                running = conn is not owner
+                break
+            if not line.strip():
+                continue
+            req = json.loads(line)
+            if req.get("tool") == "shutdown":
+                wf.write(json.dumps({"id": req.get("id"), "ok": True, "result": {}}) + "\n")
+                wf.flush()
+                running = False
+                break
+            try:
+                resp = {"ok": True, "result": handle(req)}
+            except tools.ToolError as e:
+                resp = {"ok": False, "error": str(e)}
+            except Exception as e:  # a bug in a tool, not the agent's fault: keep the details for the log
+                traceback.print_exc()
+                resp = {"ok": False, "error": f"internal error in {req.get('tool')}: {type(e).__name__}: {e}",
+                        "internal": True}
+            resp["id"] = req.get("id")
+            wf.write(json.dumps(resp) + "\n")
             wf.flush()
-            break
-        try:
-            resp = {"ok": True, "result": handle(req)}
-        except tools.ToolError as e:
-            resp = {"ok": False, "error": str(e)}
-        except Exception as e:  # a bug in a tool, not the agent's fault: keep the details for the log
-            traceback.print_exc()
-            resp = {"ok": False, "error": f"internal error in {req.get('tool')}: {type(e).__name__}: {e}",
-                    "internal": True}
-        resp["id"] = req.get("id")
-        wf.write(json.dumps(resp) + "\n")
-        wf.flush()
-    conn.close()
     srv.close()
-
 
 main()

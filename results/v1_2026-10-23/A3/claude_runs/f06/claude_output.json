@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 9628,
+ "stop_reason": "end_turn",
+ "session_id": "b82bf402-7894-4160-ad63-935e200d8608",
+ "total_cost_usd": 0.038038,
+ "usage": {
+  "input_tokens": 8,
+  "cache_creation_input_tokens": 2839,
+  "cache_read_input_tokens": 38970,
+  "output_tokens": 375,
+  "output_tokens_details": {
+   "thinking_tokens": 0
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 2839,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 56,
+    "cache_read_input_tokens": 10522,
+    "cache_creation_input_tokens": 280,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 280
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 8,
+   "outputTokens": 375,
+   "cacheReadInputTokens": 38970,
+   "cacheCreationInputTokens": 2839,
+   "webSearchRequests": 0,
+   "costUSD": 0.038038,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 0,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 5,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "I added a red stick figure at the centre that plays the sudden-fright reaction over frames 1\u201342, with the camera framed close around it. All 10 scene checks pass.",
+ "ttft_ms": 2437,
+ "type": "result",
+ "duration_ms": 11779,
+ "uuid": "79394ca6-a8bc-4a10-8a8b-e3dd7063d4cb",
+ "ttft_stream_ms": 1368,
+ "time_to_request_ms": 254,
+ "first_content_frame_ms": 1368,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

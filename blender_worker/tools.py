@@ -319,14 +319,25 @@ def _flat_look():
     scn.view_settings.look = "None"
 
 
-def add_primitive(type, name, location=(0, 0), size=1.0, colour=None, preset=None, layer=None):
+def _default_name(base):
+    """A free name: 'table', then 'table2', … (small models often leave the name out)."""
+    name, k = base, 1
+    while bpy.data.objects.get(name):
+        k += 1
+        name = f"{base}{k}"
+    return name
+
+
+def add_primitive(type, name=None, location=(0, 0), size=1.0, colour=None, preset=None, layer=None):
+    name = name or _default_name({"sphere": "ball"}.get(type, type))
     if bpy.data.objects.get(name):
         raise ToolError(f"an object named '{name}' already exists; pick another name or use set_transform")
     o = bpy.data.objects.new(name, _make_mesh(name, type, size))
     o["kind"] = type
     bpy.context.scene.collection.objects.link(o)
     _place(o, location, layer)
-    set_material(name, colour=colour or "white", preset=preset or "plastic")
+    # default grey: white would vanish on the white background
+    set_material(name, colour=colour or "grey", preset=preset or "plastic")
     return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions),
             "layer": _layer_name(o.location.y)}
 
@@ -386,7 +397,8 @@ def _asset_mesh(name, asset):
     return me
 
 
-def add_asset(asset, name, location=(0, 0), scale=1.0, colour=None, layer=None, facing=None):
+def add_asset(asset, name=None, location=(0, 0), scale=1.0, colour=None, layer=None, facing=None):
+    name = name or _default_name(asset)
     if bpy.data.objects.get(name):
         raise ToolError(f"an object named '{name}' already exists; pick another name or use set_transform")
     spec = ASSETS[asset]
@@ -563,9 +575,17 @@ def camera_move(kind, target=None, start_frame=None, end_frame=None, amount=None
 
 # ---------------------------------------------------------------- keyframes
 
+def _not_held(o):
+    for f in FIGURES.values():
+        if any(h["obj"] == o.name for h in f.holds):
+            raise ToolError(f"'{o.name}' is picked up by '{f.name}': it moves with the hand (use put_down)")
+
+
 def keyframe(name, property, frame, value):
     o = _obj(name)
     _no_figure(o, "figures are animated with play_action")
+    if property == "location":
+        _not_held(o)
     scn = bpy.context.scene
     scn.frame_set(frame)
     if property == "location":
@@ -633,35 +653,56 @@ def set_frames(start, end, fps=24):
 
 # ---------------------------------------------------------------- stick figures
 #
-# A figure is one curve object: thick lines for the limbs and a filled disc for the head (a very
-# short tube seen end-on). Its points are keyframed every frame from motion.Figure, which plays the
+# A figure is one curve object, drawn like a hand-made stick figure: thick strokes with round ends
+# and round joints (a small disc at every joint: a very short tube seen end-on), a big filled disc for
+# the head, short feet. Its points are keyframed every frame from motion.Figure, which plays the
 # motion library. Limbs on the far side sit slightly behind and are drawn a little lighter.
 
 CHAINS = [("body", ["pelvis", "chest", "neck"]),
           ("l", ["@shoulders", "l_shoulder", "l_elbow", "l_wrist"]),
           ("r", ["@shoulders", "r_shoulder", "r_elbow", "r_wrist"]),
-          ("l", ["pelvis", "l_hip", "l_knee", "l_ankle", "l_toe"]),
-          ("r", ["pelvis", "r_hip", "r_knee", "r_ankle", "r_toe"])]
+          ("l", ["pelvis", "l_hip", "l_knee", "@l_foot", "l_toe"]),
+          ("r", ["pelvis", "r_hip", "r_knee", "@r_foot", "r_toe"])]
 SLOT = {"body": 0, "l": 1, "r": 2}
-HEAD_R = 0.5 * motion.HEAD              # head radius in leg units (the head bone is its diameter)
+HEAD_R = 0.55 * motion.HEAD             # head radius in leg units (a touch bigger than the head bone)
+FOOT_SHOWN = 0.5                        # the drawn foot is half as long as the ankle→toe bone
+FOOT_FLAT = 30.0                        # ... turned this much about the toe, so planted feet lie flat
+# every spline: (material slot, what it is); _point_positions returns points in this order
+LAYOUT = ([(SLOT[side], "line") for side, _ in CHAINS] +
+          [(SLOT[side], "joint") for side, chain in CHAINS for _ in chain] + [(0, "head")])
 
 
 def _far_tone(rgb):
     """The far side's tone: lighter for dark figures, darker for light ones."""
     lum = sum(rgb) / 3
-    return tuple(c + (1 - c) * 0.5 for c in rgb) if lum < 0.5 else tuple(c * 0.6 for c in rgb)
+    return tuple(c + (1 - c) * 0.3 for c in rgb) if lum < 0.5 else tuple(c * 0.75 for c in rgb)
 
 
-def _point_positions(pose):
-    """Curve point positions for one world pose: chains, then the head (two points in depth)."""
+def _disc(c, depth=0.003):
+    return [(c[0], c[1] - depth, c[2]), (c[0], c[1] + depth, c[2])]
+
+
+def _point_positions(pose, foot_len):
+    """Curve point positions for one world pose, in LAYOUT order: the strokes, a disc on every
+    stroke point (round ends and joints), the head."""
     sh = tuple((a + b) / 2 for a, b in zip(pose["l_shoulder"], pose["r_shoulder"]))
-    sh = (sh[0], pose["chest"][1], sh[2])
-    out = []
-    for _, chain in CHAINS:
-        out.append([sh if j == "@shoulders" else pose[j] for j in chain])
+    named = {"@shoulders": (sh[0], pose["chest"][1], sh[2])}
+    for s in "lr":
+        # the drawn foot is the front part of the ankle→toe bone, turned 30° about the toe so a
+        # planted foot lies flat on the ground (the bone itself slopes down at -30°)
+        a, t = pose[f"{s}_ankle"], pose[f"{s}_toe"]
+        vx, vz = t[0] - a[0], t[2] - a[2]
+        n = math.hypot(vx, vz) or 1.0
+        rot = math.radians(FOOT_FLAT if vx >= 0 else -FOOT_FLAT)
+        fx = (vx * math.cos(rot) - vz * math.sin(rot)) / n
+        fz = (vx * math.sin(rot) + vz * math.cos(rot)) / n
+        k = foot_len                         # one length for every foot, whatever the pose stretched
+        named[f"@{s}_foot"] = (t[0] - fx * k, a[1], t[2] - fz * k)
+    strokes = [[named.get(j) or pose[j] for j in chain] for _, chain in CHAINS]
+    out = list(strokes)
+    out += [_disc(p) for stroke in strokes for p in stroke]
     nk, top = pose["neck"], pose["head_top"]
-    c = ((nk[0] + top[0]) / 2, nk[1], (nk[2] + top[2]) / 2)
-    out.append([(c[0], c[1] - 0.01, c[2]), (c[0], c[1] + 0.01, c[2])])
+    out.append(_disc(((nk[0] + top[0]) / 2, nk[1], (nk[2] + top[2]) / 2), 0.01))
     return out
 
 
@@ -669,19 +710,16 @@ def _build_figure_object(name, fig, rgb):
     cu = bpy.data.curves.new(name, "CURVE")
     cu.dimensions = "3D"
     cu.bevel_depth = fig.r
-    cu.bevel_resolution = 8
+    cu.bevel_resolution = 6
     cu.use_fill_caps = True
-    for i, part in enumerate(["body", "l", "r"]):
-        m = bpy.data.materials.new(f"{name}_{part}")
-        cu.materials.append(m)
-    pts = _point_positions(fig.poses[min(fig.poses)])
-    for k, chain in enumerate(pts):
+    for part in ["body", "l", "r"]:
+        cu.materials.append(bpy.data.materials.new(f"{name}_{part}"))
+    pts = _point_positions(fig.poses[min(fig.poses)], FOOT_SHOWN * motion.FOOT * fig.L)
+    for (slot, what), chain in zip(LAYOUT, pts):
         sp = cu.splines.new("POLY")
         sp.points.add(len(chain) - 1)
-        if k < len(CHAINS):
-            sp.material_index = SLOT[CHAINS[k][0]]
-        else:                                   # head
-            sp.material_index = 0
+        sp.material_index = slot
+        if what == "head":
             for p in sp.points:
                 p.radius = HEAD_R * fig.L / fig.r
     o = bpy.data.objects.new(name, cu)
@@ -707,7 +745,7 @@ def _key_figure(o):
     scn = bpy.context.scene
     frames = fig.frames(max(scn.frame_end, fig.end))
     fs = sorted(frames)
-    per_frame = {f: _point_positions(frames[f]) for f in fs}
+    per_frame = {f: _point_positions(frames[f], FOOT_SHOWN * motion.FOOT * fig.L) for f in fs}
     for k, sp in enumerate(cu.splines):
         for j, p in enumerate(sp.points):
             x, y, z = per_frame[fs[0]][k][j]
@@ -750,9 +788,46 @@ def _key_figure(o):
         for fc in _fcurves(m):
             for kp in fc.keyframe_points:
                 kp.interpolation = "CONSTANT"
+    for h in fig.holds:
+        _key_carried(fig, h, frames)
 
 
-def add_stick_figure(name, location=(0, 0), colour="black", facing="front", height=1.7, layer=None):
+def _hand(pose):
+    """Where a carried thing's centre goes: the right hand (the round end of the forearm)."""
+    return pose["r_wrist"]
+
+
+def _key_carried(fig, h, frames):
+    """An object in a figure's hand: at home until the grab, at the hand while carried (drawn just in
+    front of it), where it was put after the release."""
+    o = bpy.data.objects.get(h["obj"])
+    if o is None or "home" not in h:
+        return
+    for fc in [fc for fc in _fcurves(o) if fc.data_path == "location"]:
+        o.animation_data.action.fcurves.remove(fc)
+    off = Vector(h["offset"])
+    end = h["to"] if h["to"] is not None else max(frames)
+    keys = []
+    if h["from"] - 1 >= min(frames):
+        keys.append((h["from"] - 1, Vector(h["home"])))
+    for f in range(h["from"], end + 1):
+        x, y, z = _hand(frames[f])
+        keys.append((f, Vector((x, y - 0.08, z)) + off))
+    if h["to"] is not None and h.get("rest"):
+        r = Vector(h["rest"]) + Vector((off.x, 0, off.z))
+        keys.append((h["to"] + 1, Vector((r.x, h["home"][1], r.z))))
+    for f, loc in keys:
+        o.location = loc
+        o.keyframe_insert("location", frame=f)
+    _key_linear(o, "location")
+    for fc in _fcurves(o):
+        if fc.data_path == "location":
+            for kp in fc.keyframe_points[-1:]:
+                kp.interpolation = "CONSTANT"
+
+
+def add_stick_figure(name=None, location=(0, 0), colour="black", facing="front", height=1.7, layer=None):
+    name = name or _default_name("figure")
     if bpy.data.objects.get(name):
         raise ToolError(f"an object named '{name}' already exists; pick another name")
     y = LAYERS[layer or "middle"]
@@ -785,10 +860,55 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
         raise ToolError(f"'{name}' is not a stick figure (add one with add_stick_figure)")
     fig = FIGURES[name]
     scn = bpy.context.scene
-    to_x = None
-    if to is not None:
-        if action not in motion.WALKS:
-            raise ToolError(f"'to' only works with walks ({', '.join(motion.WALKS)})")
+    to_x = look_at = partner_x = obj = obj_at = None
+    rest = None
+    if action == "pick_up":
+        if not isinstance(to, str) or to in FIGURES:
+            raise ToolError("pick_up needs `to`: the name of the object to pick up")
+        t = _obj(to)
+        if t.get("kind") in ASSETS and t.get("kind") not in ("box", "lamp"):
+            raise ToolError(f"'{to}' is too big to pick up; small things (shapes, a box, a lamp) can be")
+        if any(h["obj"] == to and h["to"] is None for f in FIGURES.values() for h in f.holds):
+            raise ToolError(f"someone is already holding '{to}'")
+        lo, hi = _world_bounds(t)
+        obj, obj_at = to, ((lo.x + hi.x) / 2, (lo.z + hi.z) / 2)
+    elif action == "put_down":
+        if not fig.holding:
+            raise ToolError(f"'{name}' isn't holding anything")
+        held = _obj(fig.holding)
+        hlo, hhi = _world_bounds(held)
+        half = (hhi.z - hlo.z) / 2
+        before = [f for f in fig.poses if start_frame is None or f < start_frame]
+        fx = fig._feet_x(fig.poses[max(before) if before else min(fig.poses)])
+        if isinstance(to, str):                  # on a surface: its nearest part, a little way in
+            t = _obj(to)
+            lo, hi = _world_bounds(t)
+            x = min(max(fx, lo.x + 0.15), hi.x - 0.15)
+            if abs(x - fx) < 0.3:
+                x = fx + (0.3 if (lo.x + hi.x) / 2 >= fx else -0.3)
+            obj_at = (x, _support_top(t) + half)
+        else:                                    # on the ground in front
+            sign = -1 if fig.facing == "left" else 1
+            obj_at = (fx + sign * 0.45, half)
+        obj = fig.holding
+        rest = obj_at
+    if action == "handshake":
+        if not isinstance(to, str) or to not in FIGURES or to == name:
+            raise ToolError("handshake needs `to`: the name of the other stick figure")
+        other = FIGURES[to]
+        before = [f for f in other.poses if start_frame is None or f <= start_frame]
+        partner_x = other.pelvis_x(max(before) if before else min(other.poses))
+    elif to is not None and action == "look_down":
+        # look at something: turn toward it and bend just enough
+        if isinstance(to, str):
+            t = _obj(to)
+            lo, hi = _world_bounds(t)
+            look_at = ((lo.x + hi.x) / 2, (lo.z + hi.z) / 2)
+        else:
+            look_at = (float(to), 0.0)
+    elif to is not None and action not in ("pick_up", "put_down"):
+        if action not in motion.TRAVELS:
+            raise ToolError(f"'to' works with walks, run ({', '.join(motion.TRAVELS)}) and look_down")
         if isinstance(to, str):
             t = _obj(to)
             if t.name == name:
@@ -800,16 +920,30 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
                 lo, hi = b[0].x, b[1].x
             before = [f for f in fig.poses if start_frame is None or f < start_frame]
             here = fig.pelvis_x(max(before) if before else min(fig.poses))
-            # stop beside it: a hand's width from a prop, a conversation's distance from a figure
-            gap = (0.45 if to in FIGURES else 0.15) + 0.5 * fig.L
+            small = t.get("kind") not in ASSETS or t.get("kind") in ("box", "lamp")
+            gap = (0.45 + 0.5 * fig.L if to in FIGURES       # a conversation's distance
+                   else 0.12 + 0.25 * fig.L if small         # within arm's reach of a small thing
+                   else 0.15 + 0.5 * fig.L)                  # a hand's width from a big prop
             to_x = lo - gap if (lo + hi) / 2 >= here else hi + gap
         else:
             to_x = float(to)
     try:
         res = fig.play(action, start=start_frame, cycles=cycles, seconds=seconds, to_x=to_x, distance=distance,
-                       direction=direction, speed=speed, fps=scn.render.fps)
+                       direction=direction, speed=speed, fps=scn.render.fps, look_at=look_at,
+                       partner_x=partner_x, obj=obj, obj_at=obj_at)
     except ValueError as e:
         raise ToolError(str(e))
+    if action == "pick_up":
+        o_obj = _obj(obj)
+        lo, hi = _world_bounds(o_obj)
+        fig.holds[-1]["home"] = list(o_obj.location)
+        # where the origin sits relative to the object's centre (carried by its centre)
+        fig.holds[-1]["offset"] = list(o_obj.location - (lo + hi) / 2)
+        res["holding"] = obj
+    elif action == "put_down":
+        h = fig.holds[-1]
+        h["rest"] = [rest[0], h["home"][1], rest[1]]
+        res["put"] = {"name": obj, "on": to if isinstance(to, str) else "ground"}
     if fig.end + 12 > scn.frame_end:
         scn.frame_end = fig.end + 12            # a short hold after the last action
         res["clip_end_frame"] = scn.frame_end
@@ -979,6 +1113,7 @@ def sample_scene(vis_step=6):
     tracks = {}
     for name, fig in FIGURES.items():
         out["figures"][name] = {"segments": fig.segments, "radius": fig.r, "leg": round(fig.L, 4),
+                                "holds": [{k: h[k] for k in ("obj", "from", "to")} for h in fig.holds],
                                 "joints": {j: [] for j in motion.JOINTS}}
         tracks[name] = fig.frames(scn.frame_end)
     for f in range(scn.frame_start, scn.frame_end + 1):

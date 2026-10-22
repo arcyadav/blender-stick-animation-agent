@@ -1,0 +1,226 @@
+{
+ "id": "t02",
+ "category": "two_figures_camera",
+ "request": "a red and a blue stick figure stand side by side and wave together",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 26.0,
+ "passed_first": false,
+ "fix_rounds_used": 1,
+ "tool_calls": 12,
+ "invalid_calls": 0,
+ "tool_errors": 1,
+ "llm_seconds": 25.9,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "relation",
+    "ok": true,
+    "detail": "gap between red_figure and blue_figure is 0.28 m (max 0.5)",
+    "default": false
+   },
+   {
+    "check": "same_time",
+    "ok": true,
+    "detail": "red_figure and blue_figure do wave together for 5.2 s (\u2265 0.5 s needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "blue_figure's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm); red_figure's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "blue_figure's planted feet slide at most 0.00 cm per frame (allowed 0.5); red_figure's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "blue_figure moves smoothly (no joint jumps or spikes); red_figure moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 5.7 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "red": "red_figure",
+   "blue": "blue_figure"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "red_figure",
+    "colour": "red",
+    "location": [
+     -0.6,
+     0
+    ],
+    "facing": "front"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "blue_figure",
+    "colour": "blue",
+    "location": [
+     0.6,
+     0
+    ],
+    "facing": "front"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "red_figure",
+    "action": "wave",
+    "start_frame": 1,
+    "cycles": 2
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "blue_figure",
+    "action": "wave",
+    "start_frame": 1,
+    "cycles": 2
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1
+    ],
+    "width": 5
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "blue_figure",
+    "colour": "blue",
+    "location": [
+     0.3,
+     0
+    ],
+    "facing": "front"
+   },
+   "error": "an object named 'blue_figure' already exists; pick another name"
+  },
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "red_figure",
+    "colour": "red",
+    "location": [
+     -0.4,
+     0
+    ],
+    "facing": "front"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "blue_figure",
+    "colour": "blue",
+    "location": [
+     0.4,
+     0
+    ],
+    "facing": "front"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "red_figure",
+    "action": "wave",
+    "start_frame": 1,
+    "cycles": 2
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "blue_figure",
+    "action": "wave",
+    "start_frame": 1,
+    "cycles": 2
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1
+    ],
+    "width": 5
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": false,
+   "report": "1 of 11 checks fail:\n- relation: gap between red_figure and blue_figure is 0.68 m (max 0.5)",
+   "tool_calls": 5
+  },
+  {
+   "passed": true,
+   "report": "All 11 checks pass.",
+   "tool_calls": 12
+  }
+ ]
+}

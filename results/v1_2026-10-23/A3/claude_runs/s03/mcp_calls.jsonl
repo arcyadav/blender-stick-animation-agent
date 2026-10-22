@@ -1,0 +1,6 @@
+{"t": 1792690917.35, "tool": "add_asset", "args": {"asset": "table", "name": "table", "location": [0.5, 0]}, "warnings": []}
+{"t": 1792690917.44, "tool": "add_light", "args": {"preset": "sunset"}, "warnings": []}
+{"t": 1792690919.42, "tool": "add_asset", "args": {"asset": "lamp", "name": "lamp", "location": {"on_top_of": "table"}}, "warnings": []}
+{"t": 1792690919.95, "tool": "add_asset", "args": {"asset": "box", "name": "box", "colour": "green", "location": {"next_to": "table", "side": "left", "gap": 0.4}}, "warnings": []}
+{"t": 1792690921.57, "tool": "set_camera", "args": {"look_at": [0, 0.8], "width": 5}, "warnings": []}
+{"t": 1792690921.81, "check": 1, "passed": true, "report": "All 13 checks pass."}

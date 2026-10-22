@@ -1,0 +1,129 @@
+{
+ "id": "f05",
+ "category": "figure_single",
+ "request": "a happy stick woman walks from the left side of the screen to the right",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 15.3,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 3,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 15.3,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "woman does ['walk_happy']; expected ['walk_happy'] in this order",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "woman moves 6.98 m right (as seen by the camera), at least 2.0 m needed",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "woman's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "woman's planted feet slide at most 0.07 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "woman moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 8.3 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "woman": "woman"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "woman",
+    "location": [
+     -3.5,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "woman",
+    "action": "walk_happy",
+    "to": 3.5,
+    "direction": "right"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1.2
+    ],
+    "width": 9
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 11 checks pass.",
+   "tool_calls": 3
+  }
+ ]
+}

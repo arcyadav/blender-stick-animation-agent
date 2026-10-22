@@ -7,7 +7,8 @@ valid-tool-call rate in the evaluation still sees them.
 import copy
 
 COLOUR_NAMES = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "white", "black", "grey", "brown"]
-ACTIONS = ["walk", "walk_happy", "walk_sad", "walk_worried", "wave", "idle", "look_down", "react"]
+ACTIONS = ["walk", "walk_happy", "walk_sad", "walk_worried", "run", "wave", "idle", "look_down", "react",
+           "handshake", "pick_up", "put_down"]
 
 VEC2 = {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}
 VEC3 = {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
@@ -50,12 +51,12 @@ TOOLS = [
                          "keyframes), stick figures (actions, start/end x, facing), camera and frame range."),
     _tool("add_primitive", "Add a basic shape. It rests at `location` (bottom of the shape at z).",
           {"type": {"type": "string", "enum": ["cube", "sphere", "cylinder", "plane", "cone", "torus"]},
-           "name": {"type": "string", "description": "unique name, e.g. 'ball'"},
+           "name": {"type": "string", "description": "unique name, e.g. 'ball' (default: the shape's name)"},
            "location": LOCATION,
            "size": {"type": "number", "minimum": 0.01, "maximum": 20, "description": "largest dimension in metres"},
            "colour": COLOUR, "layer": LAYER,
            "preset": {"type": "string", "enum": ["matte", "plastic", "metal", "glass", "glow", "wood"]}},
-          ["type", "name"]),
+          ["type"]),
     _tool("add_asset", "Add a ready-made prop, drawn in profile. Tables, chairs, benches and boxes can hold "
                        "things ({\"on_top_of\": name}). Sizes: table 1.2 m wide x 0.75 m high, chair seat 0.46 m "
                        "high, bench 1.5 m long, box 0.5 m, lamp 0.46 m (a table lamp), tree 2.7 m. "
@@ -64,7 +65,7 @@ TOOLS = [
            "name": {"type": "string"}, "location": LOCATION, "layer": LAYER,
            "scale": {"type": "number", "minimum": 0.1, "maximum": 10}, "colour": COLOUR,
            "facing": {"type": "string", "enum": ["left", "right"], "description": "which way a chair faces"}},
-          ["asset", "name"]),
+          ["asset"]),
     _tool("set_transform", "Move, rotate or scale an existing object (not a stick figure).",
           {"name": {"type": "string"}, "location": LOCATION, "rotation": ROTATION, "layer": LAYER,
            "scale": {"oneOf": [{"type": "number", "minimum": 0}, VEC3]}},
@@ -116,13 +117,20 @@ TOOLS = [
                         "description": "[x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"},
            "colour": COLOUR, "facing": {"type": "string", "enum": ["front", "left", "right"]},
            "height": {"type": "number", "minimum": 0.5, "maximum": 3}, "layer": LAYER},
-          ["name"]),
+          []),
     _tool("play_action", "Make a stick figure perform an action from the motion library, after its previous "
-                         "action (or from start_frame), blending smoothly. Walks: walk, walk_happy, walk_sad, "
-                         "walk_worried; give `to` (an object's name: stops beside it; or an x position), "
+                         "action (or from start_frame), blending smoothly (it turns first if it must face "
+                         "another way). Walks: walk, walk_happy, walk_sad, walk_worried, and run (for hurrying "
+                         "or running away); give `to` (an object's name: stops beside it; or an x position), "
                          "`distance` (m), `seconds` or `cycles`, and `direction` (left/right). Others: wave "
-                         "(at the camera), idle (stands, breathing), look_down, react (a sudden fright). "
-                         "speed: 1 = normal, 0.7 = slow, 1.4 = fast. Waves and idles face the camera.",
+                         "(at the camera), idle (stands, breathing), look_down (`to`: what to look at, e.g. a "
+                         "ball on a table), react (a sudden fright), handshake (`to` = the other figure; both figures play it "
+                         "with the same start_frame, standing about 0.8-1.1 m apart and facing each other), "
+                         "pick_up (`to` = a small object within reach: walk to it first; it is then carried "
+                         "in the right hand through later actions), put_down (`to` = a surface such as a "
+                         "table, or leave it out for the ground in front). "
+                         "speed: 1 = normal, 0.7 = slow, 1.4 = fast. "
+                         "Waves and idles face the camera.",
           {"name": {"type": "string"}, "action": {"type": "string", "enum": ACTIONS},
            "start_frame": {"type": "integer", "minimum": 0},
            "to": {"oneOf": [{"type": "string"}, {"type": "number"}]},
@@ -222,6 +230,18 @@ def _misplaced_hint(value, top_props):
     return ""
 
 
+def _points_as_lists(value, warnings, path):
+    """Accept a point written as {"x": -1, "z": 0} (a natural guess) as [-1, 0], with a warning."""
+    if isinstance(value, dict):
+        if value and "x" in value and set(value) <= {"x", "y", "z"}:
+            warnings.append(f"{path}: point given as {{x, z}}; read as a list")
+            return [value["x"], value["y"], value["z"]] if "y" in value else [value["x"], value.get("z", 0)]
+        return {k: _points_as_lists(v, warnings, f"{path}.{k}") for k, v in value.items()}
+    if isinstance(value, list):
+        return [_points_as_lists(v, warnings, path) for v in value]
+    return value
+
+
 def validate(tool, args):
     """Return (clean_args, warnings) or raise ValidationError with a message for the model."""
     if tool not in BY_NAME:
@@ -235,6 +255,7 @@ def validate(tool, args):
         if r not in args:
             raise ValidationError(f"{tool}: missing required argument '{r}'")
     warnings, clean = [], {}
+    args = _points_as_lists(args, warnings, tool)
     for k, v in args.items():
         if k not in props:
             raise ValidationError(f"{tool}: unknown argument '{k}'. Arguments: {', '.join(props)}")

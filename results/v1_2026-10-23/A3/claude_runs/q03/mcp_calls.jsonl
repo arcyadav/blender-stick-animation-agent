@@ -1,0 +1,7 @@
+{"t": 1792691299.49, "tool": "add_stick_figure", "args": {"name": "figure", "location": [-2, 0], "facing": "front"}, "warnings": []}
+{"t": 1792691301.28, "tool": "play_action", "args": {"name": "figure", "action": "idle", "seconds": 2}, "warnings": []}
+{"t": 1792691301.83, "tool": "play_action", "args": {"name": "figure", "action": "react"}, "warnings": []}
+{"t": 1792691302.63, "tool": "play_action", "args": {"name": "figure", "action": "run", "direction": "right", "distance": 5}, "warnings": []}
+{"t": 1792691304.09, "tool": "set_frames", "args": {"start": 1, "end": 174}, "warnings": []}
+{"t": 1792691305.01, "tool": "set_camera", "args": {"look_at": [0.4, 1.2], "width": 8}, "warnings": []}
+{"t": 1792691309.28, "check": 1, "passed": true, "report": "All 11 checks pass."}

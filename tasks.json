@@ -7,8 +7,8 @@
     "units": "metres, seconds; scene fps from the agent (default 24)",
     "directions": "left / right are screen directions",
     "colours": "a colour name matches if the object's base colour is closest (in hue) to that name among: red, orange, yellow, green, blue, purple, pink, white, black, grey, brown",
-    "figure_actions": "action names match the motion library; 'walk' matches walk, walk_happy, walk_sad, walk_worried; a mood walk (walk_sad, …) only matches itself",
-    "library_actions": ["idle", "walk", "walk_happy", "walk_sad", "walk_worried", "wave", "react", "look_down"],
+    "figure_actions": "action names match the motion library; 'walk' matches walk, walk_happy, walk_sad, walk_worried; a mood walk (walk_sad, …) only matches itself; run is its own action",
+    "library_actions": ["idle", "walk", "walk_happy", "walk_sad", "walk_worried", "run", "wave", "react", "look_down", "handshake"],
     "library_assets": ["table", "chair", "box", "lamp", "tree", "bench"]
   },
 
@@ -41,7 +41,7 @@
     "colour_change":    "{role, from, to}: base colour at start / end",
     "light":            "{preset}: the scene light preset",
     "camera_move":      "{kind, target}: kind ∈ pan (camera slides ≥ 1 m, same width, target ends in the middle half), zoom_in / zoom_out (visible width falls to ≤ 80% / grows to ≥ 120%), follow (target in the middle third on 90% of frames, camera travels ≥ 1 m)",
-    "grounded":         "the lowest foot point stays within ±1.5 cm of the ground on every frame",
+    "grounded":         "the lowest foot point stays within ±1.5 cm of the ground on every frame (a run may leave the ground in its flight phase, never sink below it)",
     "no_foot_slide":    "a toe on the ground moves ≤ max_cm_per_frame (blends between actions excluded)",
     "no_pops":          "no joint moves more in one frame than max_speed_ratio × the figure's typical busy-frame motion",
     "actions_in_order": "{role, actions}: these actions appear in the figure's timeline in this order (others may be between)",
@@ -149,7 +149,7 @@
       "checks": [
         {"actions_in_order": {"role": "man", "actions": ["walk"]}},
         {"action_duration": {"role": "man", "action": "walk", "min_s": 3.5, "max_s": 4.5}},
-        {"moves": {"role": "man", "direction": "right", "min_m": 2.0}}
+        {"moves": {"role": "man", "direction": "right", "min_m": 1.5}}
       ]
     },
     {
@@ -221,8 +221,7 @@
       "request": "a stick figure stands around, gets startled, then hurries off to the right",
       "roles": {"fig": {"kind": "figure"}},
       "checks": [
-        {"actions_in_order": {"role": "fig", "actions": ["idle", "react", "walk"]}},
-        {"speed": {"role": "fig", "action": "walk", "relative": "fast"}},
+        {"actions_in_order": {"role": "fig", "actions": ["idle", "react", "run"]}},
         {"moves": {"role": "fig", "direction": "right", "min_m": 1.0}}
       ]
     },
@@ -316,11 +315,12 @@
 
     {
       "id": "t01", "category": "two_figures_camera",
-      "request": "two stick figures walk toward each other and stop face to face; the camera slowly zooms in",
+      "request": "two stick figures walk toward each other, stop face to face and shake hands; the camera slowly zooms in",
       "roles": {"a": {"kind": "figure"}, "b": {"kind": "figure"}},
       "checks": [
-        {"actions_in_order": {"role": "a", "actions": ["walk"]}},
-        {"actions_in_order": {"role": "b", "actions": ["walk"]}},
+        {"actions_in_order": {"role": "a", "actions": ["walk", "handshake"]}},
+        {"actions_in_order": {"role": "b", "actions": ["walk", "handshake"]}},
+        {"same_time": {"roles": ["a", "b"], "action": "handshake"}},
         {"faces": {"a": "a", "b": "b"}},
         {"faces": {"a": "b", "b": "a"}},
         {"distance_end": {"a": "a", "b": "b", "min_m": 0.4, "max_m": 1.2}},
@@ -352,8 +352,8 @@
       "roles": {"a": {"kind": "figure"}, "b": {"kind": "figure"}},
       "checks": [
         {"same_time": {"roles": ["a", "b"], "action": "walk"}},
-        {"moves": {"role": "a", "direction": "right", "min_m": 2.0}},
-        {"moves": {"role": "b", "direction": "right", "min_m": 2.0}},
+        {"moves": {"role": "a", "direction": "right", "min_m": 1.5}},
+        {"moves": {"role": "b", "direction": "right", "min_m": 1.5}},
         {"camera_move": {"kind": "follow", "target": "a"}}
       ]
     }

@@ -1,0 +1,5 @@
+{"t": 1792690897.7, "tool": "add_asset", "args": {"asset": "table", "name": "table", "location": [0, 0]}, "warnings": []}
+{"t": 1792690899.89, "tool": "add_primitive", "args": {"type": "sphere", "name": "ball", "colour": "red", "size": 0.3, "location": {"on_top_of": "table"}}, "warnings": []}
+{"t": 1792690900.78, "tool": "add_asset", "args": {"asset": "chair", "name": "chair", "facing": "left", "location": {"next_to": "table", "side": "right", "gap": 0.2}}, "warnings": []}
+{"t": 1792690901.27, "tool": "set_camera", "args": {"look_at": [0.3, 0.8], "width": 5}, "warnings": []}
+{"t": 1792690903.72, "check": 1, "passed": true, "report": "All 11 checks pass."}

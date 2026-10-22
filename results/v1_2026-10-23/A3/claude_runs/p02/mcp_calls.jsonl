@@ -1,0 +1,8 @@
+{"t": 1792691408.42, "tool": "add_asset", "args": {"asset": "chair", "name": "chair", "location": [1.5, 0], "facing": "left"}, "warnings": []}
+{"t": 1792691409.03, "tool": "add_stick_figure", "args": {"name": "figure", "location": [-3, 0], "facing": "right"}, "warnings": []}
+{"t": 1792691411.04, "tool": "add_primitive", "args": {"type": "sphere", "name": "ball", "size": 0.25, "colour": "red", "location": {"on_top_of": "chair"}}, "warnings": []}
+{"t": 1792691411.5, "tool": "play_action", "args": {"name": "figure", "action": "walk", "to": "chair"}, "warnings": []}
+{"t": 1792691413.04, "tool": "play_action", "args": {"name": "figure", "action": "look_down", "to": "ball"}, "warnings": []}
+{"t": 1792691414.44, "tool": "set_frames", "args": {"start": 1, "end": 205}, "warnings": []}
+{"t": 1792691414.83, "tool": "set_camera", "args": {"look_at": [-0.5, 1.2], "width": 7}, "warnings": []}
+{"t": 1792691420.85, "check": 1, "passed": true, "report": "All 12 checks pass."}

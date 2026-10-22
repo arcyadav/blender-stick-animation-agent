@@ -1,0 +1,5 @@
+{"t": 1792691236.77, "tool": "add_stick_figure", "args": {"name": "man", "location": [-4.5, 0], "facing": "right"}, "warnings": []}
+{"t": 1792691239.1, "tool": "play_action", "args": {"name": "man", "action": "walk", "to": 0, "direction": "right"}, "warnings": []}
+{"t": 1792691239.73, "tool": "play_action", "args": {"name": "man", "action": "wave"}, "warnings": []}
+{"t": 1792691241.56, "tool": "set_camera", "args": {"look_at": [0, 1.6], "width": 10}, "warnings": []}
+{"t": 1792691248.06, "check": 1, "passed": true, "report": "All 12 checks pass."}

@@ -1,0 +1,8 @@
+{"t": 1792691606.47, "tool": "add_stick_figure", "args": {"name": "figure1", "location": [-3, 0], "facing": "right", "layer": "back"}, "warnings": []}
+{"t": 1792691607.27, "tool": "add_stick_figure", "args": {"name": "figure2", "location": [-2.2, 0], "facing": "right", "layer": "front", "colour": "blue"}, "warnings": []}
+{"t": 1792691609.82, "tool": "play_action", "args": {"name": "figure1", "action": "walk", "direction": "right", "distance": 6, "start_frame": 1}, "warnings": []}
+{"t": 1792691610.53, "tool": "play_action", "args": {"name": "figure2", "action": "walk", "direction": "right", "distance": 6, "start_frame": 1}, "warnings": []}
+{"t": 1792691612.1, "tool": "set_camera", "args": {"look_at": [-2.6, 1.2], "width": 6}, "warnings": []}
+{"t": 1792691614.4, "tool": "camera_move", "args": {"kind": "follow", "target": "figure1", "start_frame": 1, "end_frame": 196}, "warnings": []}
+{"t": 1792691616.01, "tool": "set_frames", "args": {"start": 1, "end": 208}, "warnings": []}
+{"t": 1792691619.79, "check": 1, "passed": true, "report": "All 13 checks pass."}

@@ -1,0 +1,7 @@
+{"t": 1792690965.43, "tool": "add_primitive", "args": {"type": "cube", "name": "cube", "location": [0, 0.5], "size": 1}, "warnings": []}
+{"t": 1792690965.89, "tool": "set_frames", "args": {"start": 1, "end": 49, "fps": 24}, "warnings": []}
+{"t": 1792690967.91, "tool": "keyframe", "args": {"name": "cube", "property": "rotation", "frame": 1, "value": 0}, "warnings": []}
+{"t": 1792690968.41, "tool": "keyframe", "args": {"name": "cube", "property": "rotation", "frame": 49, "value": 360}, "warnings": []}
+{"t": 1792690970.43, "tool": "set_easing", "args": {"name": "cube", "property": "rotation", "interpolation": "linear"}, "warnings": []}
+{"t": 1792690970.72, "tool": "set_camera", "args": {"look_at": [0, 1], "width": 6}, "warnings": []}
+{"t": 1792690971.82, "check": 1, "passed": true, "report": "All 10 checks pass."}

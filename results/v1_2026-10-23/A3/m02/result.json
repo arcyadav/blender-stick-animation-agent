@@ -1,0 +1,149 @@
+{
+ "id": "m02",
+ "category": "object_motion",
+ "request": "a cube spins around once in 2 seconds",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 18.9,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 6,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 18.8,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "spins",
+    "ok": true,
+    "detail": "cube turns 1.00 time(s) in 2.00 s, expected 1 in 2 s",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 2.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "cube": "cube"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "cube",
+    "name": "cube",
+    "location": [
+     0,
+     0.5
+    ],
+    "size": 1
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 49,
+    "fps": 24
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "cube",
+    "property": "rotation",
+    "frame": 1,
+    "value": 0
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "cube",
+    "property": "rotation",
+    "frame": 49,
+    "value": 360
+   }
+  },
+  {
+   "tool": "set_easing",
+   "args": {
+    "name": "cube",
+    "property": "rotation",
+    "interpolation": "linear"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1
+    ],
+    "width": 6
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 10 checks pass.",
+   "tool_calls": 6
+  }
+ ]
+}

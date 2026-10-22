@@ -1,0 +1,8 @@
+{"t": 1792691034.97, "tool": "add_primitive", "args": {"type": "sphere", "name": "sphere", "colour": "blue", "size": 1, "location": [0, 0]}, "warnings": []}
+{"t": 1792691038.72, "tool": "keyframe", "args": {"name": "sphere", "property": "scale", "frame": 1, "value": 0}, "warnings": []}
+{"t": 1792691038.92, "tool": "keyframe", "args": {"name": "sphere", "property": "scale", "frame": 36, "value": 1}, "warnings": []}
+{"t": 1792691039.56, "tool": "keyframe", "args": {"name": "sphere", "property": "colour", "frame": 40, "value": "blue"}, "warnings": []}
+{"t": 1792691040.17, "tool": "keyframe", "args": {"name": "sphere", "property": "colour", "frame": 64, "value": "red"}, "warnings": []}
+{"t": 1792691040.69, "tool": "set_frames", "args": {"start": 1, "end": 72}, "warnings": []}
+{"t": 1792691040.97, "tool": "set_camera", "args": {"look_at": [0, 0.5], "width": 4}, "warnings": []}
+{"t": 1792691043.83, "check": 1, "passed": true, "report": "All 11 checks pass."}

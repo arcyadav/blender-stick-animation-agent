@@ -1,0 +1,1358 @@
+{
+ "id": "s02",
+ "category": "static_layout",
+ "request": "a red ball on a table, with a chair next to the table",
+ "agent": "A1",
+ "passed": false,
+ "error": null,
+ "seconds": 575.8,
+ "passed_first": false,
+ "fix_rounds_used": 0,
+ "tool_calls": 43,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 574.6,
+ "stopped": "max_steps",
+ "report": {
+  "passed": false,
+  "results": [
+   {
+    "check": "on_surface",
+    "ok": false,
+    "detail": "ball rests on ground at frame 72, expected table",
+    "default": false
+   },
+   {
+    "check": "relation",
+    "ok": true,
+    "detail": "gap between chair and table is 0.20 m (max 0.5)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "ball": "ball",
+   "table": "table",
+   "chair": "chair"
+  }
+ },
+ "calls": [
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "table",
+    "colour": "red",
+    "layer": "middle"
+   }
+  },
+  {
+   "tool": "add_asset",
+   "args": {
+    "location": {
+     "next_to": "table",
+     "side": "right"
+    },
+    "asset": "chair",
+    "facing": "right",
+    "colour": "red",
+    "layer": "middle"
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "layer": "middle",
+    "type": "sphere",
+    "size": 0.1,
+    "colour": "red"
+   }
+  },
+  {
+   "tool": "set_material",
+   "args": {
+    "colour": "red",
+    "name": "ball"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table"
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "end": 72,
+    "fps": 24,
+    "start": 1
+   }
+  },
+  {
+   "tool": "camera_move",
+   "args": {
+    "amount": 0.6,
+    "end_frame": 72,
+    "kind": "pan",
+    "start_frame": 1,
+    "target": "table"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "width": 8,
+    "look_at": "table"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "width": 8,
+    "look_at": "table"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "table",
+    "width": 8
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": false,
+   "report": "1 of 11 checks fail:\n- on_surface: ball rests on ground at frame 72, expected table",
+   "tool_calls": 43
+  }
+ ],
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You direct a short 2D animation in Blender by calling tools. The scene is already empty and ready (ground line at z = 0, white background, 24 fps). Make exactly what the request asks for: no extra objects, no stick figures unless the request has one.\n\nThe world is 2D, seen from the side like paper:\n- positions are [x, z]: x = left/right (screen-left is negative, about -4 to 4 is on screen), z = height of the object's BOTTOM (0 = standing on the ground). Or use a placement: {\"on_top_of\": \"table\"}, {\"next_to\": \"table\", \"side\": \"left\"}.\n- props (table, chair, bench, box, lamp, tree) come from add_asset; shapes (ball = sphere, cube, cone, ...) from add_primitive. Depth is only a layer: \"back\", \"middle\" (default) or \"front\".\n- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look_down, react). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at. Figures are animated only with play_action. Put props a figure walks past in the back layer.\n- moving objects: keyframe (location, rotation, scale, colour) at frames, then set_easing (gravity for bounces and falls), and set_frames to cover the motion.\n- camera: set_camera(look_at, width) frames the shot; camera_move does pan / zoom_in / zoom_out / follow.\n\nMake the objects, animate them, then frame the camera so everything is in view. When the scene is finished, reply with a short summary and no tool call."
+  },
+  {
+   "role": "user",
+   "content": "a red ball on a table, with a chair next to the table"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_dkbo3ms1",
+     "function": {
+      "index": 0,
+      "name": "scene_reset",
+      "arguments": {}
+     }
+    },
+    {
+     "id": "call_9sxiumcf",
+     "function": {
+      "index": 1,
+      "name": "add_asset",
+      "arguments": {
+       "asset": "table",
+       "colour": "red",
+       "layer": "middle"
+      }
+     }
+    },
+    {
+     "id": "call_8t11hd3m",
+     "function": {
+      "index": 2,
+      "name": "add_asset",
+      "arguments": {
+       "location": {
+        "next_to": "table",
+        "side": "right"
+       },
+       "asset": "chair",
+       "facing": "right",
+       "colour": "red",
+       "layer": "middle"
+      }
+     }
+    },
+    {
+     "id": "call_arw6moro",
+     "function": {
+      "index": 3,
+      "name": "add_primitive",
+      "arguments": {
+       "layer": "middle",
+       "type": "sphere",
+       "size": 0.1,
+       "colour": "red"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"message\":\"empty 2D scene: ground line at z = 0, camera centred on [0, 1.6] showing 8 m across, white background, frames 1\\u201372 at 24 fps\"}",
+   "tool_name": "scene_reset"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"table\",\"bottom_centre\":[0.0,0.0,0.0],\"size\":[1.2,0.8,0.75],\"layer\":\"middle\",\"top_height\":0.75}",
+   "tool_name": "add_asset"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"chair\",\"bottom_centre\":[1.02,0.0,0.0],\"size\":[0.45,0.45,0.96],\"layer\":\"middle\",\"top_height\":0.46}",
+   "tool_name": "add_asset"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"ball\",\"bottom_centre\":[0.0,0.0,0.0],\"size\":[0.1,0.1,0.1],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_crjhmyzl",
+     "function": {
+      "index": 0,
+      "name": "set_material",
+      "arguments": {
+       "colour": "red",
+       "name": "ball"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"ball\",\"colour\":\"red\",\"preset\":\"plastic\"}",
+   "tool_name": "set_material"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_geyoslrn",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_h8qfj1lg",
+     "function": {
+      "index": 0,
+      "name": "set_frames",
+      "arguments": {
+       "end": 72,
+       "fps": 24,
+       "start": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"start\":1,\"end\":72,\"fps\":24,\"seconds\":3.0}",
+   "tool_name": "set_frames"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_f1mwr4po",
+     "function": {
+      "index": 0,
+      "name": "camera_move",
+      "arguments": {
+       "amount": 0.6,
+       "end_frame": 72,
+       "kind": "pan",
+       "start_frame": 1,
+       "target": "table"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"kind\":\"pan\",\"target\":\"table\",\"frames\":[1,72],\"start_centre\":[0.0,1.58],\"start_width\":8.0}",
+   "tool_name": "camera_move"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_2r4zar6e",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_aetmss7x",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_hyr6q8ij",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_zjgvw22j",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_27gv712g",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_00it1ud5",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_vq9777ao",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_2643gxsu",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_sxdoex9s",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_9bj4x6y9",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_yq1otmbl",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_bq0r3hrl",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_g2p3na63",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_8umug7ct",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_ghxo0uie",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_5or4i1gm",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_cidmxf4h",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_6rpwqdx3",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_25sdzmhe",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_lac1vvsu",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_ldq93n81",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_1h1ghgup",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_kb6zicn5",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "width": 8,
+       "look_at": "table"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_ie4iaw2q",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_zwaj2hj3",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_kuclq6o3",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_f8mrteb4",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_s8403cn9",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_bbhygra8",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_kx6zqb5j",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_wdc49h4a",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_ehgv601m",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_2f5s6jg5",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "width": 8,
+       "look_at": "table"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_hx4md5ql",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_1uf1yrmg",
+     "function": {
+      "index": 0,
+      "name": "set_camera",
+      "arguments": {
+       "look_at": "table",
+       "width": 8
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"centre\":[0.0,1.58],\"width\":8.0,\"height\":4.5,\"shows_x\":[-4.0,4.0],\"shows_z\":[-0.67,3.83]}",
+   "tool_name": "set_camera"
+  }
+ ]
+}

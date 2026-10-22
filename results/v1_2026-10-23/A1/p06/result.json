@@ -1,0 +1,99 @@
+{
+ "id": "p06",
+ "category": "figure_props",
+ "request": "a stick figure walks past a tree while the camera follows him",
+ "agent": "A1",
+ "passed": false,
+ "error": "HTTPError: HTTP Error 530: <none>",
+ "seconds": 15.8,
+ "passed_first": false,
+ "fix_rounds_used": 0,
+ "tool_calls": 0,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": false,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": false,
+    "detail": "nothing in the scene matches 'fig': the request needs a stick figure (add_stick_figure)",
+    "default": false
+   },
+   {
+    "check": "passes",
+    "ok": false,
+    "detail": "nothing in the scene matches 'fig': the request needs a stick figure (add_stick_figure)",
+    "default": false
+   },
+   {
+    "check": "camera_move",
+    "ok": false,
+    "detail": "nothing in the scene matches 'fig': the request needs a stick figure (add_stick_figure)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "fig": null,
+   "tree": null
+  }
+ },
+ "calls": [],
+ "rounds": []
+}

@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 18242,
+ "stop_reason": "end_turn",
+ "session_id": "41462e45-284f-4be2-bb4f-2c815f55bfb6",
+ "total_cost_usd": 0.09340080000000002,
+ "usage": {
+  "input_tokens": 16,
+  "cache_creation_input_tokens": 5206,
+  "cache_read_input_tokens": 88744,
+  "output_tokens": 1697,
+  "output_tokens_details": {
+   "thinking_tokens": 94
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 5206,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 146,
+    "cache_read_input_tokens": 13097,
+    "cache_creation_input_tokens": 72,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 72
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 16,
+   "outputTokens": 1697,
+   "cacheReadInputTokens": 88744,
+   "cacheCreationInputTokens": 5206,
+   "webSearchRequests": 0,
+   "costUSD": 0.09340080000000002,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 94,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 15,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "A red and a blue stick figure stand side by side facing the camera and wave together for about 5 seconds (frames 1\u2013124), and all 11 scene checks pass. The first check failed because the figures stood 0.68 m apart (the limit is 0.5 m), and the tools can't move a figure once it's placed, so I reset the scene and rebuilt it with them closer, at x = -0.4 and 0.4.",
+ "ttft_ms": 2106,
+ "type": "result",
+ "duration_ms": 24148,
+ "uuid": "9fe35267-c29a-45bd-ac3e-93af54f0f4a2",
+ "ttft_stream_ms": 1169,
+ "time_to_request_ms": 106,
+ "first_content_frame_ms": 1169,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

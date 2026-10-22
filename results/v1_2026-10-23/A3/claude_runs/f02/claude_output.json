@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 9849,
+ "stop_reason": "end_turn",
+ "session_id": "c16296b0-de4d-4cda-a4c6-032c50fd2d02",
+ "total_cost_usd": 0.0376258,
+ "usage": {
+  "input_tokens": 8,
+  "cache_creation_input_tokens": 2826,
+  "cache_read_input_tokens": 38929,
+  "output_tokens": 360,
+  "output_tokens_details": {
+   "thinking_tokens": 0
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 2826,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 62,
+    "cache_read_input_tokens": 10509,
+    "cache_creation_input_tokens": 280,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 280
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 8,
+   "outputTokens": 360,
+   "cacheReadInputTokens": 38929,
+   "cacheCreationInputTokens": 2826,
+   "webSearchRequests": 0,
+   "costUSD": 0.0376258,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 0,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 5,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "A stick figure stands at the centre facing the camera and waves for about 5 seconds (frames 1\u2013124), framed in a 5 m-wide shot; all 11 scene checks pass.",
+ "ttft_ms": 3088,
+ "type": "result",
+ "duration_ms": 13587,
+ "uuid": "47dd0403-e300-411c-9814-dbabc2caca9b",
+ "ttft_stream_ms": 2293,
+ "time_to_request_ms": 332,
+ "first_content_frame_ms": 2296,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

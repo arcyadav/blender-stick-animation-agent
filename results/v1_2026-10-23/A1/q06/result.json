@@ -1,0 +1,621 @@
+{
+ "id": "q06",
+ "category": "figure_sequence",
+ "request": "she waves at the camera, then walks off happily to the left",
+ "agent": "A1",
+ "passed": false,
+ "error": "HTTPError: HTTP Error 530: <none>",
+ "seconds": 54.8,
+ "passed_first": false,
+ "fix_rounds_used": 0,
+ "tool_calls": 44,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": false,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": false,
+    "detail": "nothing in the scene matches 'she': the request needs a stick figure (add_stick_figure)",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": false,
+    "detail": "nothing in the scene matches 'she': the request needs a stick figure (add_stick_figure)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "she": null
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "facing": "front",
+    "location": {
+     "side": "left"
+    },
+    "height": 1.7,
+    "layer": "middle"
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "wave",
+    "direction": "left",
+    "start_frame": 1,
+    "speed": 1,
+    "cycles": 1,
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "name": "wave",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "layer": "middle"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "add_stick_figure",
+    "action": "walk_happy",
+    "direction": "left",
+    "start_frame": 1,
+    "speed": 1,
+    "cycles": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "location": {
+     "side": "left"
+    },
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle"
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "speed": 1,
+    "start_frame": 1,
+    "action": "wave",
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "walk_happy"
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle",
+    "location": {
+     "side": "left"
+    }
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "walk_happy",
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle",
+    "location": {
+     "side": "left"
+    }
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave",
+    "layer": "middle"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "walk_happy",
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "side": "left"
+    },
+    "facing": "front",
+    "height": 1.7
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "wave",
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "walk_happy"
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle",
+    "location": {
+     "side": "left"
+    }
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "walk_happy",
+    "cycles": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "location": {
+     "side": "left"
+    },
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle"
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "wave",
+    "cycles": 1,
+    "direction": "left"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "walk_happy",
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "location": {
+     "side": "left"
+    },
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle"
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "wave",
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1,
+    "action": "walk_happy",
+    "cycles": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "location": {
+     "side": "left"
+    },
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle"
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "wave",
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave",
+    "layer": "middle"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "walk_happy",
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "side": "left"
+    },
+    "facing": "front",
+    "height": 1.7
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "wave",
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "walk_happy",
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "facing": "front",
+    "height": 1.7,
+    "layer": "middle",
+    "location": {
+     "side": "left"
+    }
+   },
+   "error": "ERROR (invalid call, nothing changed): add_stick_figure.location: use exactly one of ['on_top_of', 'next_to']. Expected [x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "action": "wave",
+    "cycles": 1,
+    "direction": "left",
+    "name": "wave",
+    "speed": 1,
+    "start_frame": 1
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "set_transform",
+   "args": {
+    "layer": "middle",
+    "location": {
+     "x": -2,
+     "z": 0
+    },
+    "name": "wave"
+   },
+   "error": "ERROR: no object named 'wave'. Objects in the scene: camera, ground"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "speed": 1,
+    "start_frame": 1,
+    "action": "walk_happy",
+    "cycles": 1,
+    "direction": "left",
+    "name": "add_stick_figure"
+   },
+   "error": "ERROR: no object named 'add_stick_figure'. Objects in the scene: camera, ground"
+  }
+ ],
+ "rounds": []
+}

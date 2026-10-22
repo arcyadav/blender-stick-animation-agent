@@ -5,7 +5,8 @@ Each check is fn(S, args, binding) → (ok, detail), like the scene checks in ch
 import math
 
 WALKS = {"walk", "walk_happy", "walk_sad", "walk_worried"}
-TOL = {"ground_m": 0.015, "planted_m": 0.004, "pop_min_m": 0.05, "faces_deg": 30}
+AIRBORNE = {"run"}
+TOL = {"ground_m": 0.015, "planted_m": 0.004, "pop_min_m": 0.04, "faces_deg": 30}
 
 
 def _fig(S, b, role):
@@ -60,9 +61,13 @@ def _facing_at(F, frame):
 # ---------------------------------------------------------------- quality (defaults)
 
 def c_grounded(S, a, b):
+    """Feet on the ground every frame; a run may leave it (its flight phase) but never sink below."""
     n, F = _fig(S, b, a["role"])
     low = [_lowest(F, i) for i in range(S.n)]
-    worst = max(range(S.n), key=lambda i: abs(low[i]))
+    air = {f for g in F["segments"] if g["action"] in AIRBORNE for f in range(g["start"], g["end"] + 1)}
+    err = [min(x, 0.0) if S.frames[i] in air else x for i, x in enumerate(low)]
+    worst = max(range(S.n), key=lambda i: abs(err[i]))
+    low = err
     ok = abs(low[worst]) <= TOL["ground_m"]
     state = "below" if low[worst] < 0 else "above"
     return ok, f"{n}'s lowest foot is {abs(low[worst]) * 100:.1f} cm {state} the ground at worst " \
@@ -92,27 +97,35 @@ def c_no_foot_slide(S, a, b):
 
 
 def c_no_pops(S, a, b):
-    """No joint jumps. A pop (a joint that teleports for a frame, or jumps and stays) is a sudden
-    change of velocity: the acceleration on that frame is far above the acceleration two frames
-    either side. A fast but eased move, like a flinch, speeds up and slows down over several frames."""
+    """No joint pops. Two kinds, both discontinuities a viewer sees as a glitch:
+    - a jump: one frame's move is > ratio × the moves just before and after (it jumps and stays);
+    - a spike: a joint shoots out and straight back (two big moves in opposite directions).
+    Fast but continuous motion (a flinch, a heel kick from a planted foot) speeds up over frames."""
     n, F = _fig(S, b, a["role"])
     ratio = a.get("max_speed_ratio", 3.0)
-    worst = (0.0, None, None)
+    floor = TOL["pop_min_m"]
+    worst = None
     for j, track in F["joints"].items():
-        acc = [0.0] + [math.dist([track[i + 1][k] - 2 * track[i][k] + track[i - 1][k] for k in range(3)], [0, 0, 0])
-                       for i in range(1, S.n - 1)] + [0.0]
-        for i, x in enumerate(acc):
-            if x <= TOL["pop_min_m"]:
+        d = [[track[i + 1][k] - track[i][k] for k in range(3)] for i in range(S.n - 1)]
+        m = [math.sqrt(sum(x * x for x in v)) for v in d]
+        for i, x in enumerate(m):
+            if x <= floor:
                 continue
-            around = max(acc[i - 2] if i >= 2 else 0.0, acc[i + 2] if i + 2 < len(acc) else 0.0, 0.01)
-            if x / around > worst[0]:
-                worst = (x / around, i, (j, x))
-    r, i, jx = worst
-    if i is None or r <= ratio:
-        return True, f"{n} moves smoothly (no sudden jumps)"
-    j, x = jx
-    return False, f"{n}'s {j.replace('_', ' ')} jumps at frame {S.frames[i]} (its speed changes by " \
-                  f"{x * 100:.1f} cm/frame at once, ×{r:.1f} the frames around it; allowed ×{ratio})"
+            before = m[i - 1] if i > 0 else 0.0
+            after = m[i + 1] if i + 1 < len(m) else 0.0
+            kind = None
+            if x > ratio * max(before, after, 0.005):
+                kind = "jumps"
+            elif after > floor and sum(p * q for p, q in zip(d[i], d[i + 1])) < -0.5 * x * after \
+                    and x > ratio * max(before, 0.005):
+                kind = "spikes out and back"
+            if kind and (worst is None or x > worst[0]):
+                worst = (x, i, j, kind)
+    if worst is None:
+        return True, f"{n} moves smoothly (no joint jumps or spikes)"
+    x, i, j, kind = worst
+    return False, f"{n}'s {j.replace('_', ' ')} {kind} {x * 100:.1f} cm at frame {S.frames[i]} " \
+                  f"(more than ×{ratio} the frames around it)"
 
 
 def c_staging(S, a, b):
@@ -241,9 +254,33 @@ def c_passes(S, a, b):
     return ok, f"{n} starts to the {side(d0)} of {t} and ends to the {side(d1)}"
 
 
+def c_holds(S, a, b):
+    """{role, object}: at the last frame the figure has the object in its hand."""
+    from checks.checker import _one
+    n, F = _fig(S, b, a["role"])
+    o = _one(b, a["object"])
+    end = S.frames[-1]
+    held = [h for h in F.get("holds", []) if h["obj"] == o and h["from"] <= end and (h["to"] is None or h["to"] > end)]
+    return bool(held), f"{n} {'holds' if held else 'is not holding'} {o} at the end"
+
+
+def c_puts(S, a, b):
+    """{role, object, surface}: the figure picked the object up and put it down on surface."""
+    from checks.checker import _one
+    n, F = _fig(S, b, a["role"])
+    o = _one(b, a["object"])
+    done = [h for h in F.get("holds", []) if h["obj"] == o and h["to"] is not None]
+    if not done:
+        return False, f"{n} never picks {o} up and puts it down"
+    want = a.get("surface", "ground")
+    want = want if want == "ground" else _one(b, want)
+    under = S.support_under(o, S.n - 1)
+    return under == want, f"{n} puts {o} down; it ends on {under or 'nothing'}, expected {want}"
+
+
 CHECKS = {
     "grounded": c_grounded, "no_foot_slide": c_no_foot_slide, "no_pops": c_no_pops, "staging": c_staging,
     "actions_in_order": c_actions_in_order, "action_duration": c_action_duration, "speed": c_speed,
     "reaches": c_reaches, "faces": c_faces, "returns": c_returns, "same_time": c_same_time,
-    "start_near": c_start_near, "passes": c_passes,
+    "start_near": c_start_near, "passes": c_passes, "holds": c_holds, "puts": c_puts,
 }

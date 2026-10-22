@@ -1,0 +1,41 @@
+{
+ "agent": "A1",
+ "passed": 0,
+ "passed_first": 0,
+ "total": 3,
+ "tasks": [
+  {
+   "id": "s02",
+   "category": "static_layout",
+   "passed": false,
+   "passed_first": false,
+   "fix_rounds_used": 0,
+   "seconds": 575.8,
+   "tool_calls": 43,
+   "invalid_calls": 0,
+   "tool_errors": 0
+  },
+  {
+   "id": "m01",
+   "category": "object_motion",
+   "passed": false,
+   "passed_first": false,
+   "fix_rounds_used": 3,
+   "seconds": 209.9,
+   "tool_calls": 26,
+   "invalid_calls": 18,
+   "tool_errors": 6
+  },
+  {
+   "id": "p01",
+   "category": "figure_props",
+   "passed": false,
+   "passed_first": false,
+   "fix_rounds_used": 3,
+   "seconds": 268.3,
+   "tool_calls": 40,
+   "invalid_calls": 5,
+   "tool_errors": 13
+  }
+ ]
+}
