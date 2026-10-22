@@ -295,9 +295,7 @@ def c_relation(S, a, b):
         return under == B, f"{A} rests on {under or 'nothing'}, expected {B}"
     if rel == "next_to":
         ea, eb = S.f(A, i), S.f(B, i)
-        gx = max(eb["lo"][0] - ea["hi"][0], ea["lo"][0] - eb["hi"][0], 0)
-        gy = max(eb["lo"][1] - ea["hi"][1], ea["lo"][1] - eb["hi"][1], 0)
-        gap = math.hypot(gx, gy)
+        gap = max(eb["lo"][0] - ea["hi"][0], ea["lo"][0] - eb["hi"][0], 0)     # 2D: across the screen
         return gap <= TOL["next_to_gap_m"], f"gap between {A} and {B} is {gap:.2f} m (max {TOL['next_to_gap_m']})"
     raise ValueError(rel)
 
@@ -322,7 +320,7 @@ def c_bounces(S, a, b):
 
 def c_spins(S, a, b):
     n = _one(b, a["role"])
-    ax = "xyz".index(a.get("axis", "z"))
+    ax = "xyz".index(a.get("axis", "y"))
     rots = [S.f(n, i)["rot"][ax] for i in range(S.n)]
     total = sum(abs(rots[i + 1] - rots[i]) for i in range(S.n - 1))
     turns = total / 360
@@ -330,7 +328,7 @@ def c_spins(S, a, b):
     secs = (moving[-1] - moving[0] + 1) / S.fps if moving else 0
     ok = abs(turns - a["turns"]) <= 0.1 * a["turns"] and (
         "seconds" not in a or abs(secs - a["seconds"]) <= 0.2 * a["seconds"])
-    return ok, f"{n} turns {turns:.2f} time(s) around {a.get('axis', 'z')} in {secs:.2f} s, " \
+    return ok, f"{n} turns {turns:.2f} time(s) in {secs:.2f} s, " \
                f"expected {a['turns']} in {a.get('seconds', 'any')} s"
 
 
@@ -369,30 +367,50 @@ def c_light(S, a, b):
 
 
 def c_camera_move(S, a, b):
-    kind = a["kind"]
+    """2D camera: it slides (pan, follow) and zooms (the visible width changes); it can't orbit."""
+    kind = {"dolly_in": "zoom_in", "dolly_out": "zoom_out"}.get(a["kind"], a["kind"])
     cams = S.s["camera"]
-    t = _pick(S, b, a["target"])
-    tc = [S.centre(t, i) for i in range(S.n)]
     if kind == "orbit":
-        ang = [math.atan2(cams[i]["loc"][1] - tc[i][1], cams[i]["loc"][0] - tc[i][0]) for i in range(S.n)]
-        swept = sum(abs(math.remainder(ang[i + 1] - ang[i], 2 * math.pi)) for i in range(S.n - 1))
-        deg = math.degrees(swept)
-        return deg >= 90, f"camera circles {deg:.0f}° around {t} (at least 90° needed)"
-    if kind in ("dolly_in", "dolly_out"):
-        d0, d1 = math.dist(cams[0]["loc"], tc[0]), math.dist(cams[-1]["loc"], tc[-1])
-        ok = d1 <= 0.8 * d0 if kind == "dolly_in" else d1 >= 1.2 * d0
-        return ok, f"camera distance to {t} goes {d0:.1f} → {d1:.1f} m"
+        return False, "the world is 2D, so the camera can't orbit"
+    t = _pick(S, b, a["target"]) if a.get("target") else None
+    w0, w1 = cams[0].get("width", 0), cams[-1].get("width", 0)
+    travel = abs(cams[-1]["loc"][0] - cams[0]["loc"][0])
+    if kind in ("zoom_in", "zoom_out"):
+        ok = w1 <= 0.8 * w0 if kind == "zoom_in" else w1 >= 1.2 * w0
+        return ok, f"visible width goes {w0:.1f} → {w1:.1f} m ({'≤ 80%' if kind == 'zoom_in' else '≥ 120%'} needed)"
     if kind == "follow":
         centred = sum(1 / 3 <= (S.f(t, i)["screen"][0] + S.f(t, i)["screen"][2]) / 2 <= 2 / 3 for i in range(S.n))
-        travel = math.dist(cams[0]["loc"], cams[-1]["loc"])
         ok = centred >= 0.9 * S.n and travel >= 1.0
         return ok, f"{t} in the middle third on {centred}/{S.n} frames, camera travels {travel:.1f} m"
     if kind == "pan":
-        f0, f1 = cams[0]["fwd"], cams[-1]["fwd"]
-        turn = math.degrees(math.acos(max(-1, min(1, sum(x * y for x, y in zip(f0, f1))))))
-        travel = math.dist(cams[0]["loc"], cams[-1]["loc"])
-        return turn >= 15 and travel < 0.5, f"camera turns {turn:.0f}° and travels {travel:.1f} m"
+        ok = travel >= 1.0 and abs(w1 - w0) <= 0.1 * w0
+        where = ""
+        if t:
+            c = (S.f(t, S.n - 1)["screen"][0] + S.f(t, S.n - 1)["screen"][2]) / 2
+            ok = ok and 0.25 <= c <= 0.75
+            where = f", {t} ends at {c:.0%} across the frame"
+        return ok, f"camera slides {travel:.1f} m sideways (≥ 1 m needed), width {w0:.1f} → {w1:.1f} m{where}"
     raise ValueError(kind)
+
+
+def c_no_hover(S, a, b):
+    """Nothing hangs in the air: an unsupported object must be moving up or down (a fall, a bounce),
+    not drifting sideways at a constant height for more than a quarter of a second."""
+    names = [n for n in _all_roles(b) if S.kind(n) != "figure"]
+    bad = []
+    limit = max(3, round(0.25 * S.fps))
+    for n in names:
+        run = 0
+        for i in range(1, S.n):
+            dz = abs(S.f(n, i)["lo"][2] - S.f(n, i - 1)["lo"][2])
+            floating = S.support_under(n, i) is None and dz < 0.002
+            run = run + 1 if floating else 0
+            if run > limit:
+                z = S.bottom(n, i)[2]
+                bad.append(f"{n} hangs in the air at {z:.2f} m with nothing under it (frames "
+                           f"{S.frames[i - run + 1]}–{S.frames[i]})")
+                break
+    return not bad, "; ".join(bad) or "nothing hangs in the air"
 
 
 def c_no_collision(S, a, b):
@@ -414,7 +432,7 @@ def c_clip_length_s(S, a, b):
 def c_distance_end(S, a, b):
     A, B = _one(b, a["a"]), _one(b, a["b"])
     pa, pb = S.bottom(A, S.n - 1), S.bottom(B, S.n - 1)
-    d = math.hypot(pa[0] - pb[0], pa[1] - pb[1])
+    d = abs(pa[0] - pb[0])
     return a.get("min_m", 0) <= d <= a["max_m"], f"{A} and {B} end {d:.2f} m apart " \
                                                  f"(allowed {a.get('min_m', 0)}–{a['max_m']} m)"
 
@@ -424,7 +442,7 @@ CHECKS = {
     "middle_of_row": c_middle_of_row, "relation": c_relation, "bounces": c_bounces, "spins": c_spins,
     "moves": c_moves, "scale_change": c_scale_change, "colour_change": c_colour_change, "light": c_light,
     "camera_move": c_camera_move, "no_collision": c_no_collision, "clip_length_s": c_clip_length_s,
-    "distance_end": c_distance_end, **figure_checks.CHECKS,
+    "distance_end": c_distance_end, "no_hover": c_no_hover, **figure_checks.CHECKS,
 }
 
 
@@ -444,13 +462,16 @@ def _run_one(S, check, b):
             return key, *c_static_on_surface(S, b)
         if key == "no_collision" and arg == "all_roles":
             return key, *c_no_collision(S, None, b)
+        if key == "no_hover":
+            return key, *c_no_hover(S, arg, b)
         if arg == "all_figures":
             figs = [n for n in _all_roles(b) if S.kind(n) == "figure"]
             if not figs:
                 return key, True, "no figures"
             if key not in figure_checks.CHECKS:
                 return key, False, f"check '{key}' is not implemented yet"
-            res = [CHECKS[key](S, {**{k: v for k, v in check.items() if k != key}, "role": f}, b) for f in figs]
+            res = [CHECKS[key](S, {**{k: v for k, v in check.items() if k != key}, "role": f}, {**b, f: f})
+                   for f in figs]
             return key, all(r[0] for r in res), "; ".join(r[1] for r in res)
         fn = CHECKS.get(key)
         if fn is None:
@@ -467,7 +488,9 @@ def _all_roles(b):
 def check_task(task, sample, defaults=None):
     """→ {"passed": bool, "results": [{"check", "ok", "detail", "default"}], "binding": {...}}"""
     S = Scene(sample)
-    checks = [(c, False) for c in task["checks"]] + [(c, True) for c in (defaults or [])]
+    skip = set(task.get("skip_defaults", []))
+    checks = [(c, False) for c in task["checks"]] + [
+        (c, True) for c in (defaults or []) if next(iter(c)) not in skip]
     best = None
     for b in bindings(task, S):
         results = []

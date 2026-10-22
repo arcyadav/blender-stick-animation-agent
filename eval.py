@@ -5,6 +5,7 @@
 """
 import argparse
 import json
+import sys
 import time
 
 import config
@@ -40,7 +41,7 @@ def run_task(agent, task, defaults, w, render=False):
     if render:
         n = sample["end"] - sample["start"]
         w.call("render_check", frames=[sample["start"], sample["start"] + n // 2, sample["end"]])
-        w.call("render_final", engine="workbench", filename="final.mp4")
+        w.call("render_final", filename="final.mp4")
         w.call("save_blend", filename="scene.blend")
     return out
 
@@ -52,6 +53,7 @@ def main():
     ap.add_argument("--category")
     ap.add_argument("--render", action="store_true")
     a = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8")
     tasks, defaults = load_tasks(a.ids and a.ids.split(","), a.category and a.category.split(","))
     agent = AGENTS[a.agent]()
     out_dir = config.OUTPUTS / "eval" / a.agent

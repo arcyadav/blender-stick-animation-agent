@@ -1,0 +1,15 @@
+{
+  "action": "walk_sad",
+  "view": "side",
+  "fps": 24,
+  "frames": 44,
+  "loop": true,
+  "source": "code keyframes",
+  "stride_per_cycle": 0.933,
+  "cycle_frames": 44,
+  "bounce": 0.025,
+  "contact_frames": {
+    "l": 27,
+    "r": 27
+  }
+}

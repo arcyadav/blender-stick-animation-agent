@@ -1,10 +1,11 @@
 {
-  "version": "draft-1 (21 Oct 2026)",
+  "version": "draft-2 (22 Oct 2026): 2D world",
   "about": "30 requests for UMC301 Project 5, written before building. Each task names roles (what must be in the scene) and machine-checkable checks. The checker binds scene objects to roles by kind + colour, so the agent may name objects anything.",
 
   "conventions": {
+    "world": "2D, seen from the side like paper: things move left/right (x) and up/down (z); depth is only a layer (back / middle / front) that decides what is drawn over what",
     "units": "metres, seconds; scene fps from the agent (default 24)",
-    "directions": "left / right / toward / away are camera-relative, judged from the final camera at the frame the check refers to",
+    "directions": "left / right are screen directions",
     "colours": "a colour name matches if the object's base colour is closest (in hue) to that name among: red, orange, yellow, green, blue, purple, pink, white, black, grey, brown",
     "figure_actions": "action names match the motion library; 'walk' matches walk, walk_happy, walk_sad, walk_worried; a mood walk (walk_sad, …) only matches itself",
     "library_actions": ["idle", "walk", "walk_happy", "walk_sad", "walk_worried", "wave", "react", "look_down"],
@@ -12,7 +13,7 @@
   },
 
   "defaults": {
-    "about": "added to every task automatically",
+    "about": "added to every task automatically (a task may list 'skip_defaults', e.g. a pan that reveals things)",
     "checks": [
       {"in_view": "all_roles", "frames": "most"},
       {"not_hidden": "all_roles", "frames": "key"},
@@ -20,8 +21,8 @@
       {"grounded": "all_figures"},
       {"no_foot_slide": "all_figures", "max_cm_per_frame": 0.5},
       {"no_pops": "all_figures", "max_speed_ratio": 3.0},
-      {"staging": "all_figures", "max_angle_deg": 45},
       {"no_collision": "all_roles"},
+      {"no_hover": "all_roles"},
       {"clip_length_s": {"min": 2, "max": 20}}
     ]
   },
@@ -34,24 +35,24 @@
     "row":              "{roles, order}: roles lie on one line, roughly evenly spaced (±25%), in this left→right order",
     "relation":         "{a, rel, b}: rel ∈ left_of, right_of, next_to (gap ≤ 0.5 m), on_top_of, in_front_of, behind; at the last frame",
     "bounces":          "{role, n, surface}: n local height minima touching the surface",
-    "spins":            "{role, turns, axis, seconds}: total rotation = turns × 360° (±10%) within seconds (±20%)",
-    "moves":            "{role, direction, min_m}: net displacement in that camera-relative direction ≥ min_m",
+    "spins":            "{role, turns, seconds}: total rotation in the picture plane = turns × 360° (±10%) within seconds (±20%)",
+    "moves":            "{role, direction, min_m}: net displacement left or right on screen ≥ min_m",
     "scale_change":     "{role, from, to}: scale factor at start / end (±10%)",
     "colour_change":    "{role, from, to}: base colour at start / end",
     "light":            "{preset}: the scene light preset",
-    "camera_move":      "{kind, target}: kind ∈ orbit (≥ 90° around target), dolly_in (distance to target falls ≥ 20%), follow (target stays within the middle third), pan",
-    "grounded":         "lowest foot point within ±1 cm of the floor on contact frames, never below it",
-    "no_foot_slide":    "a planted foot moves ≤ max_cm_per_frame",
-    "no_pops":          "no joint speed above max_speed_ratio × that action's median speed at action boundaries",
-    "staging":          "angle between the camera view and the current action's motion plane ≤ max_angle_deg",
+    "camera_move":      "{kind, target}: kind ∈ pan (camera slides ≥ 1 m, same width, target ends in the middle half), zoom_in / zoom_out (visible width falls to ≤ 80% / grows to ≥ 120%), follow (target in the middle third on 90% of frames, camera travels ≥ 1 m)",
+    "grounded":         "the lowest foot point stays within ±1.5 cm of the ground on every frame",
+    "no_foot_slide":    "a toe on the ground moves ≤ max_cm_per_frame (blends between actions excluded)",
+    "no_pops":          "no joint moves more in one frame than max_speed_ratio × the figure's typical busy-frame motion",
     "actions_in_order": "{role, actions}: these actions appear in the figure's timeline in this order (others may be between)",
     "action_duration":  "{role, action, min_s, max_s}: total time spent in that action",
     "speed":            "{role, action, relative}: relative ∈ slow (speed ≤ 0.85), normal, fast (≥ 1.2), from play_action's speed",
-    "reaches":          "{role, target, within_m, facing}: figure stops within_m of the target, optionally facing it",
-    "faces":            "{a, b}: at the last frame a's forward direction points at b (±30°)",
+    "reaches":          "{role, target, within_m, facing}: at the end, the gap across the screen between figure and target ≤ within_m, optionally facing it",
+    "faces":            "{a, b}: at the last frame a faces b (left/right), or faces the camera if b is 'camera'",
     "returns":          "{role, within_m}: figure ends within within_m of where it started, after moving ≥ 1 m away",
     "same_time":        "{roles, action}: the roles perform the action in overlapping time ranges",
-    "no_collision":     "no two roles' bounds overlap on any frame (figures vs props, figures vs figures)",
+    "no_collision":     "no two roles overlap on any checked frame (things in different layers never do)",
+    "no_hover":         "nothing unsupported stays at a constant height for more than 0.25 s",
     "clip_length_s":    "{min, max}: frame range ÷ fps",
     "middle_of_row":    "{role, row}: role is the middle object of that row",
     "distance_end":     "{a, b, min_m, max_m}: distance between a and b at the last frame",
@@ -105,7 +106,7 @@
       "request": "a cube spins around once in 2 seconds",
       "roles": {"cube": {"kind": "cube"}},
       "checks": [
-        {"spins": {"role": "cube", "turns": 1, "axis": "z", "seconds": 2}}
+        {"spins": {"role": "cube", "turns": 1, "seconds": 2}}
       ]
     },
     {
@@ -129,11 +130,15 @@
     },
     {
       "id": "m05", "category": "object_motion",
-      "request": "the camera slowly orbits around a table with a ball on it",
-      "roles": {"table": {"kind": "table"}, "ball": {"kind": "sphere"}},
+      "request": "the camera pans from a tree on the left to a table with a ball on it",
+      "roles": {"tree": {"kind": "tree"}, "table": {"kind": "table"}, "ball": {"kind": "sphere"}},
+      "skip_defaults": ["in_view"],
       "checks": [
+        {"in_view": "tree", "frames": "first"},
+        {"in_view": ["table", "ball"], "frames": "last"},
         {"on_surface": {"role": "ball", "surface": "table"}},
-        {"camera_move": {"kind": "orbit", "target": "table"}}
+        {"relation": {"a": "tree", "rel": "left_of", "b": "table"}},
+        {"camera_move": {"kind": "pan", "target": "table"}}
       ]
     },
 
@@ -270,12 +275,12 @@
     },
     {
       "id": "p03", "category": "figure_props",
-      "request": "she walks around a big box to reach the tree behind it",
+      "request": "she walks to a box, looks down at it, then walks on past it to a tree",
       "roles": {"she": {"kind": "figure"}, "box": {"kind": "box"}, "tree": {"kind": "tree"}},
       "checks": [
-        {"actions_in_order": {"role": "she", "actions": ["walk"]}},
-        {"reaches": {"role": "she", "target": "tree", "within_m": 0.6}},
-        {"no_collision": ["she", "box"]}
+        {"actions_in_order": {"role": "she", "actions": ["walk", "look_down", "walk"]}},
+        {"passes": {"role": "she", "target": "box"}},
+        {"reaches": {"role": "she", "target": "tree", "within_m": 0.6}}
       ]
     },
     {
@@ -311,7 +316,7 @@
 
     {
       "id": "t01", "category": "two_figures_camera",
-      "request": "two stick figures walk toward each other and stop face to face; the camera slowly dollies in",
+      "request": "two stick figures walk toward each other and stop face to face; the camera slowly zooms in",
       "roles": {"a": {"kind": "figure"}, "b": {"kind": "figure"}},
       "checks": [
         {"actions_in_order": {"role": "a", "actions": ["walk"]}},
@@ -319,7 +324,7 @@
         {"faces": {"a": "a", "b": "b"}},
         {"faces": {"a": "b", "b": "a"}},
         {"distance_end": {"a": "a", "b": "b", "min_m": 0.4, "max_m": 1.2}},
-        {"camera_move": {"kind": "dolly_in", "target": "a"}}
+        {"camera_move": {"kind": "zoom_in", "target": "a"}}
       ]
     },
     {

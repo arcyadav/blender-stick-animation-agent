@@ -1,18 +1,25 @@
 """Tools that run inside Blender (bpy). Arguments arrive already validated (schema.py).
 
-Conventions the agent sees (also in the tool descriptions):
-- `location` = [x, y, z] where x, y is the object's centre and z is the height of its BOTTOM,
-  so z = 0 means "standing on the ground". It may also be a placement: {"on_top_of": name}, …
-- rotation in degrees; colours as names, "#rrggbb" or [r, g, b] in 0..1.
-- The default camera looks from -y toward +y, so screen-left is -x and screen-right is +x.
+The world is 2D, seen from the side like a sheet of paper (flat colours, white background, black
+ground line, orthographic camera). Conventions the agent sees (also in the tool descriptions):
+- `location` = [x, z]: x is left/right (screen-left is negative), z is the height of the object's
+  BOTTOM, so z = 0 means "standing on the ground". [x, y, z] is accepted too (y = depth). It may also
+  be a placement: {"on_top_of": name} or {"next_to": name, "side": "left|right", "gap": m}.
+- depth is only a `layer`: "back", "middle" (default) or "front"; front things are drawn over back
+  things and nothing in different layers can collide.
+- `rotation` = degrees in the picture plane, positive = clockwise on screen ([x, y, z] also accepted).
+- colours as names, "#rrggbb" or [r, g, b] in 0..1.
 """
+import json
 import math
 import os
 import time
 
 import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
+
+import motion
 
 
 class ToolError(Exception):
@@ -21,6 +28,7 @@ class ToolError(Exception):
 
 OUT_DIR = "."          # set by worker.py
 _render_count = 0
+FIGURES = {}           # name → motion.Figure (cleared by scene_reset)
 
 COLOURS = {
     "red": (0.8, 0.05, 0.05), "orange": (0.9, 0.35, 0.02), "yellow": (0.95, 0.8, 0.05),
@@ -29,15 +37,12 @@ COLOURS = {
     "grey": (0.4, 0.4, 0.4), "brown": (0.35, 0.18, 0.07),
 }
 COLOURS["gray"] = COLOURS["grey"]
-
-MATERIAL_PRESETS = {
-    "matte":   {"Roughness": 0.9, "Metallic": 0.0},
-    "plastic": {"Roughness": 0.35, "Metallic": 0.0},
-    "metal":   {"Roughness": 0.25, "Metallic": 1.0},
-    "glass":   {"Roughness": 0.0, "Metallic": 0.0, "Transmission Weight": 1.0},
-    "glow":    {"Roughness": 0.5, "Metallic": 0.0, "Emission Strength": 3.0},
-    "wood":    {"Roughness": 0.6, "Metallic": 0.0},
-}
+MATERIAL_PRESETS = ["matte", "plastic", "metal", "glass", "glow", "wood"]   # kept for the agent; flat look
+LAYERS = {"back": 1.0, "middle": 0.0, "front": -1.0}
+BACKGROUNDS = {"day": (1.0, 1.0, 1.0), "studio": (0.93, 0.93, 0.93), "sunset": (1.0, 0.86, 0.72),
+               "night": (0.12, 0.14, 0.26)}
+CAM_Y = -30.0
+ASPECT = 16 / 9
 
 INTERNAL = "p5_internal"     # custom property on helper objects (camera target, ground is NOT internal)
 
@@ -54,6 +59,11 @@ def _obj(name):
 
 def _scene_objects():
     return [o for o in bpy.context.scene.objects if not o.get(INTERNAL)]
+
+
+def _things():
+    """Objects the checks look at: meshes and stick figures, not the ground or the camera."""
+    return [o for o in _scene_objects() if o.type in ("MESH", "CURVE") and o.get("kind") != "ground"]
 
 
 def _rgb(colour):
@@ -73,15 +83,28 @@ def colour_name(rgb):
                key=lambda k: sum((a - b) ** 2 for a, b in zip(COLOURS[k], rgb[:3])))
 
 
+def _points(o):
+    """World-space vertices of o as drawn at the current frame (curves and figures evaluated)."""
+    if o.type == "MESH" and 0 < len(o.data.vertices) <= 20000:
+        mw = o.matrix_world
+        return [mw @ v.co for v in o.data.vertices]
+    if o.type == "CURVE":
+        deps = bpy.context.evaluated_depsgraph_get()
+        eo = o.evaluated_get(deps)
+        me = eo.to_mesh()
+        mw = eo.matrix_world
+        pts = [mw @ v.co for v in me.vertices]
+        eo.to_mesh_clear()
+        if pts:
+            return pts
+    return [o.matrix_world @ Vector(c) for c in o.bound_box]
+
+
 def _world_bounds(o):
     """(min, max) corners of the object's world-space bounding box at the current frame."""
     bpy.context.view_layer.update()
-    if o.type == "MESH" and 0 < len(o.data.vertices) <= 20000:
-        # exact for rotated shapes (a rolling ball's rotated box would poke into the floor)
-        mw = o.matrix_world
-        pts = [mw @ v.co for v in o.data.vertices]
-    else:
-        pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
+    # exact vertices: a rolling ball's rotated box would poke into the floor
+    pts = _points(o)
     lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     return lo, hi
@@ -98,43 +121,45 @@ def _support_top(o):
     return lo.z + o["top_z"] * o.scale.z if "top_z" in o else hi.z
 
 
-SIDES = {"left": Vector((-1, 0, 0)), "right": Vector((1, 0, 0)),
-         "front": Vector((0, -1, 0)), "back": Vector((0, 1, 0))}
+def _xyz(loc, y):
+    """[x, z] → (x, y, z) with the given depth; [x, y, z] passes through."""
+    return Vector((loc[0], y, loc[1])) if len(loc) == 2 else Vector(loc)
 
 
-def _resolve_location(o, loc):
+def _resolve_location(o, loc, y=0.0):
     """Turn a location argument into the target bottom-centre point for object o."""
     if isinstance(loc, (list, tuple)):
-        return Vector(loc)
+        return _xyz(loc, y)
     if "on_top_of" in loc:
         t = _obj(loc["on_top_of"])
+        if t.get("kind") == "figure":
+            raise ToolError("things can't be put on a stick figure")
         lo, hi = _world_bounds(t)
-        dx, dy = loc.get("offset", [0, 0])
-        return Vector(((lo.x + hi.x) / 2 + dx, (lo.y + hi.y) / 2 + dy, _support_top(t)))
-    if "next_to" in loc or "in_front_of" in loc:
-        key = "next_to" if "next_to" in loc else "in_front_of"
-        t = _obj(loc[key])
-        side = SIDES[loc.get("side", "right") if key == "next_to" else "front"]
-        gap = loc.get("gap", 0.2) if key == "next_to" else loc.get("distance", 1.0)
+        off = loc.get("offset", [0])
+        return Vector(((lo.x + hi.x) / 2 + off[0], (lo.y + hi.y) / 2, _support_top(t)))
+    if "next_to" in loc:
+        t = _obj(loc["next_to"])
+        side = -1 if loc.get("side", "right") == "left" else 1
+        gap = loc.get("gap", 0.2)
         tlo, thi = _world_bounds(t)
         olo, ohi = _world_bounds(o)
-        t_half = (thi - tlo) / 2
-        o_half = (ohi - olo) / 2
-        centre = (tlo + thi) / 2
-        reach = abs(side.x) * (t_half.x + o_half.x) + abs(side.y) * (t_half.y + o_half.y) + gap
-        p = centre + side * reach
-        return Vector((p.x, p.y, 0.0))
-    raise ToolError("location must be [x, y, z] or one of {on_top_of}, {next_to, side}, {in_front_of, distance}")
+        half = (ohi.x - olo.x) / 2
+        x = (thi.x + gap + half) if side > 0 else (tlo.x - gap - half)
+        return Vector((x, (tlo.y + thi.y) / 2, 0.0))
+    raise ToolError("location must be [x, z] or one of {on_top_of}, {next_to, side}")
 
 
-def _place(o, loc):
+def _place(o, loc, layer=None):
     """Move o so its bottom-centre lands on the resolved location (respects current rotation/scale)."""
-    target = _resolve_location(o, loc)
+    y = LAYERS[layer] if layer else _bottom_centre(o).y
+    target = _resolve_location(o, loc, y)
+    if layer:
+        target.y = LAYERS[layer]
     o.location += target - _bottom_centre(o)
     bpy.context.view_layer.update()
 
 
-def _normalise(bm, size, keep_floor=False):
+def _normalise(bm, size):
     """Centre the mesh on the origin and scale it so its largest extent is `size`."""
     xs = [v.co.x for v in bm.verts]; ys = [v.co.y for v in bm.verts]; zs = [v.co.z for v in bm.verts]
     c = Vector(((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (min(zs) + max(zs)) / 2))
@@ -161,7 +186,7 @@ def _make_mesh(name, kind, size):
     if kind == "cube":
         bmesh.ops.create_cube(bm, size=1.0)
     elif kind == "sphere":
-        bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=16, radius=0.5)
+        bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=24, radius=0.5)
     elif kind == "cylinder":
         bmesh.ops.create_cone(bm, cap_ends=True, segments=32, radius1=0.5, radius2=0.5, depth=1.0)
     elif kind == "cone":
@@ -170,6 +195,9 @@ def _make_mesh(name, kind, size):
         bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=1.0)
     elif kind == "torus":
         _torus(bm)
+    if kind in ("plane", "torus"):
+        # flat shapes face the camera in a side-view world (a panel, a ring)
+        bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(math.pi / 2, 3, "X"))
     _normalise(bm, size)
     if kind in ("sphere", "torus"):
         for f in bm.faces:
@@ -186,21 +214,12 @@ def _material(o):
     if o.data.materials and o.data.materials[0]:
         return o.data.materials[0]
     m = bpy.data.materials.new(f"{o.name}_mat")
-    m.use_nodes = True
     o.data.materials.append(m)
     return m
 
 
-def _bsdf(m):
-    return m.node_tree.nodes["Principled BSDF"]
-
-
 def _apply_colour(m, rgb):
-    rgba = (*rgb, 1.0)
-    _bsdf(m).inputs["Base Color"].default_value = rgba
-    m.diffuse_color = rgba                      # Workbench check renders use this one
-    if m.get("preset") == "glow":
-        _bsdf(m).inputs["Emission Color"].default_value = rgba
+    m.diffuse_color = (*rgb, 1.0)          # the flat renderer draws this colour
 
 
 def _fcurves(id_data):
@@ -221,9 +240,7 @@ def _fcurves(id_data):
 
 def _prop_fcurves(o, prop):
     if prop == "colour":
-        m = _material(o)
-        curves = _fcurves(m) + _fcurves(m.node_tree)
-        return [fc for fc in curves if "default_value" in fc.data_path or fc.data_path == "diffuse_color"]
+        return [fc for fc in _fcurves(_material(o)) if fc.data_path == "diffuse_color"]
     path = {"location": "location", "rotation": "rotation_euler", "scale": "scale"}[prop]
     return [fc for fc in _fcurves(o) if fc.data_path == path]
 
@@ -232,59 +249,100 @@ def _r(v, n=2):
     return [round(x, n) for x in v]
 
 
-# ---------------------------------------------------------------- tools
+def _rotation(value):
+    """A number = degrees clockwise on screen (about the depth axis); [x, y, z] = Euler degrees."""
+    if isinstance(value, (int, float)):
+        return [0.0, math.radians(value), 0.0]
+    return [math.radians(a) for a in value]
+
+
+def _no_figure(o, what):
+    if o.get("kind") == "figure":
+        raise ToolError(f"'{o.name}' is a stick figure: {what}")
+
+
+def _layer_name(y):
+    return min(LAYERS, key=lambda k: abs(LAYERS[k] - y))
+
+
+# ---------------------------------------------------------------- scene
 
 def scene_reset():
-    """Empty scene with a ground plane, a default camera, day light, 1–72 at 24 fps (3 s)."""
-    for coll in (bpy.data.objects, bpy.data.meshes, bpy.data.materials, bpy.data.lights,
+    """Empty 2D scene: ground line, default camera, white background, frames 1–72 at 24 fps (3 s)."""
+    for coll in (bpy.data.objects, bpy.data.meshes, bpy.data.curves, bpy.data.materials, bpy.data.lights,
                  bpy.data.cameras, bpy.data.actions):
         for block in list(coll):
             coll.remove(block)
+    FIGURES.clear()
     scn = bpy.context.scene
     scn.frame_start, scn.frame_end = 1, 72
     scn.render.fps = 24
     scn.frame_set(1)
-    ground = bpy.data.objects.new("ground", _make_mesh("ground", "plane", 20.0))
+    # the ground: a thin black slab whose top is z = 0, seen edge-on as the ground line
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0, matrix=Matrix.Translation((0, 0, -0.015)) @ Matrix.Diagonal((80, 12, 0.03, 1)))
+    me = bpy.data.meshes.new("ground")
+    bm.to_mesh(me)
+    bm.free()
+    ground = bpy.data.objects.new("ground", me)
     ground["kind"] = "ground"
     scn.collection.objects.link(ground)
-    _apply_colour(_material(ground), (0.55, 0.55, 0.55))
-    _bsdf(_material(ground)).inputs["Roughness"].default_value = 0.9
+    _apply_colour(_material(ground), (0.0, 0.0, 0.0))
 
     target = bpy.data.objects.new("camera_target", None)
     target[INTERNAL] = True
     scn.collection.objects.link(target)
     cam = bpy.data.objects.new("camera", bpy.data.cameras.new("camera"))
     cam["kind"] = "camera"
+    cam.data.type = "ORTHO"
+    cam.data.clip_end = 100
+    cam.rotation_euler = (math.pi / 2, 0, 0)       # looks along +y, up is +z
     scn.collection.objects.link(cam)
     scn.camera = cam
-    set_camera(location=[0, -8, 2.5], look_at=[0, 0, 0.8], focal_length=35)
+    set_camera(look_at=[0, 1.6], width=8)
     add_light(preset="day")
-    return {"message": "empty scene: ground (20 m × 20 m at z = 0), camera at [0, -8, 2.5] looking at "
-                       "[0, 0, 0.8], day light, frames 1–72 at 24 fps"}
+    _flat_look()
+    return {"message": "empty 2D scene: ground line at z = 0, camera centred on [0, 1.6] showing 8 m across, "
+                       "white background, frames 1–72 at 24 fps"}
 
 
-def add_primitive(type, name, location=(0, 0, 0), size=1.0, colour=None, preset=None):
+def _flat_look():
+    scn = bpy.context.scene
+    scn.render.engine = "BLENDER_WORKBENCH"
+    sh = scn.display.shading
+    sh.light, sh.color_type = "FLAT", "MATERIAL"
+    sh.show_shadows = sh.show_cavity = sh.show_specular_highlight = False
+    sh.show_object_outline = True
+    sh.object_outline_color = (0.0, 0.0, 0.0)
+    scn.display.render_aa = "16"
+    scn.view_settings.view_transform = "Standard"
+    scn.view_settings.look = "None"
+
+
+def add_primitive(type, name, location=(0, 0), size=1.0, colour=None, preset=None, layer=None):
     if bpy.data.objects.get(name):
         raise ToolError(f"an object named '{name}' already exists; pick another name or use set_transform")
     o = bpy.data.objects.new(name, _make_mesh(name, type, size))
     o["kind"] = type
     bpy.context.scene.collection.objects.link(o)
-    _place(o, location)
+    _place(o, location, layer)
     set_material(name, colour=colour or "white", preset=preset or "plastic")
-    return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions)}
+    return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions),
+            "layer": _layer_name(o.location.y)}
 
 
-# Props are built from primitives: one flat style with the stick figures, no downloads, and an exact
-# support height (top_z, from the bottom) for things that hold other things.
+# Props are built from primitives in profile (the camera sees their side), with an exact support
+# height (top_z, from the bottom) for things that hold other things.
 # part = (shape, bottom-centre, size, material slot[, top radius ratio for cylinders])
 WOOD, CARDBOARD, LEAF, BARK = (0.45, 0.27, 0.12), (0.5, 0.3, 0.15), (0.15, 0.5, 0.15), (0.3, 0.18, 0.08)
 ASSETS = {
     "table": {"top_z": 0.75, "colours": [WOOD], "parts": [
         ("box", (0, 0, 0.7), (1.2, 0.8, 0.05), 0),
         *[("box", (x, y, 0), (0.06, 0.06, 0.7), 0) for x in (-0.55, 0.55) for y in (-0.35, 0.35)]]},
+    # profile: the back is on the left, so the chair faces right (facing="left" mirrors it)
     "chair": {"top_z": 0.46, "colours": [WOOD], "parts": [
         ("box", (0, 0, 0.42), (0.45, 0.45, 0.04), 0),
-        ("box", (0, 0.205, 0.46), (0.45, 0.04, 0.45), 0),
+        ("box", (-0.205, 0, 0.46), (0.04, 0.45, 0.5), 0),
         *[("box", (x, y, 0), (0.04, 0.04, 0.42), 0) for x in (-0.2, 0.2) for y in (-0.2, 0.2)]]},
     "bench": {"top_z": 0.45, "colours": [WOOD], "parts": [
         ("box", (0, 0, 0.4), (1.5, 0.4, 0.05), 0),
@@ -301,7 +359,6 @@ ASSETS = {
 
 
 def _asset_mesh(name, asset):
-    from mathutils import Matrix
     bm = bmesh.new()
     for part in ASSETS[asset]["parts"]:
         shape, (x, y, z0), (sx, sy, sz), slot = part[:4]
@@ -314,7 +371,7 @@ def _asset_mesh(name, asset):
             bmesh.ops.create_cone(bm, cap_ends=True, segments=24, radius1=0.5, radius2=0.5 * top,
                                   depth=1.0, matrix=m)
         else:
-            bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=12, radius=0.5, matrix=m)
+            bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=24, radius=0.5, matrix=m)
         for f in set(bm.faces) - before:
             f.material_index = slot
             f.smooth = shape == "sphere"
@@ -329,7 +386,7 @@ def _asset_mesh(name, asset):
     return me
 
 
-def add_asset(asset, name, location=(0, 0, 0), scale=1.0, colour=None):
+def add_asset(asset, name, location=(0, 0), scale=1.0, colour=None, layer=None, facing=None):
     if bpy.data.objects.get(name):
         raise ToolError(f"an object named '{name}' already exists; pick another name or use set_transform")
     spec = ASSETS[asset]
@@ -338,43 +395,43 @@ def add_asset(asset, name, location=(0, 0, 0), scale=1.0, colour=None):
     if "top_z" in spec:
         o["top_z"] = spec["top_z"]
     o.scale = [scale] * 3
+    if facing == "left":
+        o.rotation_euler = (0, 0, math.pi)
     bpy.context.scene.collection.objects.link(o)
     for i, rgb in enumerate(spec["colours"]):
         m = bpy.data.materials.new(f"{name}_mat{i}")
-        m.use_nodes = True
         m["preset"] = "matte"
-        _bsdf(m).inputs["Roughness"].default_value = 0.8
         _apply_colour(m, rgb)
         o.data.materials.append(m)
     if colour:
         _apply_colour(o.data.materials[0], _rgb(colour))
-    _place(o, location)
+    _place(o, location, layer)
     return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions),
+            "layer": _layer_name(o.location.y),
             **({"top_height": round(_support_top(o), 2)} if "top_z" in spec else {})}
 
 
-def set_transform(name, location=None, rotation=None, scale=None):
+def set_transform(name, location=None, rotation=None, scale=None, layer=None):
     o = _obj(name)
+    _no_figure(o, "place it with add_stick_figure and move it with play_action")
     standing = _bottom_centre(o)
     if rotation is not None:
-        o.rotation_euler = [math.radians(a) for a in rotation]
+        o.rotation_euler = _rotation(rotation)
     if scale is not None:
         o.scale = [scale] * 3 if isinstance(scale, (int, float)) else scale
     # without a new location, keep the object standing where it was
-    _place(o, location if location is not None else list(standing))
+    _place(o, location if location is not None else list(standing), layer)
     return {"name": name, "bottom_centre": _r(_bottom_centre(o)), "size": _r(o.dimensions),
-            "rotation": _r([math.degrees(a) for a in o.rotation_euler], 1)}
+            "rotation": _r([math.degrees(a) for a in o.rotation_euler], 1), "layer": _layer_name(o.location.y)}
 
 
 def set_material(name, colour="white", preset="plastic"):
     o = _obj(name)
+    if o.get("kind") == "figure":
+        _figure_colour(o, _rgb(colour))
+        return {"name": name, "colour": colour_name(_rgb(colour))}
     m = _material(o)
     m["preset"] = preset
-    b = _bsdf(m)
-    b.inputs["Transmission Weight"].default_value = 0.0
-    b.inputs["Emission Strength"].default_value = 0.0
-    for k, v in MATERIAL_PRESETS[preset].items():
-        b.inputs[k].default_value = v
     if preset == "wood" and colour == "white":
         colour = "brown"
     _apply_colour(m, _rgb(colour))
@@ -382,68 +439,52 @@ def set_material(name, colour="white", preset="plastic"):
 
 
 def add_light(preset="day"):
-    for o in [o for o in bpy.data.objects if o.type == "LIGHT"]:
-        bpy.data.objects.remove(o, do_unlink=True)
+    """In the flat 2D look the 'light' is the background colour: day white, sunset peach, night blue."""
     scn = bpy.context.scene
     world = scn.world or bpy.data.worlds.new("world")
     scn.world = world
-    world.use_nodes = True
-    bg = world.node_tree.nodes["Background"]
-
-    def light(name, kind, energy, colour, location, aim=(0, 0, 0.5)):
-        ld = bpy.data.lights.new(name, kind)
-        ld.energy = energy
-        ld.color = colour
-        o = bpy.data.objects.new(name, ld)
-        o[INTERNAL] = True
-        o.location = location
-        o.rotation_euler = (Vector(aim) - Vector(location)).to_track_quat("-Z", "Y").to_euler()
-        scn.collection.objects.link(o)
-        return o
-
-    if preset == "day":
-        light("sun", "SUN", 4.0, (1.0, 0.97, 0.92), (4, -3, 8))
-        world_col, strength = (0.55, 0.65, 0.8), 0.8
-    elif preset == "studio":
-        light("key", "AREA", 400, (1, 1, 1), (3, -3, 4))
-        light("fill", "AREA", 150, (1, 1, 1), (-4, -2, 2.5))
-        light("rim", "AREA", 250, (1, 1, 1), (0, 4, 3))
-        world_col, strength = (0.3, 0.3, 0.3), 0.5
-    elif preset == "sunset":
-        light("sun", "SUN", 2.5, (1.0, 0.55, 0.3), (-8, 2, 1.5))
-        world_col, strength = (0.9, 0.5, 0.35), 0.5
-    else:  # night
-        light("moon", "SUN", 0.3, (0.6, 0.7, 1.0), (3, 2, 8))
-        light("lamp_light", "POINT", 150, (1.0, 0.8, 0.55), (2, -2, 3))
-        world_col, strength = (0.02, 0.03, 0.08), 1.0
-    bg.inputs["Color"].default_value = (*world_col, 1)
-    bg.inputs["Strength"].default_value = strength
+    world.color = BACKGROUNDS[preset]
     scn["light_preset"] = preset
-    return {"preset": preset}
+    return {"preset": preset, "background": _r(BACKGROUNDS[preset])}
 
 
-def set_camera(location=None, look_at=None, focal_length=None):
-    cam = bpy.context.scene.camera
-    target = bpy.data.objects["camera_target"]
-    if location is not None:
-        # a fixed placement replaces earlier camera moves
-        cam.animation_data_clear()
-        target.animation_data_clear()
-        cam.location = location
-    if focal_length is not None:
-        cam.data.lens = focal_length
-    if look_at is not None:
-        cam.constraints.clear()
-        c = cam.constraints.new("TRACK_TO")
-        c.track_axis, c.up_axis = "TRACK_NEGATIVE_Z", "UP_Y"
-        if isinstance(look_at, str):
-            c.target = _obj(look_at)
-            cam["look_at"] = look_at
-        else:
-            target.location = look_at
-            c.target = target
-            cam["look_at"] = list(look_at)
-    return {"location": _r(cam.location), "look_at": _look_at(cam), "focal_length": cam.data.lens}
+# ---------------------------------------------------------------- camera
+
+def _centre(target):
+    """Centre point (x, z) of an object, a figure or a given [x, z] / [x, y, z]."""
+    if isinstance(target, str):
+        lo, hi = _world_bounds(_obj(target))
+        return Vector(((lo.x + hi.x) / 2, (lo.z + hi.z) / 2))
+    return Vector((target[0], target[-1]))
+
+
+def _cam_put(cam, c, width=None):
+    cam.location = (c.x, CAM_Y, c.y)
+    if width is not None:
+        cam.data.ortho_scale = width
+
+
+def set_camera(look_at=None, width=None):
+    """Centre the view on an object or a point [x, z]; `width` = metres visible across the frame."""
+    scn = bpy.context.scene
+    cam = scn.camera
+    cam.animation_data_clear()
+    cam.data.animation_data_clear()
+    c = _centre(look_at) if look_at is not None else Vector((cam.location.x, cam.location.z))
+    w = width or cam.data.ortho_scale
+    if isinstance(look_at, str):
+        lo, hi = _world_bounds(_obj(look_at))
+        if lo.z < 0.05:
+            # something standing on the ground: keep the ground line in the shot (15% up from the
+            # bottom) unless the object is too tall for that, then fit its top
+            h = w / ASPECT
+            c.y = max(0.35 * h, hi.z + 0.08 * h - 0.5 * h)
+    _cam_put(cam, c, width)
+    cam["look_at"] = look_at if isinstance(look_at, str) else _r(c)
+    w = cam.data.ortho_scale
+    return {"centre": _r(c), "width": round(w, 2), "height": round(w / ASPECT, 2),
+            "shows_x": [round(c.x - w / 2, 2), round(c.x + w / 2, 2)],
+            "shows_z": [round(c.y - w / ASPECT / 2, 2), round(c.y + w / ASPECT / 2, 2)]}
 
 
 def _look_at(cam):
@@ -452,14 +493,8 @@ def _look_at(cam):
 
 
 def _smooth(t):
+    t = min(max(t, 0.0), 1.0)
     return t * t * (3 - 2 * t)
-
-
-def _point(target):
-    if isinstance(target, str):
-        lo, hi = _world_bounds(_obj(target))
-        return (lo + hi) / 2
-    return Vector(target)
 
 
 def _key_linear(id_data, path):
@@ -469,71 +504,75 @@ def _key_linear(id_data, path):
                 k.interpolation = "LINEAR"
 
 
-def camera_move(kind, target=None, start_frame=None, end_frame=None, degrees=90, amount=None):
-    """orbit / dolly_in / dolly_out / follow / pan, eased in and out between start and end frame."""
+def camera_move(kind, target=None, start_frame=None, end_frame=None, amount=None):
+    """pan / zoom_in / zoom_out / follow between start and end frame, eased in and out."""
     scn = bpy.context.scene
     cam = scn.camera
     s = scn.frame_start if start_frame is None else start_frame
     e = scn.frame_end if end_frame is None else end_frame
     if e <= s:
         raise ToolError(f"end_frame ({e}) must be after start_frame ({s})")
-    if target is None:
-        target = cam.get("look_at")
-        target = target if isinstance(target, str) else list(target)
+    if kind == "orbit":
+        raise ToolError("the world is 2D (seen from the side), so the camera can't orbit. "
+                        "Use pan, zoom_in, zoom_out or follow")
     if kind == "follow" and not isinstance(target, str):
         raise ToolError("follow needs the name of the object to follow as target")
     scn.frame_set(s)
-    start = cam.location.copy()
+    c0 = Vector((cam.location.x, cam.location.z))
+    w0 = cam.data.ortho_scale
+    if target is None:
+        target = cam.get("look_at")
+        target = target if isinstance(target, str) else list(target)
 
-    if kind == "pan":
-        old = cam.get("look_at")
-        p0 = _point(old if isinstance(old, str) else list(old))
-        set_camera(look_at=list(p0))
-        tgt = bpy.data.objects["camera_target"]
-        for f, p in ((s, p0), (e, _point(target))):
-            tgt.location = p
-            tgt.keyframe_insert("location", frame=f)
-        cam["look_at"] = target if isinstance(target, str) else list(target)
-    else:
-        set_camera(look_at=target)
-        if kind == "orbit":
-            c = _point(target)
-            rel = start - c
-            r, a0 = math.hypot(rel.x, rel.y), math.atan2(rel.y, rel.x)
-            for f in range(s, e + 1):
-                a = a0 + math.radians(degrees) * _smooth((f - s) / (e - s))
-                cam.location = (c.x + r * math.cos(a), c.y + r * math.sin(a), start.z)
-                cam.keyframe_insert("location", frame=f)
-            _key_linear(cam, "location")
-        elif kind in ("dolly_in", "dolly_out"):
-            c = _point(target)
-            factor = amount or (0.6 if kind == "dolly_in" else 1.5)
-            for f, p in ((s, start), (e, c + (start - c) * factor)):
-                cam.location = p
-                cam.keyframe_insert("location", frame=f)
-        elif kind == "follow":
-            o = _obj(target)
-            offset = start - _bottom_centre(o)
-            for f in range(s, e + 1):
-                scn.frame_set(f)
-                b = _bottom_centre(o)
-                cam.location = (b.x + offset.x, b.y + offset.y, start.z)
-                cam.keyframe_insert("location", frame=f)
-            _key_linear(cam, "location")
+    def key(f, c, w):
+        _cam_put(cam, c, w)
+        cam.keyframe_insert("location", frame=f)
+        cam.data.keyframe_insert("ortho_scale", frame=f)
+
+    if kind in ("pan", "zoom_in", "zoom_out"):
+        c1 = _centre(target)
+        if kind == "pan":
+            w1 = w0
+            c1 = Vector((c1.x, c0.y))                    # slide sideways, keep the ground line still
+        else:
+            factor = amount or (0.6 if kind == "zoom_in" else 1.5)
+            w1 = w0 * factor
+            # zoom toward the target but keep the ground at the same place in the frame
+            ground_frac = (0 - (c0.y - w0 / ASPECT / 2)) / (w0 / ASPECT)
+            c1 = Vector((c1.x, w1 / ASPECT * (0.5 - ground_frac)))
+        for f in range(s, e + 1):
+            t = _smooth((f - s) / (e - s))
+            key(f, c0.lerp(c1, t), w0 + (w1 - w0) * t)
+    else:  # follow: keep the target's centre where it is on screen, smoothed (no walk-bob jitter)
+        o = _obj(target)
+        xs = {}
+        for f in range(s, e + 1):
+            scn.frame_set(f)
+            xs[f] = _centre(o.name).x
+        off = c0.x - xs[s]
+        for f in range(s, e + 1):
+            win = [xs[g] for g in range(max(s, f - 6), min(e, f + 6) + 1)]
+            key(f, Vector((sum(win) / len(win) + off, c0.y)), w0)
+    _key_linear(cam, "location")
+    _key_linear(cam.data, "ortho_scale")
+    cam["look_at"] = target if isinstance(target, str) else list(target)
     scn.frame_set(s)
     return {"kind": kind, "target": target if isinstance(target, str) else _r(target),
-            "frames": [s, e], "camera_start": _r(start)}
+            "frames": [s, e], "start_centre": _r(c0), "start_width": round(w0, 2)}
 
+
+# ---------------------------------------------------------------- keyframes
 
 def keyframe(name, property, frame, value):
     o = _obj(name)
+    _no_figure(o, "figures are animated with play_action")
     scn = bpy.context.scene
     scn.frame_set(frame)
     if property == "location":
         _place(o, value)
         o.keyframe_insert("location", frame=frame)
     elif property == "rotation":
-        o.rotation_euler = [math.radians(a) for a in value]
+        o.rotation_euler = _rotation(value)
         o.keyframe_insert("rotation_euler", frame=frame)
     elif property == "scale":
         o.scale = [value] * 3 if isinstance(value, (int, float)) else value
@@ -541,7 +580,6 @@ def keyframe(name, property, frame, value):
     elif property == "colour":
         m = _material(o)
         _apply_colour(m, _rgb(value))
-        _bsdf(m).inputs["Base Color"].keyframe_insert("default_value", frame=frame)
         m.keyframe_insert("diffuse_color", frame=frame)
     if frame > scn.frame_end:
         scn.frame_end = frame
@@ -559,6 +597,7 @@ EASINGS = {
 def set_easing(name, property, interpolation, from_frame=None, to_frame=None):
     """'gravity': each falling segment speeds up (ease in), each rising one slows down (ease out)."""
     o = _obj(name)
+    _no_figure(o, "play_action already eases a figure's motion")
     curves = _prop_fcurves(o, property)
     if not curves:
         raise ToolError(f"'{name}' has no {property} keyframes yet; add them with keyframe first")
@@ -592,6 +631,195 @@ def set_frames(start, end, fps=24):
     return {"start": start, "end": end, "fps": fps, "seconds": round((end - start + 1) / fps, 2)}
 
 
+# ---------------------------------------------------------------- stick figures
+#
+# A figure is one curve object: thick lines for the limbs and a filled disc for the head (a very
+# short tube seen end-on). Its points are keyframed every frame from motion.Figure, which plays the
+# motion library. Limbs on the far side sit slightly behind and are drawn a little lighter.
+
+CHAINS = [("body", ["pelvis", "chest", "neck"]),
+          ("l", ["@shoulders", "l_shoulder", "l_elbow", "l_wrist"]),
+          ("r", ["@shoulders", "r_shoulder", "r_elbow", "r_wrist"]),
+          ("l", ["pelvis", "l_hip", "l_knee", "l_ankle", "l_toe"]),
+          ("r", ["pelvis", "r_hip", "r_knee", "r_ankle", "r_toe"])]
+SLOT = {"body": 0, "l": 1, "r": 2}
+HEAD_R = 0.5 * motion.HEAD              # head radius in leg units (the head bone is its diameter)
+
+
+def _far_tone(rgb):
+    """The far side's tone: lighter for dark figures, darker for light ones."""
+    lum = sum(rgb) / 3
+    return tuple(c + (1 - c) * 0.5 for c in rgb) if lum < 0.5 else tuple(c * 0.6 for c in rgb)
+
+
+def _point_positions(pose):
+    """Curve point positions for one world pose: chains, then the head (two points in depth)."""
+    sh = tuple((a + b) / 2 for a, b in zip(pose["l_shoulder"], pose["r_shoulder"]))
+    sh = (sh[0], pose["chest"][1], sh[2])
+    out = []
+    for _, chain in CHAINS:
+        out.append([sh if j == "@shoulders" else pose[j] for j in chain])
+    nk, top = pose["neck"], pose["head_top"]
+    c = ((nk[0] + top[0]) / 2, nk[1], (nk[2] + top[2]) / 2)
+    out.append([(c[0], c[1] - 0.01, c[2]), (c[0], c[1] + 0.01, c[2])])
+    return out
+
+
+def _build_figure_object(name, fig, rgb):
+    cu = bpy.data.curves.new(name, "CURVE")
+    cu.dimensions = "3D"
+    cu.bevel_depth = fig.r
+    cu.bevel_resolution = 8
+    cu.use_fill_caps = True
+    for i, part in enumerate(["body", "l", "r"]):
+        m = bpy.data.materials.new(f"{name}_{part}")
+        cu.materials.append(m)
+    pts = _point_positions(fig.poses[min(fig.poses)])
+    for k, chain in enumerate(pts):
+        sp = cu.splines.new("POLY")
+        sp.points.add(len(chain) - 1)
+        if k < len(CHAINS):
+            sp.material_index = SLOT[CHAINS[k][0]]
+        else:                                   # head
+            sp.material_index = 0
+            for p in sp.points:
+                p.radius = HEAD_R * fig.L / fig.r
+    o = bpy.data.objects.new(name, cu)
+    o["kind"] = "figure"
+    bpy.context.scene.collection.objects.link(o)
+    _figure_colour(o, rgb)
+    return o
+
+
+def _figure_colour(o, rgb):
+    o["colour"] = list(rgb)
+    for m in o.data.materials:
+        m.animation_data_clear()
+        _apply_colour(m, rgb)
+    _key_figure(o)
+
+
+def _key_figure(o):
+    """Write the figure's whole timeline into keyframes (points every frame, side tones per facing)."""
+    fig = FIGURES[o.name]
+    cu = o.data
+    cu.animation_data_clear()
+    scn = bpy.context.scene
+    frames = fig.frames(max(scn.frame_end, fig.end))
+    fs = sorted(frames)
+    per_frame = {f: _point_positions(frames[f]) for f in fs}
+    for k, sp in enumerate(cu.splines):
+        for j, p in enumerate(sp.points):
+            x, y, z = per_frame[fs[0]][k][j]
+            p.co = (x, y, z, 1.0)
+            p.keyframe_insert("co", frame=fs[0])
+    curves = {}
+    for fc in _fcurves(cu):
+        curves[(fc.data_path, fc.array_index)] = fc
+    for k, sp in enumerate(cu.splines):
+        for j, p in enumerate(sp.points):
+            for a in range(3):
+                fc = curves.get((f"splines[{k}].points[{j}].co", a))
+                if fc is None:
+                    continue
+                fc.keyframe_points.add(len(fs) - 1)
+                co = []
+                for f in fs:
+                    co += [f, per_frame[f][k][j][a]]
+                fc.keyframe_points.foreach_set("co", co)
+                for kp in fc.keyframe_points:
+                    kp.interpolation = "LINEAR"
+                fc.update()
+    # far-side tone follows the facing: facing right shows the left side far away, and vice versa
+    rgb = tuple(o["colour"])
+    far = _far_tone(rgb)
+    mats = {"l": cu.materials[1], "r": cu.materials[2]}
+    for m in mats.values():
+        m.animation_data_clear()
+    last = None
+    for f in fs:
+        facing = fig.local[f][2] if f in fig.local else last
+        if facing == last:
+            continue
+        for side, m in mats.items():
+            is_far = (facing == "right" and side == "l") or (facing == "left" and side == "r")
+            m.diffuse_color = (*(far if is_far else rgb), 1.0)
+            m.keyframe_insert("diffuse_color", frame=f)
+        last = facing
+    for m in mats.values():
+        for fc in _fcurves(m):
+            for kp in fc.keyframe_points:
+                kp.interpolation = "CONSTANT"
+
+
+def add_stick_figure(name, location=(0, 0), colour="black", facing="front", height=1.7, layer=None):
+    if bpy.data.objects.get(name):
+        raise ToolError(f"an object named '{name}' already exists; pick another name")
+    y = LAYERS[layer or "middle"]
+    if isinstance(location, dict):
+        if "on_top_of" in location:
+            raise ToolError("stick figures stand on the ground; use [x, 0] or {\"next_to\": name}")
+        t = _obj(location["next_to"])
+        lo, hi = _world_bounds(t)
+        gap = location.get("gap", 0.3) + 0.25 * height / 1.7
+        x = hi.x + gap if location.get("side", "right") == "right" else lo.x - gap
+    else:
+        if len(location) >= 2 and abs(location[-1]) > 0.01:
+            raise ToolError("stick figures stand on the ground: the height (z) must be 0")
+        x = location[0]
+        if len(location) == 3:
+            y = location[1] if layer is None else y
+    fig = motion.Figure(name, x, y, height=height, facing=facing, start=bpy.context.scene.frame_start)
+    FIGURES[name] = fig
+    _build_figure_object(name, fig, _rgb(colour))
+    lo, hi = fig.bounds_x()
+    return {"name": name, "x": round(x, 2), "facing": facing, "height": height, "layer": _layer_name(y),
+            "width": round(hi - lo, 2),
+            "actions": motion.ACTIONS}
+
+
+def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=None, distance=None,
+                direction=None, speed=1.0):
+    o = _obj(name)
+    if o.get("kind") != "figure":
+        raise ToolError(f"'{name}' is not a stick figure (add one with add_stick_figure)")
+    fig = FIGURES[name]
+    scn = bpy.context.scene
+    to_x = None
+    if to is not None:
+        if action not in motion.WALKS:
+            raise ToolError(f"'to' only works with walks ({', '.join(motion.WALKS)})")
+        if isinstance(to, str):
+            t = _obj(to)
+            if t.name == name:
+                raise ToolError("a figure can't walk to itself")
+            if to in FIGURES:
+                lo, hi = FIGURES[to].bounds_x()
+            else:
+                b = _world_bounds(t)
+                lo, hi = b[0].x, b[1].x
+            before = [f for f in fig.poses if start_frame is None or f < start_frame]
+            here = fig.pelvis_x(max(before) if before else min(fig.poses))
+            # stop beside it: a hand's width from a prop, a conversation's distance from a figure
+            gap = (0.45 if to in FIGURES else 0.15) + 0.5 * fig.L
+            to_x = lo - gap if (lo + hi) / 2 >= here else hi + gap
+        else:
+            to_x = float(to)
+    try:
+        res = fig.play(action, start=start_frame, cycles=cycles, seconds=seconds, to_x=to_x, distance=distance,
+                       direction=direction, speed=speed, fps=scn.render.fps)
+    except ValueError as e:
+        raise ToolError(str(e))
+    if fig.end + 12 > scn.frame_end:
+        scn.frame_end = fig.end + 12            # a short hold after the last action
+        res["clip_end_frame"] = scn.frame_end
+    for other in FIGURES:                        # other figures hold their last pose to the new end
+        _key_figure(bpy.data.objects[other])
+    return res
+
+
+# ---------------------------------------------------------------- state and rendering
+
 def _anim_summary(o):
     out = {}
     for prop in ("location", "rotation", "scale", "colour"):
@@ -611,16 +839,22 @@ def scene_state():
     scn.frame_set(scn.frame_start)
     objs = []
     for o in _scene_objects():
-        if o.type != "MESH":
+        if o.type not in ("MESH", "CURVE"):
             continue
         entry = {"name": o.name, "kind": o.get("kind", "mesh")}
-        if o.get("kind") != "ground":
+        if o.get("kind") == "figure":
+            fig = FIGURES[o.name]
+            entry.update({"colour": colour_name(o["colour"]), "x_at_start": round(fig.pelvis_x(min(fig.poses)), 2),
+                          "x_at_end": round(fig.pelvis_x(fig.end), 2), "facing_at_end": fig.facing,
+                          "layer": _layer_name(fig.y),
+                          "actions": [{k: g[k] for k in ("action", "start", "end", "facing")} for g in fig.segments]})
+        elif o.get("kind") != "ground":
             m = o.data.materials[0] if o.data.materials else None
             if m:
                 entry["colour"] = colour_name(m.diffuse_color)
-                entry["preset"] = m.get("preset")
             entry["bottom_centre"] = _r(_bottom_centre(o))
             entry["size"] = _r(o.dimensions)
+            entry["layer"] = _layer_name(o.location.y)
             if any(abs(a) > 1e-4 for a in o.rotation_euler):
                 entry["rotation"] = _r([math.degrees(a) for a in o.rotation_euler], 1)
             anim = _anim_summary(o)
@@ -628,38 +862,34 @@ def scene_state():
                 entry["keyframes"] = anim
         objs.append(entry)
     cam = scn.camera
+    w = cam.data.ortho_scale
+    keys = sorted({int(k.co.x) for fc in _fcurves(cam) + _fcurves(cam.data) for k in fc.keyframe_points})
     state = {
         "frames": {"start": scn.frame_start, "end": scn.frame_end, "fps": scn.render.fps,
                    "seconds": round((scn.frame_end - scn.frame_start + 1) / scn.render.fps, 2)},
         "objects": objs,
-        "camera": {"location": _r(cam.location), "look_at": _look_at(cam), "focal_length": cam.data.lens,
-                   **({"moves_between_frames": [min(keys), max(keys)]}
-                      if (keys := [int(k.co.x) for fc in _fcurves(cam) for k in fc.keyframe_points]) else {})},
-        "light": scn.get("light_preset"),
-        "note": "bottom_centre = [x, y, height of the object's bottom] at the first frame",
+        "camera": {"centre": [round(cam.location.x, 2), round(cam.location.z, 2)], "width": round(w, 2),
+                   "shows_x": [round(cam.location.x - w / 2, 2), round(cam.location.x + w / 2, 2)],
+                   **({"moves_between_frames": [keys[0], keys[-1]]} if keys else {})},
+        "background": scn.get("light_preset"),
+        "note": "bottom_centre = [x, depth, height of the object's bottom] at the first frame; "
+                "the camera looks from the front, screen-left is -x",
     }
     scn.frame_set(cur)
     return state
 
 
-def _render_settings(engine, w, h):
+def _render_settings(w, h):
     r = bpy.context.scene.render
     r.resolution_x, r.resolution_y, r.resolution_percentage = w, h, 100
-    if engine == "workbench":
-        r.engine = "BLENDER_WORKBENCH"
-        sh = bpy.context.scene.display.shading
-        sh.light, sh.color_type, sh.show_shadows = "STUDIO", "MATERIAL", True
-    else:
-        ids = {e.identifier for e in r.bl_rna.properties["engine"].enum_items}
-        r.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in ids else "BLENDER_EEVEE"
-        bpy.context.scene.eevee.taa_render_samples = 16
+    _flat_look()
 
 
 def render_check(frames):
     global _render_count
     _render_count += 1
     scn = bpy.context.scene
-    _render_settings("workbench", 960, 540)
+    _render_settings(960, 540)
     scn.render.image_settings.file_format = "PNG"
     paths = []
     for f in frames:
@@ -670,9 +900,9 @@ def render_check(frames):
     return {"images": paths}
 
 
-def render_final(engine="eevee", filename="final.mp4"):
+def render_final(filename="final.mp4"):
     scn = bpy.context.scene
-    _render_settings(engine, 1280, 720)
+    _render_settings(1280, 720)
     scn.render.image_settings.file_format = "FFMPEG"
     scn.render.ffmpeg.format, scn.render.ffmpeg.codec = "MPEG4", "H264"
     scn.render.ffmpeg.constant_rate_factor = "HIGH"
@@ -680,33 +910,46 @@ def render_final(engine="eevee", filename="final.mp4"):
     scn.render.use_file_extension = False
     t = time.time()
     bpy.ops.render.render(animation=True)
-    return {"video": scn.render.filepath, "engine": scn.render.engine, "seconds": round(time.time() - t, 1)}
+    return {"video": scn.render.filepath, "seconds": round(time.time() - t, 1)}
 
 
-def _visible_fraction(o, cam_pos, deps):
+def _eval_mesh(o, deps):
+    """(world vertices, [(world centre, world normal)] per face) of o as drawn now."""
+    eo = o.evaluated_get(deps)
+    me = eo.to_mesh()
+    mw = eo.matrix_world
+    nm = mw.to_3x3().inverted_safe().transposed()
+    verts = [mw @ v.co for v in me.vertices]
+    faces = [(mw @ p.center, (nm @ p.normal).normalized(), [verts[i] for i in p.vertices]) for p in me.polygons]
+    polys = [tuple(p.vertices) for p in me.polygons]
+    eo.to_mesh_clear()
+    return verts, faces, polys
+
+
+def _visible_fraction(o, cam, deps):
     """Share of up to 12 points on o's camera-facing faces that the camera can see (nothing else in
     between). Points are face centres nudged 2 mm outward, so faces resting on the ground or a
-    table don't count as hidden, and sparse shapes (a table's legs) are sampled where they are.
+    table don't count as hidden. The camera is orthographic: every ray runs along its view axis.
     None if o has no size or no face toward the camera."""
     lo, hi = _world_bounds(o)
     if (hi - lo).length < 1e-3:
         return None
-    mw = o.matrix_world
-    nm = mw.to_3x3().inverted_safe().transposed()
+    fwd = (cam.matrix_world.to_quaternion() @ Vector((0, 0, -1))).normalized()
+    _, faces, _ = _eval_mesh(o, deps)
     pts = []
-    for poly in o.data.polygons:
-        c = mw @ poly.center
-        n = (nm @ poly.normal).normalized()
-        if n.z > -0.5 and n.dot(cam_pos - c) > 0:
-            pts.append(c + n * 0.002)
+    for c, n, vs in faces:
+        if n.z > -0.5 and n.dot(-fwd) > 0:
+            # the face centre and points part-way to its corners, so a big face isn't judged by one point
+            pts += [p + n * 0.002 for p in [c] + [c + (v - c) * 0.7 for v in vs]]
     if not pts:
         return None
-    pts = pts[::max(1, len(pts) // 12)][:12]
+    pts = pts[::max(1, len(pts) // 24)][:24]
     seen = 0
+    cam_pos = cam.matrix_world.translation
     for p in pts:
-        d = p - cam_pos
-        ok, _loc, _n, _i, hit, _m = bpy.context.scene.ray_cast(deps, cam_pos, d.normalized(),
-                                                               distance=d.length - 0.001)
+        origin = p - fwd * ((p - cam_pos).dot(fwd))
+        dist = (p - origin).length
+        ok, _loc, _n, _i, hit, _m = bpy.context.scene.ray_cast(deps, origin, fwd, distance=max(dist - 0.001, 0))
         seen += (not ok) or (hit is not None and hit.original.name == o.name)
     return seen / len(pts)
 
@@ -714,17 +957,11 @@ def _visible_fraction(o, cam_pos, deps):
 def _world_bvh(o, deps):
     """BVH of o in world space, shrunk 1 cm per side so resting contact doesn't count as a collision."""
     from mathutils.bvhtree import BVHTree
-    eo = o.evaluated_get(deps)
-    me = eo.to_mesh()
+    verts, _, polys = _eval_mesh(o, deps)
     lo, hi = _world_bounds(o)
     c, d = (lo + hi) / 2, hi - lo
     s = Vector([max(0.0, 1 - 0.02 / x) if x > 0 else 1.0 for x in d])
-    verts = []
-    for v in me.vertices:
-        p = o.matrix_world @ v.co - c
-        verts.append(c + Vector((p.x * s.x, p.y * s.y, p.z * s.z)))
-    polys = [tuple(p.vertices) for p in me.polygons]
-    eo.to_mesh_clear()
+    verts = [c + Vector(((v - c).x * s.x, (v - c).y * s.y, (v - c).z * s.z)) for v in verts]
     return BVHTree.FromPolygons(verts, polys)
 
 
@@ -733,11 +970,17 @@ def sample_scene(vis_step=6):
     from bpy_extras.object_utils import world_to_camera_view
     scn = bpy.context.scene
     cam = scn.camera
-    objs = [o for o in _scene_objects() if o.type == "MESH" and o.get("kind") != "ground"]
+    objs = _things()
     out = {"start": scn.frame_start, "end": scn.frame_end, "fps": scn.render.fps,
            "light": scn.get("light_preset"), "frames": [], "camera": [], "collisions": [],
            "objects": {o.name: {"kind": o.get("kind", "mesh"),
-                                "top_z": o.get("top_z"), "frames": []} for o in objs}}
+                                "top_z": o.get("top_z"), "frames": []} for o in objs},
+           "figures": {}}
+    tracks = {}
+    for name, fig in FIGURES.items():
+        out["figures"][name] = {"segments": fig.segments, "radius": fig.r, "leg": round(fig.L, 4),
+                                "joints": {j: [] for j in motion.JOINTS}}
+        tracks[name] = fig.frames(scn.frame_end)
     for f in range(scn.frame_start, scn.frame_end + 1):
         scn.frame_set(f)
         deps = bpy.context.evaluated_depsgraph_get()
@@ -746,22 +989,32 @@ def sample_scene(vis_step=6):
         q = cam.matrix_world.to_quaternion()
         cam_pos = cam.matrix_world.translation.copy()
         out["camera"].append({"loc": _r(cam_pos, 3), "fwd": _r(q @ Vector((0, 0, -1)), 3),
-                              "right": _r(q @ Vector((1, 0, 0)), 3)})
+                              "right": _r(q @ Vector((1, 0, 0)), 3), "width": round(cam.data.ortho_scale, 3)})
+        boxes = {}
         for o in objs:
             lo, hi = _world_bounds(o)
-            sc = [world_to_camera_view(scn, cam, o.matrix_world @ Vector(c)) for c in o.bound_box]
-            m = o.data.materials[0] if o.data.materials else None
+            boxes[o.name] = (lo, hi)
+            corners = [Vector((x, y, z)) for x in (lo.x, hi.x) for y in (lo.y, hi.y) for z in (lo.z, hi.z)]
+            sc = [world_to_camera_view(scn, cam, c) for c in corners]
+            if o.get("kind") == "figure":
+                colour = list(o["colour"])
+            else:
+                m = o.data.materials[0] if o.data.materials else None
+                colour = list(m.diffuse_color[:3]) if m else None
             e = {"lo": _r(lo, 3), "hi": _r(hi, 3),
                  "rot": _r([math.degrees(a) for a in o.rotation_euler], 1), "scale": _r(o.scale, 3),
-                 "colour": _r(m.diffuse_color[:3], 3) if m else None,
+                 "colour": _r(colour, 3) if colour else None,
                  "screen": _r([min(p.x for p in sc), min(p.y for p in sc), max(p.x for p in sc),
                                max(p.y for p in sc)], 3),
                  "in_front": all(p.z > 0 for p in sc)}
             if key:
-                e["visible"] = _visible_fraction(o, cam_pos, deps)
+                e["visible"] = _visible_fraction(o, cam, deps)
             out["objects"][o.name]["frames"].append(e)
+        for name, track in tracks.items():
+            pose = track.get(f) or track[min(track)]
+            for j in motion.JOINTS:
+                out["figures"][name]["joints"][j].append(list(pose[j]))
         if key:
-            boxes = {o.name: _world_bounds(o) for o in objs}
             pairs = [(a, b) for i, a in enumerate(objs) for b in objs[i + 1:]
                      if all(boxes[a.name][0][k] < boxes[b.name][1][k] - 0.01 and
                             boxes[b.name][0][k] < boxes[a.name][1][k] - 0.01 for k in range(3))]
@@ -795,5 +1048,5 @@ def save_blend(filename="scene.blend"):
 
 TOOLS = {f.__name__: f for f in (
     scene_reset, scene_state, add_primitive, add_asset, set_transform, set_material, add_light, set_camera,
-    camera_move, keyframe, set_easing, set_frames, render_check, render_final, sample_scene, set_output,
-    save_blend)}
+    camera_move, keyframe, set_easing, set_frames, add_stick_figure, play_action, render_check, render_final,
+    sample_scene, set_output, save_blend)}

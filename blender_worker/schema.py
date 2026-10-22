@@ -7,7 +7,9 @@ valid-tool-call rate in the evaluation still sees them.
 import copy
 
 COLOUR_NAMES = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "white", "black", "grey", "brown"]
+ACTIONS = ["walk", "walk_happy", "walk_sad", "walk_worried", "wave", "idle", "look_down", "react"]
 
+VEC2 = {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}
 VEC3 = {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
 COLOUR = {"oneOf": [{"type": "string"}, VEC3],
           "description": f"a name ({', '.join(COLOUR_NAMES)}), '#rrggbb' or [r, g, b] in 0..1"}
@@ -15,21 +17,24 @@ PLACEMENT = {
     "type": "object",
     "properties": {
         "on_top_of": {"type": "string"},
-        "offset": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "offset": {"type": "array", "items": {"type": "number"}, "minItems": 1, "maxItems": 1},
         "next_to": {"type": "string"},
-        "side": {"type": "string", "enum": ["left", "right", "front", "back"]},
+        "side": {"type": "string", "enum": ["left", "right"]},
         "gap": {"type": "number", "minimum": 0},
-        "in_front_of": {"type": "string"},
-        "distance": {"type": "number", "minimum": 0},
     },
-    "oneOf_keys": ["on_top_of", "next_to", "in_front_of"],
+    "oneOf_keys": ["on_top_of", "next_to"],
 }
 LOCATION = {
-    "oneOf": [VEC3, PLACEMENT],
-    "description": "[x, y, z] with z = height of the object's BOTTOM (0 = on the ground), or a placement: "
-                   "{\"on_top_of\": name}, {\"next_to\": name, \"side\": \"left|right|front|back\"}, "
-                   "{\"in_front_of\": name, \"distance\": metres}. Screen-left is -x, screen-right is +x.",
+    "oneOf": [VEC2, VEC3, PLACEMENT],
+    "description": "[x, z]: x = left/right (screen-left is negative), z = height of the object's BOTTOM "
+                   "(0 = on the ground); or a placement: {\"on_top_of\": name}, "
+                   "{\"next_to\": name, \"side\": \"left|right\", \"gap\": metres}",
 }
+LAYER = {"type": "string", "enum": ["back", "middle", "front"],
+         "description": "depth layer (default middle): front is drawn over back; different layers never collide"}
+ROTATION = {"oneOf": [{"type": "number"}, VEC3],
+            "description": "degrees in the picture plane, positive = clockwise on screen"}
+TARGET = {"oneOf": [{"type": "string"}, VEC2, VEC3], "description": "an object's name or a point [x, z]"}
 
 
 def _tool(name, description, props=None, required=()):
@@ -39,54 +44,57 @@ def _tool(name, description, props=None, required=()):
 
 
 TOOLS = [
-    _tool("scene_reset", "Start an empty scene: ground at z = 0, default camera, day light, frames 1-72 at 24 fps."),
-    _tool("scene_state", "Describe the current scene: objects (kind, colour, bottom_centre, size, keyframes), "
-                         "camera, light and frame range."),
+    _tool("scene_reset", "Start an empty 2D scene (seen from the side, like paper): ground line at z = 0, "
+                         "camera centred on [0, 1.6] showing 8 m across, white background, frames 1-72 at 24 fps."),
+    _tool("scene_state", "Describe the current scene: objects (kind, colour, bottom_centre, size, layer, "
+                         "keyframes), stick figures (actions, start/end x, facing), camera and frame range."),
     _tool("add_primitive", "Add a basic shape. It rests at `location` (bottom of the shape at z).",
           {"type": {"type": "string", "enum": ["cube", "sphere", "cylinder", "plane", "cone", "torus"]},
            "name": {"type": "string", "description": "unique name, e.g. 'ball'"},
            "location": LOCATION,
            "size": {"type": "number", "minimum": 0.01, "maximum": 20, "description": "largest dimension in metres"},
-           "colour": COLOUR,
+           "colour": COLOUR, "layer": LAYER,
            "preset": {"type": "string", "enum": ["matte", "plastic", "metal", "glass", "glow", "wood"]}},
           ["type", "name"]),
-    _tool("add_asset", "Add a ready-made prop. Tables, chairs, benches and boxes can hold things "
-                       "({\"on_top_of\": name}). Sizes: table 1.2×0.8×0.75 m, chair seat 0.46 m high, "
-                       "bench 1.5 m long, box 0.5 m, lamp 0.46 m (a table lamp), tree 3 m.",
+    _tool("add_asset", "Add a ready-made prop, drawn in profile. Tables, chairs, benches and boxes can hold "
+                       "things ({\"on_top_of\": name}). Sizes: table 1.2 m wide x 0.75 m high, chair seat 0.46 m "
+                       "high, bench 1.5 m long, box 0.5 m, lamp 0.46 m (a table lamp), tree 2.7 m. "
+                       "Put things a figure walks past in the back layer.",
           {"asset": {"type": "string", "enum": ["table", "chair", "bench", "box", "lamp", "tree"]},
-           "name": {"type": "string"}, "location": LOCATION,
-           "scale": {"type": "number", "minimum": 0.1, "maximum": 10}, "colour": COLOUR},
+           "name": {"type": "string"}, "location": LOCATION, "layer": LAYER,
+           "scale": {"type": "number", "minimum": 0.1, "maximum": 10}, "colour": COLOUR,
+           "facing": {"type": "string", "enum": ["left", "right"], "description": "which way a chair faces"}},
           ["asset", "name"]),
-    _tool("set_transform", "Move, rotate (degrees) or scale an existing object.",
-          {"name": {"type": "string"}, "location": LOCATION,
-           "rotation": dict(VEC3, description="[x, y, z] in degrees"),
+    _tool("set_transform", "Move, rotate or scale an existing object (not a stick figure).",
+          {"name": {"type": "string"}, "location": LOCATION, "rotation": ROTATION, "layer": LAYER,
            "scale": {"oneOf": [{"type": "number", "minimum": 0}, VEC3]}},
           ["name"]),
-    _tool("set_material", "Set an object's colour and surface preset.",
+    _tool("set_material", "Set an object's (or a stick figure's) colour.",
           {"name": {"type": "string"}, "colour": COLOUR,
            "preset": {"type": "string", "enum": ["matte", "plastic", "metal", "glass", "glow", "wood"]}},
           ["name"]),
-    _tool("add_light", "Replace the lighting with a preset.",
+    _tool("add_light", "Set the mood of the background: day (white), studio (light grey), sunset (peach), "
+                       "night (dark blue).",
           {"preset": {"type": "string", "enum": ["day", "studio", "sunset", "night"]}}, ["preset"]),
-    _tool("set_camera", "Place the camera and aim it at an object (by name) or a point [x, y, z].",
-          {"location": VEC3, "look_at": {"oneOf": [{"type": "string"}, VEC3]},
-           "focal_length": {"type": "number", "minimum": 10, "maximum": 200, "description": "mm, default 35"}}),
-    _tool("camera_move", "Animate the camera between two frames (eased in and out). orbit: circle around "
-                         "the target by `degrees`; dolly_in / dolly_out: move toward / away from the target "
-                         "(`amount` = distance factor, default 0.6 / 1.5); follow: keep the same offset from a "
-                         "moving object; pan: turn to look from the current point to the target.",
-          {"kind": {"type": "string", "enum": ["orbit", "dolly_in", "dolly_out", "follow", "pan"]},
-           "target": {"oneOf": [{"type": "string"}, VEC3]},
+    _tool("set_camera", "Frame the shot: centre on an object or a point [x, z], and choose how many metres "
+                        "are visible across (height = width x 9/16).",
+          {"look_at": TARGET,
+           "width": {"type": "number", "minimum": 1, "maximum": 60, "description": "metres across, default 8"}}),
+    _tool("camera_move", "Animate the camera between two frames (eased in and out). pan: slide sideways to "
+                         "the target; zoom_in / zoom_out: show less / more around the target (`amount` = width "
+                         "factor, default 0.6 / 1.5); follow: keep a moving object (e.g. a walking figure) in the "
+                         "same place on screen.",
+          {"kind": {"type": "string", "enum": ["pan", "zoom_in", "zoom_out", "follow"]},
+           "target": TARGET,
            "start_frame": {"type": "integer", "minimum": 0}, "end_frame": {"type": "integer", "minimum": 1},
-           "degrees": {"type": "number", "minimum": -720, "maximum": 720},
            "amount": {"type": "number", "minimum": 0.1, "maximum": 5}},
           ["kind"]),
-    _tool("keyframe", "Set a property of an object at a frame and record a keyframe. Between keyframes "
-                      "Blender interpolates smoothly.",
+    _tool("keyframe", "Set a property of an object (not a stick figure) at a frame and record a keyframe. "
+                      "Between keyframes Blender interpolates smoothly.",
           {"name": {"type": "string"},
            "property": {"type": "string", "enum": ["location", "rotation", "scale", "colour"]},
            "frame": {"type": "integer", "minimum": 0, "maximum": 2000},
-           "value": {"description": "location: like `location` of add_primitive; rotation: [x, y, z] degrees; "
+           "value": {"description": "location: like `location` of add_primitive; rotation: degrees clockwise; "
                                     "scale: number or [x, y, z]; colour: like `colour`"}},
           ["name", "property", "frame", "value"]),
     _tool("set_easing", "Choose how a property moves between its keyframes. 'gravity' is for bounces, "
@@ -101,6 +109,29 @@ TOOLS = [
           {"start": {"type": "integer", "minimum": 0}, "end": {"type": "integer", "minimum": 1, "maximum": 2000},
            "fps": {"type": "integer", "minimum": 1, "maximum": 60}},
           ["start", "end"]),
+    _tool("add_stick_figure", "Add a stick figure (1.7 m tall) standing on the ground. facing: 'front' "
+                              "(toward the camera), 'left' or 'right'.",
+          {"name": {"type": "string"},
+           "location": {"oneOf": [VEC2, VEC3, PLACEMENT],
+                        "description": "[x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"},
+           "colour": COLOUR, "facing": {"type": "string", "enum": ["front", "left", "right"]},
+           "height": {"type": "number", "minimum": 0.5, "maximum": 3}, "layer": LAYER},
+          ["name"]),
+    _tool("play_action", "Make a stick figure perform an action from the motion library, after its previous "
+                         "action (or from start_frame), blending smoothly. Walks: walk, walk_happy, walk_sad, "
+                         "walk_worried; give `to` (an object's name: stops beside it; or an x position), "
+                         "`distance` (m), `seconds` or `cycles`, and `direction` (left/right). Others: wave "
+                         "(at the camera), idle (stands, breathing), look_down, react (a sudden fright). "
+                         "speed: 1 = normal, 0.7 = slow, 1.4 = fast. Waves and idles face the camera.",
+          {"name": {"type": "string"}, "action": {"type": "string", "enum": ACTIONS},
+           "start_frame": {"type": "integer", "minimum": 0},
+           "to": {"oneOf": [{"type": "string"}, {"type": "number"}]},
+           "distance": {"type": "number", "minimum": 0.1, "maximum": 50},
+           "seconds": {"type": "number", "minimum": 0.2, "maximum": 60},
+           "cycles": {"type": "number", "minimum": 0.5, "maximum": 30},
+           "direction": {"type": "string", "enum": ["left", "right"]},
+           "speed": {"type": "number", "minimum": 0.3, "maximum": 3}},
+          ["name", "action"]),
     _tool("render_check", "Render quick preview images of some frames and return the check report.",
           {"frames": {"type": "array", "items": {"type": "integer"}, "minItems": 1, "maxItems": 8}},
           ["frames"]),
@@ -109,7 +140,7 @@ TOOLS = [
 BY_NAME = {t["function"]["name"]: t["function"] for t in TOOLS}
 
 # values for keyframe.value, chosen by keyframe.property
-KEYFRAME_VALUE = {"location": LOCATION, "rotation": VEC3,
+KEYFRAME_VALUE = {"location": LOCATION, "rotation": ROTATION,
                   "scale": {"oneOf": [{"type": "number", "minimum": 0}, VEC3]}, "colour": COLOUR}
 
 

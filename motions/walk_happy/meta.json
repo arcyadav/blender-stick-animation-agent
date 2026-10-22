@@ -1,0 +1,15 @@
+{
+  "action": "walk_happy",
+  "view": "side",
+  "fps": 24,
+  "frames": 32,
+  "loop": true,
+  "source": "code keyframes",
+  "stride_per_cycle": 1.233,
+  "cycle_frames": 32,
+  "bounce": 0.049,
+  "contact_frames": {
+    "l": 20,
+    "r": 20
+  }
+}

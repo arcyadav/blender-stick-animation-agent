@@ -28,7 +28,13 @@ def main():
 
     rejects("add_primitive", {"type": "pyramid", "name": "p"}, "must be one of")
     rejects("add_primitive", {"name": "p"}, "missing required argument 'type'")
-    rejects("add_primitive", {"type": "cube", "name": "p", "location": [0, 0]}, "z = height")
+    rejects("add_primitive", {"type": "cube", "name": "p", "location": [0]}, "height of the object")
+    clean, _ = validate("add_primitive", {"type": "cube", "name": "p", "location": [1.5, 0]})
+    assert clean["location"] == [1.5, 0]
+    validate("play_action", {"name": "man", "action": "walk", "to": "table"})
+    rejects("play_action", {"name": "man", "action": "dance"}, "must be one of")
+    rejects("camera_move", {"kind": "orbit"}, "must be one of")
+    validate("keyframe", {"name": "b", "property": "rotation", "frame": 1, "value": 90})
     rejects("add_primitive", {"type": "cube", "name": "p", "location": {"on_top_of": "t", "next_to": "u"}},
             "exactly one")
     rejects("teleport", {}, "unknown tool")

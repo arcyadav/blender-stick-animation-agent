@@ -1,5 +1,6 @@
 """The checker must FAIL broken scenes, naming the right check.  python -m tests.test_checker"""
 import json
+import sys
 
 import config
 from blender_worker.client import BlenderWorker
@@ -20,7 +21,7 @@ def bounce(w, n):
         w.call("keyframe", name="ball", property="location", frame=f, value=[0, 0, 0.6])
     w.call("keyframe", name="ball", property="location", frame=f + 10, value=[0, 0, 0])
     w.call("set_frames", start=1, end=f + 20)
-    w.call("set_camera", location=[0, -6, 1.5], look_at=[0, 0, 0.7])
+    w.call("set_camera", look_at=[0, 1.2], width=6)
 
 
 def table_and_ball(w, ball_loc):
@@ -40,25 +41,58 @@ CASES = [
     ("bounces three times (control)", "m01", lambda w: bounce(w, 3), None),
     ("blue cube at the end of the row", "s01", lambda w: row(w, ["blue", "white", "white"]), "middle_of_row"),
     ("ball floating above the table", "s02", lambda w: table_and_ball(w, [0, 0, 1.1]), "on_surface"),
-    ("ball out of view", "m01", lambda w: (bounce(w, 3), w.call("set_camera", location=[8, -6, 1.5],
-                                                                  look_at=[8, 0, 0.7])), "in_view"),
+    ("ball out of view", "m01", lambda w: (bounce(w, 3), w.call("set_camera", look_at=[8, 1.2])), "in_view"),
     ("ball hidden behind a wall", "m01", lambda w: (bounce(w, 3), w.call(
-        "add_primitive", type="cube", name="wall", location=[0, -2.5, 0], size=3)), "not_hidden"),
+        "add_primitive", type="cube", name="wall", location=[0, 0], size=3, layer="front")), "not_hidden"),
     ("half a turn instead of one", "m02", lambda w: (
-        w.call("add_primitive", type="cube", name="cube", location=[0, 0, 0]),
-        w.call("keyframe", name="cube", property="rotation", frame=1, value=[0, 0, 0]),
-        w.call("keyframe", name="cube", property="rotation", frame=48, value=[0, 0, 180])), "spins"),
+        w.call("add_primitive", type="cube", name="cube", location=[0, 0]),
+        w.call("keyframe", name="cube", property="rotation", frame=1, value=0),
+        w.call("keyframe", name="cube", property="rotation", frame=48, value=180)), "spins"),
     ("ball goes through the table", "s02", lambda w: (
         table_and_ball(w, {"on_top_of": "table"}),
-        w.call("keyframe", name="ball", property="location", frame=1, value=[-1.5, 0, 0.6]),
-        w.call("keyframe", name="ball", property="location", frame=40, value=[1.5, 0, 0.6])), "no_collision"),
-    ("orbit of only 45°", "m05", lambda w: (
+        w.call("keyframe", name="ball", property="location", frame=1, value=[-1.5, 0.6]),
+        w.call("keyframe", name="ball", property="location", frame=40, value=[1.5, 0.6])), "no_collision"),
+    ("ball hangs in the air past the table edge", "m03", lambda w: (
+        w.call("add_asset", asset="table", name="table", location=[0, 0]),
+        w.call("add_primitive", type="sphere", name="ball", location={"on_top_of": "table"}, size=0.25,
+               colour="yellow"),
+        w.call("keyframe", name="ball", property="location", frame=1, value={"on_top_of": "table"}),
+        w.call("keyframe", name="ball", property="location", frame=30, value=[1.2, 0.75]),
+        w.call("keyframe", name="ball", property="location", frame=50, value=[1.2, 0.75]),
+        w.call("keyframe", name="ball", property="location", frame=60, value=[1.4, 0])), "no_hover"),
+    ("pan that doesn't move", "m05", lambda w: (
         table_and_ball(w, {"on_top_of": "table"}),
-        w.call("camera_move", kind="orbit", target="table", degrees=45)), "camera_move"),
+        w.call("add_asset", asset="tree", name="tree", location=[-3, 0], layer="back"),
+        w.call("camera_move", kind="pan", target="table", start_frame=1, end_frame=40)), "camera_move"),
+    ("figure walks the wrong way", "f01", lambda w: (
+        w.call("add_stick_figure", name="man", location=[1, 0]),
+        w.call("play_action", name="man", action="walk", seconds=4, direction="left"),
+        w.call("set_camera", look_at=[-1, 1.5], width=9)), "moves"),
+    ("figure walks right for 4 s (control)", "f01", lambda w: (
+        w.call("add_stick_figure", name="man", location=[-3, 0]),
+        w.call("play_action", name="man", action="walk", seconds=4, direction="right"),
+        w.call("set_camera", look_at=[-0.2, 1.5], width=9)), None),
+    ("waves, then walks (wrong order)", "q01", lambda w: (
+        w.call("add_stick_figure", name="man", location=[-2.5, 0]),
+        w.call("play_action", name="man", action="wave"),
+        w.call("play_action", name="man", action="walk", to=0)), "actions_in_order"),
+    ("figure walks through the table", "p01", lambda w: (
+        w.call("add_asset", asset="table", name="table", location=[0.5, 0]),
+        w.call("add_stick_figure", name="man", location=[-2.5, 0]),
+        w.call("play_action", name="man", action="walk", to=3.0),
+        w.call("play_action", name="man", action="wave"),
+        w.call("set_camera", look_at=[0.3, 1.5], width=9)), "no_collision"),
+    ("figure stops far from the table", "p01", lambda w: (
+        w.call("add_asset", asset="table", name="table", location=[2.5, 0]),
+        w.call("add_stick_figure", name="man", location=[-3, 0]),
+        w.call("play_action", name="man", action="walk", to=-0.5),
+        w.call("play_action", name="man", action="wave"),
+        w.call("set_camera", look_at=[0, 1.5], width=9)), "reaches"),
 ]
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")
     failures = []
     with BlenderWorker(config.OUTPUTS / "test_checker") as w:
         for name, tid, build, must_fail in CASES:

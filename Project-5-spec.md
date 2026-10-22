@@ -91,6 +91,23 @@ Check renders 960×540, final 1280×720, 24 fps, MP4 via the built-in FFmpeg.
 | qwen2.5:3b tool calling | ✅ 3 schema-valid calls in 23 s (CPU) for "red ball on the table, stick man walks to the table". It used the `on_top_of` helper correctly but **forgot to add the table** and **put the figure 1.5 m in the air**: exactly the failures the checks + fix loop target |
 | Python / FFmpeg | 3.11.9 / FFmpeg 8.0 (Blender has its own FFmpeg too) |
 
+### 3.6 Decision: a 2D world (22 Oct 2026)
+After seeing the first renders, the look was changed from "3D toy" to **a proper 2D world**: flat colours,
+a plain white background, a black ground line and thin outlines, seen from the side through an
+**orthographic** camera (no perspective, like paper). Blender is still the engine underneath.
+- **Why:** stick figures are a 2D art form (the Animator's Survival Kit exercises are flat drawings), and
+  the P3 motions are 2D anyway. In 3D a flat figure looks wrong when the camera moves round it; in 2D
+  the "staging" problem disappears by construction.
+- **What changes for the agent:** positions are `[x, z]` (left/right, height of the bottom); depth is only a
+  **layer** (`back` / `middle` / `front`) that decides what is drawn over what, and things in different
+  layers never collide (so props a figure walks past go in the back layer). Rotation is one angle in the
+  picture plane. The camera pans, zooms and follows; it can't orbit.
+- **Render:** Workbench, flat lighting, object outlines, Standard view transform. A 12 s clip renders in
+  about 11 s on the laptop, so EEVEE is no longer needed.
+- **Tasks changed:** m02 spins in the picture plane; m05 is now a pan (tree → table) instead of an orbit;
+  t01 zooms instead of dollying; p03 became "walks to a box, looks down at it, walks on past it to a tree".
+  The `staging` default check was dropped (always true in 2D) and a `no_hover` default was added.
+
 ### 3.4 Limits to know
 - `bpy.ops` often needs a UI context; in background mode use `bpy.data`.
 - The API changes between versions (e.g. the EEVEE engine id differs across 4.x and 5.x). Pin one version.
@@ -153,6 +170,15 @@ and keeps the constraint. One mechanism, no conflict. A new fixed `set_camera(lo
 - Validation runs outside Blender (`blender_worker/schema.py`) and names the wrong field, e.g.
   *"unknown field 'colour'. Hint: 'colour' is a separate argument of this tool"*.
 
+**As built (Day 2, 2D):** `location` is `[x, z]` (`[x, y, z]` still accepted), plus `layer`; placements are
+`on_top_of` and `next_to` (left/right); `set_camera(look_at, width)` frames an object or point with a width
+in metres (centring on an object keeps the ground line in shot); `camera_move` ∈ {pan, zoom_in, zoom_out,
+follow} (follow is smoothed so the walk's bob doesn't shake the shot); `add_light` sets the background
+mood; `add_asset` has `facing` (the chair is drawn in profile). New tools: `add_stick_figure(name, location,
+colour, facing ∈ front/left/right, height, layer)` and `play_action(name, action, start_frame, to | distance
+| seconds | cycles, direction, speed)`. `keyframe` / `set_transform` / `set_easing` refuse figures ("use
+play_action"), so the agent can't break a figure's foot contact by hand.
+
 Stretch tools: `pose` (name, joint, angle, frame: custom gestures), new actions (`jump`, `sit`, `run`),
 3D armature version of the stick figure, `image_plane` (P3 character parts as a 2.5D cut-out).
 
@@ -177,6 +203,31 @@ Stretch tools: `pose` (name, joint, angle, frame: custom gestures), new actions 
   - frame rates are resampled to the scene fps (e.g. `wave` was recorded at ~29.8 fps)
 - **Known limit:** the motions are 2D, so a figure looks flat when seen along its motion plane. Handled by the
   staging check (§4.4) and sensible camera defaults; a true 3D armature is a stretch goal.
+
+**As built (Day 2, 22 Oct), in the 2D world** (`blender_worker/motion.py`, pure Python, + `tools.py`):
+- **Drawing:** one Blender **curve** object per figure: thick round lines for spine, arms and legs, and a
+  filled disc for the head (a very short tube seen end-on). Its points are keyframed every frame. Limbs on
+  the far side sit slightly behind and are drawn in a lighter tone (an animator's convention), switching
+  sides when the figure turns.
+- **Library:** the four P3 walks (joint tracks) and the P3 **wave from my own video**; `idle`, `look_down`
+  and `react` are keyed in code, exaggerated for a stick figure (P3's front-view versions were tuned for a
+  drawn character and are too subtle as lines). The video wave's forearm swing (~±10°) is amplified ×2.2
+  around its running mean and the upper arm lifts while the hand is up (exaggeration principle).
+  Keyed actions use spline (Catmull-Rom, clamped) interpolation like an F-curve, not ease-in/out per key.
+- **Feet:** the P3 tracks turn the foot about the ankle while the heel lifts, so the toe slid ~1.5 cm/frame.
+  Toes are now pinned while on the ground (the foot pivots on the toe) and the pin fades out over 5 frames
+  after lift-off. Every walk at speeds 0.6–1.6 has planted feet moving ≤ 0.26 cm/frame.
+- **`to` targets:** the number of steps is rounded and the stride stretched slightly (×0.85–1.15) so the
+  figure lands exactly; it stops a hand's width from a prop, a conversation's distance from a figure.
+- **Settle:** a walk ends on a contact pose (feet apart); the figure then steps up: front foot planted, back
+  foot lifts and comes alongside, body rises (0.4 s). Knees are interpolated there, not re-solved, because IK
+  on a nearly straight leg snaps.
+- **Blends:** each action starts where the feet are. The crossfade length grows with how far joints must
+  travel (eased blend over B frames peaks at 6·d/B² acceleration, kept ≤ ~3 cm/frame², 6–17 frames); a
+  facing change is an 8+ frame turn; non-walk actions hold their first pose until the turn is done
+  (a fright that starts mid-turn reads as a glitch).
+- **Grounding:** every frame the lowest foot point is put on the ground, so `grounded` fails only if the
+  agent/tooling misplaces a figure.
 
 ### 4.4 Self-check (the agent's critic)
 **Scene checks** (exact, from scene data):
@@ -203,6 +254,27 @@ and top, not through the gap between them). Collisions = BVH overlap with each m
 contact doesn't count. Roles are bound to objects by kind + colour, trying every assignment and keeping the best.
 `tests/test_checker.py` builds 9 deliberately broken scenes; each fails exactly the expected check.
 Known gap: an object moving sideways in mid-air ("hovering") isn't caught yet.
+
+**As built (Day 2):** `no_hover` (anything unsupported at a constant height for > 0.25 s) closes that gap.
+Visibility uses parallel rays for the orthographic camera and up to 24 points per object (face centres
+and points toward their corners), so a stick leg crossing a box doesn't count as hiding it. `next_to` and
+`distance_end` measure across the screen only. Figure checks (`checks/figure_checks.py`) read the joint
+tracks and action timeline from `sample_scene`:
+- `grounded` (±1.5 cm every frame), `no_foot_slide` (a toe within 4 mm of the ground moves ≤ 0.5 cm/frame;
+  blend frames excluded, the settle step is not), `no_pops` (a joint's acceleration ≤ 3× the
+  acceleration two frames either side, ignoring < 5 cm/frame², so a teleport or jump fails but an eased
+  flinch passes; this caught three real bugs: the toe-pin release, too-short blends, a fright inside a turn)
+- `actions_in_order`, `action_duration`, `speed`, `reaches` (+facing), `faces` (incl. the camera),
+  `returns`, `same_time`, `start_near`, `passes`.
+Tests: `tests/test_checker.py` (15 broken/control scenes in Blender) and `tests/test_figure_checks.py`
+(no Blender: library motion passes; moonwalk, teleporting arm and floating figure fail).
+A task can list `skip_defaults` (m05: a pan reveals the table, so it checks the tree in view at the
+start and the table at the end instead of "in view most of the time").
+
+**A0 status (22 Oct):** 29/30. The one failure (f04) is honest: it walks the sad figure slowly across the
+whole screen and the clip runs 20.6 s (> 20 s). Caveat: A0's rules were written while looking at these 30
+requests, so its score is an optimistic upper bound for templates; a few reworded held-out requests
+would show how brittle it is.
 
 **Visual check (optional):** a small local VLM via Ollama (e.g. `qwen2.5vl:3b`) answers 3–5 yes/no questions
 on the check renders. One vote, never the only check (as in Project 3).
