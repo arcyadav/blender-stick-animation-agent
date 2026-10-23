@@ -24,8 +24,10 @@ SYSTEM = """You direct a short 2D animation in Blender by calling tools. The sce
 The world is 2D, seen from the side like paper:
 - positions are [x, z]: x = left/right (screen-left is negative, about -4 to 4 is on screen), z = height of the object's BOTTOM (0 = standing on the ground). Or use a placement: {"on_top_of": "table"}, {"next_to": "table", "side": "left"}.
 - props (table, chair, bench, box, lamp, tree) come from add_asset; shapes (ball = sphere, cube, cone, ...) from add_primitive. Depth is only a layer: "back", "middle" (default) or "front".
-- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look_down, react, handshake, pick_up, put_down). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at; pick_up `to` = a small object (walk to it first); put_down `to` = a surface or the ground. Figures are animated only with play_action. Put props a figure walks past in the back layer.
+- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look_down, react, sigh, handshake, pick_up, put_down). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at; pick_up `to` = a small object (walk to it first); put_down `to` = a surface or the ground. Figures are animated only with play_action. Put props a figure walks past in the back layer.
 - moving objects: keyframe (location, rotation, scale, colour) at frames, then set_easing (gravity for bounces and falls), and set_frames to cover the motion.
+- a figure that "walks in" or "comes in" starts just off-screen (beyond the camera's shows_x) and walks into view.
+- small props read better a little bigger than life (a phone about 0.3 m, a cup 0.25 m), like cartoons.
 - camera: set_camera(look_at, width) frames the shot; camera_move does pan / zoom_in / zoom_out / follow.
 
 Make the objects, animate them, then frame the camera so everything is in view. When the scene is finished, reply with a short summary and no tool call."""
@@ -79,11 +81,12 @@ class LLMAgent:
     def __init__(self, model, name, max_steps=40, fix_rounds=3):
         self.model, self.name, self.max_steps, self.fix_rounds = model, name, max_steps, fix_rounds
 
-    def run(self, request, w, log=None, check=None, task_id=None):
+    def run(self, request, w, log=None, check=None, task_id=None, reset=True):
         """check(): → (passed, report_text); called when the model says it is done."""
         stats = {"tool_calls": 0, "invalid": 0, "tool_errors": 0, "warnings": 0, "rounds": [],
                  "llm_seconds": 0.0, "steps": 0, "stopped": None}
-        w.call("scene_reset")
+        if reset:
+            w.call("scene_reset")
         messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": request}]
         for rnd in range(self.fix_rounds + 1):
             self._loop(messages, w, log, stats)

@@ -10,6 +10,7 @@ ground line, orthographic camera). Conventions the agent sees (also in the tool 
 - `rotation` = degrees in the picture plane, positive = clockwise on screen ([x, y, z] also accepted).
 - colours as names, "#rrggbb" or [r, g, b] in 0..1.
 """
+import copy
 import json
 import math
 import os
@@ -575,17 +576,20 @@ def camera_move(kind, target=None, start_frame=None, end_frame=None, amount=None
 
 # ---------------------------------------------------------------- keyframes
 
-def _not_held(o):
+def _not_held(o, frame):
+    """Keyframes before an object is first picked up are fine; from then on a hand moves it."""
     for f in FIGURES.values():
-        if any(h["obj"] == o.name for h in f.holds):
-            raise ToolError(f"'{o.name}' is picked up by '{f.name}': it moves with the hand (use put_down)")
+        for h in f.holds:
+            if h["obj"] == o.name and frame >= h["from"] - 1:
+                raise ToolError(f"'{o.name}' is picked up by '{f.name}' at frame {h['from']}: from then on it "
+                                "moves with the hand (key it before that, or use put_down)")
 
 
 def keyframe(name, property, frame, value):
     o = _obj(name)
     _no_figure(o, "figures are animated with play_action")
-    if property == "location":
-        _not_held(o)
+    if property in ("location", "rotation"):
+        _not_held(o, frame)
     scn = bpy.context.scene
     scn.frame_set(frame)
     if property == "location":
@@ -788,8 +792,8 @@ def _key_figure(o):
         for fc in _fcurves(m):
             for kp in fc.keyframe_points:
                 kp.interpolation = "CONSTANT"
-    for h in fig.holds:
-        _key_carried(fig, h, frames)
+    for obj in {h["obj"] for h in fig.holds}:
+        _key_object_path(obj)
 
 
 def _hand(pose):
@@ -797,36 +801,68 @@ def _hand(pose):
     return pose["r_wrist"]
 
 
-def _key_carried(fig, h, frames):
-    """An object in a figure's hand: at home until the grab, at the hand while carried (drawn just in
-    front of it), where it was put after the release."""
-    o = bpy.data.objects.get(h["obj"])
-    if o is None or "home" not in h:
+def _key_object_path(name):
+    """Everything that happens to an object passed around by figures, in order: its own animation
+    up to the first grab (a ball bouncing in is kept), then in a hand (drawn just in front of it),
+    put somewhere, picked up again..."""
+    o = bpy.data.objects.get(name)
+    holds = sorted((h for f in FIGURES.values() for h in f.holds if h["obj"] == name and "home" in h),
+                   key=lambda h: h["from"])
+    if o is None or not holds:
         return
-    for fc in [fc for fc in _fcurves(o) if fc.data_path == "location"]:
-        o.animation_data.action.fcurves.remove(fc)
-    off = Vector(h["offset"])
-    end = h["to"] if h["to"] is not None else max(frames)
-    keys = []
-    if h["from"] - 1 >= min(frames):
-        keys.append((h["from"] - 1, Vector(h["home"])))
-    for f in range(h["from"], end + 1):
-        x, y, z = _hand(frames[f])
-        keys.append((f, Vector((x, y - 0.08, z)) + off))
-    if h["to"] is not None and h.get("rest"):
-        r = Vector(h["rest"]) + Vector((off.x, 0, off.z))
-        keys.append((h["to"] + 1, Vector((r.x, h["home"][1], r.z))))
-    for f, loc in keys:
-        o.location = loc
+    first = holds[0]["from"] - 1
+    for fc in [fc for fc in _fcurves(o) if fc.data_path in ("location", "rotation_euler")]:
+        for kp in [kp for kp in fc.keyframe_points if kp.co.x >= first][::-1]:
+            fc.keyframe_points.remove(kp)
+        if not len(fc.keyframe_points):
+            o.animation_data.action.fcurves.remove(fc)
+    scn = bpy.context.scene
+    off = Vector(holds[0]["offset"])
+    pos = Vector(holds[0]["home"]) - off                     # the object's centre and tilt
+    rot = holds[0].get("home_rot", 0.0)
+    keys = []                                               # (frame, centre, rotation°, constant?)
+    for h in holds:
+        fig = FIGURES[next(f for f in FIGURES if h in FIGURES[f].holds)]
+        frames = fig.frames(scn.frame_end)
+        if h["from"] - 1 >= scn.frame_start:
+            keys.append((h["from"] - 1, pos.copy(), rot, False))
+        end = h["to"] if h["to"] is not None else max(frames)
+        for f in range(h["from"], end + 1):
+            x, y, z = _hand(frames[f])
+            keys.append((f, Vector((x, y - 0.08, z)), rot, False))
+        if h["to"] is None:
+            break
+        if h.get("rest"):
+            pos = Vector((h["rest"][0], h["home"][1], h["rest"][2]))
+            keys.append((h["to"] + 1, pos.copy(), rot, False))
+    for f, c, r, _ in keys:
+        o.location = c + off
+        o.rotation_euler = (0.0, math.radians(r), 0.0)
         o.keyframe_insert("location", frame=f)
-    _key_linear(o, "location")
-    for fc in _fcurves(o):
-        if fc.data_path == "location":
-            for kp in fc.keyframe_points[-1:]:
-                kp.interpolation = "CONSTANT"
+        o.keyframe_insert("rotation_euler", frame=f)
+    for fc in _fcurves(o):                                  # only our keys go linear
+        if fc.data_path in ("location", "rotation_euler"):
+            for kp in fc.keyframe_points:
+                if kp.co.x >= first:
+                    kp.interpolation = "LINEAR"
 
 
-def add_stick_figure(name=None, location=(0, 0), colour="black", facing="front", height=1.7, layer=None):
+def _overlap(name):
+    """Another figure in the same layer standing where `name` ends up (pelvises < 0.4 m apart)."""
+    fig = FIGURES[name]
+    x = fig.pelvis_x(fig.end)
+    for other, of in FIGURES.items():
+        if other == name or abs(of.y - fig.y) > 0.5:
+            continue
+        frames = [f for f in of.poses if f <= fig.end]
+        ox = of.pelvis_x(max(frames) if frames else min(of.poses))
+        if abs(ox - x) < 0.4:
+            return other, x, ox
+    return None
+
+
+def add_stick_figure(name=None, location=(0, 0), colour="black", facing="front", height=1.7, layer=None,
+                     holding=None, carry="front"):
     name = name or _default_name("figure")
     if bpy.data.objects.get(name):
         raise ToolError(f"an object named '{name}' already exists; pick another name")
@@ -846,6 +882,13 @@ def add_stick_figure(name=None, location=(0, 0), colour="black", facing="front",
             y = location[1] if layer is None else y
     fig = motion.Figure(name, x, y, height=height, facing=facing, start=bpy.context.scene.frame_start)
     FIGURES[name] = fig
+    if holding:
+        t = _obj(holding)
+        _no_figure(t, "a figure can't hold another figure")
+        fig.start_holding(holding, carry)
+        lo, hi = _world_bounds(t)
+        fig.holds[-1]["home"] = list(t.location)
+        fig.holds[-1]["offset"] = list(t.location - (lo + hi) / 2)
     _build_figure_object(name, fig, _rgb(colour))
     lo, hi = fig.bounds_x()
     return {"name": name, "x": round(x, 2), "facing": facing, "height": height, "layer": _layer_name(y),
@@ -854,7 +897,7 @@ def add_stick_figure(name=None, location=(0, 0), colour="black", facing="front",
 
 
 def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=None, distance=None,
-                direction=None, speed=1.0):
+                direction=None, speed=1.0, carry="front"):
     o = _obj(name)
     if o.get("kind") != "figure":
         raise ToolError(f"'{name}' is not a stick figure (add one with add_stick_figure)")
@@ -870,6 +913,7 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
             raise ToolError(f"'{to}' is too big to pick up; small things (shapes, a box, a lamp) can be")
         if any(h["obj"] == to and h["to"] is None for f in FIGURES.values() for h in f.holds):
             raise ToolError(f"someone is already holding '{to}'")
+        scn.frame_set(start_frame if start_frame is not None else fig.end + 1)
         lo, hi = _world_bounds(t)
         obj, obj_at = to, ((lo.x + hi.x) / 2, (lo.z + hi.z) / 2)
     elif action == "put_down":
@@ -906,6 +950,14 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
             look_at = ((lo.x + hi.x) / 2, (lo.z + hi.z) / 2)
         else:
             look_at = (float(to), 0.0)
+    elif to is not None and action in ("react", "sigh"):
+        # face what caused it (side-view actions): turn toward that object
+        t = _obj(to)
+        lo, hi = (FIGURES[to].bounds_x() if to in FIGURES else (lambda b: (b[0].x, b[1].x))(_world_bounds(t)))
+        before = [f for f in fig.poses if start_frame is None or f < start_frame]
+        here = fig._feet_x(fig.poses[max(before) if before else min(fig.poses)])
+        if direction is None:
+            direction = "right" if (lo + hi) / 2 > here else "left"
     elif to is not None and action not in ("pick_up", "put_down"):
         if action not in motion.TRAVELS:
             raise ToolError(f"'to' works with walks, run ({', '.join(motion.TRAVELS)}) and look_down")
@@ -922,21 +974,42 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
             here = fig.pelvis_x(max(before) if before else min(fig.poses))
             small = t.get("kind") not in ASSETS or t.get("kind") in ("box", "lamp")
             gap = (0.45 + 0.5 * fig.L if to in FIGURES       # a conversation's distance
-                   else 0.12 + 0.25 * fig.L if small         # within arm's reach of a small thing
+                   else 0.08 + 0.3 * fig.L if small          # just in front, within reach (crouching)
                    else 0.15 + 0.5 * fig.L)                  # a hand's width from a big prop
             to_x = lo - gap if (lo + hi) / 2 >= here else hi + gap
         else:
             to_x = float(to)
+    kw = dict(direction=direction, speed=speed, fps=scn.render.fps, look_at=look_at, partner_x=partner_x,
+              obj=obj, obj_at=obj_at, carry=carry)
+    stepped = None
+    before_state = copy.deepcopy(fig.__dict__)        # to undo an action that ends inside someone
     try:
-        res = fig.play(action, start=start_frame, cycles=cycles, seconds=seconds, to_x=to_x, distance=distance,
-                       direction=direction, speed=speed, fps=scn.render.fps, look_at=look_at,
-                       partner_x=partner_x, obj=obj, obj_at=obj_at)
+        res = fig.play(action, start=start_frame, cycles=cycles, seconds=seconds, to_x=to_x, distance=distance, **kw)
     except ValueError as e:
-        raise ToolError(str(e))
+        # just out of reach (within a couple of steps): step up to it first, as anyone would
+        feet = fig._feet_x(fig.poses[fig.end]) if start_frame is None else None
+        if "out of reach" not in str(e) or feet is None or abs(obj_at[0] - feet) > 2.5:
+            raise ToolError(str(e))
+        sign = 1 if obj_at[0] > feet else -1
+        try:
+            stepped = fig.play("walk", to_x=obj_at[0] - sign * 0.42, fps=scn.render.fps)
+            res = fig.play(action, **kw)
+        except ValueError as e2:
+            raise ToolError(str(e2))
+        res["stepped_closer"] = stepped["frames"]
+    clash = _overlap(name)
+    if clash:
+        fig.__dict__.clear()
+        fig.__dict__.update(before_state)
+        other, x, ox = clash
+        raise ToolError(f"that would end with '{name}' standing inside '{other}' (x {x:.2f} vs {ox:.2f}, same layer); "
+                        f"nothing was changed. Stop further away, move '{other}' first, or use another layer")
     if action == "pick_up":
         o_obj = _obj(obj)
+        scn.frame_set(max(fig.holds[-1]["from"] - 1, scn.frame_start))
         lo, hi = _world_bounds(o_obj)
         fig.holds[-1]["home"] = list(o_obj.location)
+        fig.holds[-1]["home_rot"] = math.degrees(o_obj.rotation_euler.y)
         # where the origin sits relative to the object's centre (carried by its centre)
         fig.holds[-1]["offset"] = list(o_obj.location - (lo + hi) / 2)
         res["holding"] = obj
@@ -944,11 +1017,13 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
         h = fig.holds[-1]
         h["rest"] = [rest[0], h["home"][1], rest[1]]
         res["put"] = {"name": obj, "on": to if isinstance(to, str) else "ground"}
+
     if fig.end + 12 > scn.frame_end:
         scn.frame_end = fig.end + 12            # a short hold after the last action
         res["clip_end_frame"] = scn.frame_end
     for other in FIGURES:                        # other figures hold their last pose to the new end
         _key_figure(bpy.data.objects[other])
+    scn.frame_set(scn.frame_start)
     return res
 
 
@@ -980,7 +1055,7 @@ def scene_state():
             fig = FIGURES[o.name]
             entry.update({"colour": colour_name(o["colour"]), "x_at_start": round(fig.pelvis_x(min(fig.poses)), 2),
                           "x_at_end": round(fig.pelvis_x(fig.end), 2), "facing_at_end": fig.facing,
-                          "layer": _layer_name(fig.y),
+                          "layer": _layer_name(fig.y), **({"holding": fig.holding} if fig.holding else {}),
                           "actions": [{k: g[k] for k in ("action", "start", "end", "facing")} for g in fig.segments]})
         elif o.get("kind") != "ground":
             m = o.data.materials[0] if o.data.materials else None

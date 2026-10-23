@@ -8,7 +8,7 @@ import copy
 
 COLOUR_NAMES = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "white", "black", "grey", "brown"]
 ACTIONS = ["walk", "walk_happy", "walk_sad", "walk_worried", "run", "wave", "idle", "look_down", "react",
-           "handshake", "pick_up", "put_down"]
+           "sigh", "handshake", "pick_up", "put_down"]
 
 VEC2 = {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}
 VEC3 = {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
@@ -116,7 +116,9 @@ TOOLS = [
            "location": {"oneOf": [VEC2, VEC3, PLACEMENT],
                         "description": "[x, 0] or {\"next_to\": name, \"side\": \"left|right\"}"},
            "colour": COLOUR, "facing": {"type": "string", "enum": ["front", "left", "right"]},
-           "height": {"type": "number", "minimum": 0.5, "maximum": 3}, "layer": LAYER},
+           "height": {"type": "number", "minimum": 0.5, "maximum": 3}, "layer": LAYER,
+           "holding": {"type": "string", "description": "a small object it already holds in its right hand"},
+           "carry": {"type": "string", "enum": ["front", "swing"]}},
           []),
     _tool("play_action", "Make a stick figure perform an action from the motion library, after its previous "
                          "action (or from start_frame), blending smoothly (it turns first if it must face "
@@ -124,7 +126,8 @@ TOOLS = [
                          "or running away); give `to` (an object's name: stops beside it; or an x position), "
                          "`distance` (m), `seconds` or `cycles`, and `direction` (left/right). Others: wave "
                          "(at the camera), idle (stands, breathing), look_down (`to`: what to look at, e.g. a "
-                         "ball on a table), react (a sudden fright), handshake (`to` = the other figure; both figures play it "
+                         "ball on a table), react (a sudden fright; `to` = what scared it, it turns to face it), sigh (a sad "
+                         "breath out), handshake (`to` = the other figure; both figures play it "
                          "with the same start_frame, standing about 0.8-1.1 m apart and facing each other), "
                          "pick_up (`to` = a small object within reach: walk to it first; it is then carried "
                          "in the right hand through later actions), put_down (`to` = a surface such as a "
@@ -138,7 +141,10 @@ TOOLS = [
            "seconds": {"type": "number", "minimum": 0.2, "maximum": 60},
            "cycles": {"type": "number", "minimum": 0.5, "maximum": 30},
            "direction": {"type": "string", "enum": ["left", "right"]},
-           "speed": {"type": "number", "minimum": 0.3, "maximum": 3}},
+           "speed": {"type": "number", "minimum": 0.3, "maximum": 3},
+           "carry": {"type": "string", "enum": ["front", "swing"],
+                     "description": "pick_up only: hold it up in front (default) or carry it at the side, "
+                                    "swinging with the walk"}},
           ["name", "action"]),
     _tool("render_check", "Render quick preview images of some frames and return the check report.",
           {"frames": {"type": "array", "items": {"type": "integer"}, "minItems": 1, "maxItems": 8}},

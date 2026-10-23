@@ -373,6 +373,8 @@ class _Figures:
                 ev.append(("look_down", c))
             if re.search(r"fright|startled|scared|shock", c):
                 ev.append(("react", c))
+            if re.search(r"\bsighs?\b", c):
+                ev.append(("sigh", c))
             if re.search(r"stands? (still|around)|breathing|waits?", c):
                 ev.append(("idle", c))
             if len(ev) == before and ev and _seconds(c):          # "…, for 3 seconds" belongs to the last one

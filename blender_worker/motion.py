@@ -30,9 +30,9 @@ HEAD_TOP_V = STAND_V + SPINE + NECK + HEAD - 0.075   # standing height above the
 LIB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "motions")
 WALKS = ["walk", "walk_happy", "walk_sad", "walk_worried"]
 TRAVELS = WALKS + ["run"]            # cyclic actions that move the figure along
-ACTIONS = TRAVELS + ["wave", "idle", "look_down", "react", "handshake", "pick_up", "put_down"]
+ACTIONS = TRAVELS + ["wave", "idle", "look_down", "react", "sigh", "handshake", "pick_up", "put_down"]
 VIEW = {**{w: "side" for w in TRAVELS}, "wave": "front", "idle": "front", "look_down": "side", "react": "side",
-        "handshake": "side", "pick_up": "side", "put_down": "side"}
+        "sigh": "side", "handshake": "side", "pick_up": "side", "put_down": "side"}
 GRAB_AT = 0.62            # s into pick_up / put_down when the hand closes / opens
 FPS = 24
 
@@ -336,16 +336,16 @@ def _keyed(keys, t):
 
 
 def _look_down(pitch=50.0, seconds=2.5):
-    """Side view: looks down at something `pitch` degrees below eye level. The bend is shared out
-    from the waist up (upper body 20%, neck 40%, head 40%), so the head really turns on the neck;
-    the legs stay straight. Then holds, breathing."""
+    """Side view: looks down at something `pitch` degrees below eye level. Looking is the neck and
+    head (45% / 50%); the body stays upright (a forward-bending torso reads as a bow), the legs
+    straight, the arms hanging. Then holds, breathing."""
     poses = []
     for i in range(int(seconds * FPS)):
         t = i / FPS
         d = _keyed([(0.0, 0.0), (0.15, 0.08), (0.7, 1.0)], t)
         breathe = 0.003 * math.sin(2 * math.pi * t / 2.5) * d
-        poses.append(side_pose(pelvis=(-0.03 * d, STAND_V), lean=0.2 * pitch * d + breathe * 100,
-                               neck=0.4 * pitch * d, head=0.4 * pitch * d,
+        poses.append(side_pose(pelvis=(-0.01 * d, STAND_V), lean=0.05 * pitch * d + breathe * 100,
+                               neck=0.45 * pitch * d, head=0.5 * pitch * d,
                                arms={"l": (-3, 3), "r": (3, 7)}))     # arms just hang: not reaching for it
     return Clip("look_down", poses, FPS, False, "side")
 
@@ -442,24 +442,63 @@ def _handshake(reach=0.5, seconds=2.0):
     return Clip("handshake", poses, FPS, False, "side")
 
 
-CARRY = (0.3, 0.2)        # a carried thing: the hand this far ahead of / above the pelvis (leg units)
+CARRY_SWING = (2.0, 14.0)  # carrying at the side: the arm hangs, the elbow a little bent, and
+                           # the walk swings it (the thing swings along in the hand)
+CARRY = (24.0, 108.0)     # carrying, side view: upper arm hangs by the body (10° forward), the forearm
+                          # comes up to just above level in front, holding the thing at the waist
+
+
+def _arm_angles(p, side):
+    """(upper, forearm) angles in degrees from hanging straight down, > 0 = forward."""
+    sh, el, wr = p[f"{side}_shoulder"], p[f"{side}_elbow"], p[f"{side}_wrist"]
+    return (math.degrees(math.atan2(el[0] - sh[0], sh[1] - el[1])),
+            math.degrees(math.atan2(wr[0] - el[0], el[1] - wr[1])))
+
+
+def _set_arm(p, side, upper, fore):
+    sh = p[f"{side}_shoulder"]
+    el = (sh[0] + UPPER * math.sin(math.radians(upper)), sh[1] - UPPER * math.cos(math.radians(upper)))
+    wr = (el[0] + FORE * math.sin(math.radians(fore)), el[1] - FORE * math.cos(math.radians(fore)))
+    return dict(p, **{f"{side}_elbow": el, f"{side}_wrist": wr})
+
+
+def _reach_angles(p, side, target):
+    """Arm angles that put the hand on target (u, v). The arm is drawn ARM_SCALE longer about the
+    shoulder, so the unscaled arm aims at a target pulled in by that factor. Of the two elbow
+    solutions, the one that bends like an elbow (forearm forward of the upper arm)."""
+    sh = p[f"{side}_shoulder"]
+    aim = (sh[0] + (target[0] - sh[0]) / ARM_SCALE, sh[1] + (target[1] - sh[1]) / ARM_SCALE)
+    best = None
+    for b in (1, -1):
+        q = dict(p, **{f"{side}_elbow": _ik(sh, aim, UPPER, FORE, b), f"{side}_wrist": aim})
+        u, f = _arm_angles(q, side)
+        flex = f - u
+        if best is None or (0 <= flex <= 170) > (0 <= best[2] <= 170):
+            best = (u, f, flex)
+    return best[:2]
 
 
 def _arm_to(p, side, target):
-    """Put `side`'s hand on target (u, v). The arm is drawn ARM_SCALE longer about the shoulder, so the
-    unscaled arm aims at a target pulled in by that factor. Of the two elbow solutions, the higher."""
-    sh = p[f"{side}_shoulder"]
-    aim = (sh[0] + (target[0] - sh[0]) / ARM_SCALE, sh[1] + (target[1] - sh[1]) / ARM_SCALE)
-    el = max((_ik(sh, aim, UPPER, FORE, b) for b in (1, -1)), key=lambda e: e[1])
-    return dict(p, **{f"{side}_elbow": el, f"{side}_wrist": aim})
+    return _set_arm(p, side, *_reach_angles(p, side, target))
+
+
+def _lerp_angles(a, b, t):
+    return tuple(_lerp(x, y, t) for x, y in zip(a, b))
+
+
+def _grip(p):
+    """Carrying at the side: keep the right arm's swing, bend the elbow a little more."""
+    up, fore = _arm_angles(p, "r")
+    return _set_arm(p, "r", up, max(fore, up + 12))
 
 
 def carry_arm(p, view):
-    """While holding something, the right hand stays in front of the body at the waist."""
-    pel = p["pelvis"]
+    """While holding something: elbow down by the side, forearm up in front holding it."""
     if view == "front":
-        return _arm_to(p, "r", (pel[0] - 0.12, pel[1] + 0.3))
-    return _arm_to(p, "r", (pel[0] + CARRY[0], pel[1] + CARRY[1]))
+        sh = p["r_shoulder"]
+        el = _add(sh, _dir(-96), UPPER)
+        return dict(p, r_elbow=el, r_wrist=_add(el, _dir(28), FORE))
+    return _set_arm(p, "r", *CARRY)
 
 
 def _reach_pose(target):
@@ -467,45 +506,59 @@ def _reach_pose(target):
     (knees bend, hips go back) for low ones; the least effort that reaches. None if too far."""
     arm = (UPPER + FORE) * ARM_SCALE * 0.97
     best = None
-    for drop in [i * 0.025 for i in range(21)]:
+    for drop in [i * 0.025 for i in range(25)]:
         for lean in range(0, 72, 3):
-            p = side_pose(pelvis=(-0.35 * drop, STAND_V - drop), lean=lean, head=-0.3 * lean)
+            p = side_pose(pelvis=(-0.15 * drop, STAND_V - drop), lean=lean, head=-0.3 * lean)
             if math.dist(p["r_shoulder"], target) <= arm:
-                cost = lean + 160 * drop
+                cost = lean + 50 * drop              # knees do a fair share: a squat, not a stoop
                 if best is None or cost < best[0]:
                     best = (cost, drop, lean)
                 break
     return None if best is None else best[1:]
 
 
-def _pick_or_place(target, seconds=1.6, place=False):
-    """Side view: bend/squat until the right hand is at target, hold briefly (the grab or the
-    release happens at GRAB_AT s), stand up. Picking ends with the hand in the carry position;
-    placing starts from it and ends with the arm hanging."""
+def _pick_or_place(target, seconds=1.6, place=False, carry="front"):
+    """Side view, by joint angles so the elbow moves like an elbow. Picking: bend/squat while the
+    arm reaches to the thing, hold (the grab is at GRAB_AT s), then stand up while the forearm lifts
+    it into the carry (elbow down by the side). Placing is the reverse, ending with the arm hanging."""
     reach = _reach_pose(target)
     if reach is None:
         return None
     drop, lean = reach
+    hang = _arm_angles(side_pose(), "r")
     poses = []
     for i in range(int(seconds * FPS)):
         t = i / FPS
         d = _keyed([(0.0, 0.0), (0.55, 1.0), (0.8, 1.0), (1.4, 0.0)], t)
-        p = side_pose(pelvis=(-0.35 * drop * d, STAND_V - drop * d), lean=lean * d, head=-0.3 * lean * d)
-        hold = (p["pelvis"][0] + CARRY[0], p["pelvis"][1] + CARRY[1])
-        if place:
-            if t <= 0.8:                       # carry position down to the spot
-                k = smooth(t / 0.55)
-                p = _arm_to(p, "r", (_lerp(hold[0], target[0], k), _lerp(hold[1], target[1], k)))
-            else:                              # let go: the arm falls back to hanging
-                p = lerp_pose(_arm_to(p, "r", target), p, smooth((t - 0.8) / 0.6))
+        p = side_pose(pelvis=(-0.15 * drop * d, STAND_V - drop * d), lean=lean * d, head=-0.3 * lean * d)
+        at = _reach_angles(p, "r", target)      # hand on the thing, for this body pose
+        held = CARRY if carry == "front" else CARRY_SWING
+        before, after = (held, hang) if place else (hang, held)
+        if t <= 0.55:
+            arm = _lerp_angles(before, at, smooth(t / 0.55))
+        elif t <= 0.8:
+            arm = at
         else:
-            if t <= 0.8:                       # reach down to it
-                p = lerp_pose(p, _arm_to(p, "r", target), smooth(t / 0.55))
-            else:                              # bring it up to the carry position
-                k = smooth((t - 0.8) / 0.6)
-                p = _arm_to(p, "r", (_lerp(target[0], hold[0], k), _lerp(target[1], hold[1], k)))
-        poses.append(p)
+            arm = _lerp_angles(at, after, smooth((t - 0.8) / 0.6))
+        poses.append(_set_arm(p, "r", *arm))
     return Clip("put_down" if place else "pick_up", poses, FPS, False, "side")
+
+
+def _sigh(seconds=2.6):
+    """Side view, facing ahead: a breath in (chest up, a slight lean back, the head lifts), then a
+    long breath out: the upper body slumps, the neck and head drop, the arms hang loose. Holds sad."""
+    poses = []
+    for i in range(int(seconds * FPS)):
+        t = i / FPS
+        k = lambda *kv: _keyed(list(zip(kv[::2], kv[1::2])), t)   # noqa: E731
+        lean = k(0.0, 0.0, 0.7, -4.0, 1.7, 9.0)
+        neck = k(0.0, 0.0, 0.7, -3.0, 1.7, 14.0)
+        head = k(0.0, 0.0, 0.7, -8.0, 1.7, 18.0)
+        rise = k(0.0, 0.0, 0.7, 0.012, 1.7, -0.01)
+        arm = k(0.0, 0.0, 0.7, -2.0, 1.7, 4.0)
+        poses.append(side_pose(pelvis=(0.0, STAND_V + rise), lean=lean, neck=neck, head=head,
+                               arms={"l": (-3 + arm, 3 + arm), "r": (3 + arm, 7 + arm)}))
+    return Clip("sigh", poses, FPS, False, "side")
 
 
 def _react(seconds=1.75):
@@ -618,7 +671,7 @@ def clip(name, **params):
             _CACHE[key] = _walk(name)
         else:
             _CACHE[key] = {"wave": _wave, "idle": _idle, "look_down": _look_down, "react": _react,
-                           "run": _run, "handshake": _handshake}[name](**params)
+                           "run": _run, "handshake": _handshake, "sigh": _sigh}[name](**params)
     return _CACHE[key]
 
 
@@ -674,6 +727,16 @@ class Figure:
         self.local[frame] = (pose, view, facing, x0)
         self.poses[frame] = self.world(pose, view, facing, x0)
 
+    def start_holding(self, obj, carry="front"):
+        """The figure starts the clip with obj already in its right hand."""
+        f0 = min(self.poses)
+        self.holds.append({"obj": obj, "from": f0, "to": None, "carry": carry, "initial": True})
+        self.holding = obj
+        pose, view, facing, x0 = self.initial
+        held = carry_arm(pose, view) if carry == "front" else _grip(pose)
+        self.initial = (held, view, facing, x0)
+        self._put(f0, *self.initial)
+
     @staticmethod
     def _feet_x(world):
         return (world["l_ankle"][0] + world["r_ankle"][0]) / 2
@@ -692,7 +755,8 @@ class Figure:
 
     # -- playing actions
     def play(self, action, start=None, cycles=None, seconds=None, to_x=None, distance=None, direction=None,
-             speed=1.0, fps=24, blend=None, look_at=None, partner_x=None, obj=None, obj_at=None):
+             speed=1.0, fps=24, blend=None, look_at=None, partner_x=None, obj=None, obj_at=None,
+             carry="front"):
         """Append (or, if start is earlier, replace from `start` on) one action. Returns a summary.
         look_at = (x, z) of what a look_down looks at: it turns toward it and bends just enough.
         pick_up / put_down: obj = the object's name, obj_at = (x, z) where its centre is / will be."""
@@ -708,11 +772,12 @@ class Figure:
         self.segments = [g for g in self.segments if g["start"] < s]
         for g in self.segments:
             g["end"] = min(g["end"], s - 1)
-        self.holds = [h for h in self.holds if h["from"] < s]
+        self.holds = [h for h in self.holds if h["from"] < s or h.get("initial")]
         for h in self.holds:
             if h["to"] is not None and h["to"] >= s:
                 h["to"] = None
         self.holding = next((h["obj"] for h in self.holds if h["to"] is None), None)
+        style = next((h.get("carry", "front") for h in self.holds if h["to"] is None), "front")
         if prev_f is None:
             prev_f = s
             self._put(s, *self.initial)
@@ -741,7 +806,8 @@ class Figure:
             elif prev_facing in ("left", "right"):
                 direction = prev_facing
             target = (abs(dx) / self.L, (obj_at[1] - self.r) / self.L + ground(rest_pose("side")))
-            c = _pick_or_place(target, place=action == "put_down")
+            c = _pick_or_place(target, place=action == "put_down",
+                               carry=carry if action == "pick_up" else style)
             if c is None:
                 where = "it" if action == "pick_up" else "that spot"
                 raise ValueError(f"{where} is {abs(dx):.2f} m away and out of reach; walk to it first "
@@ -786,7 +852,7 @@ class Figure:
                 d = max(d - (SETTLE_U + (0.15 * 0.38 * 24 / 2 + 0.15 if c.base is not None else 0)) * self.L, 0.05)
                 steps = max(1, round(d / step))
                 scale = d / (steps * step)
-                if steps == 1 and scale < 0.4:
+                if steps == 1 and d < 0.05:
                     raise ValueError(f"the figure is already there ({d:.2f} m away); no need to walk")
             else:
                 if seconds is not None:
@@ -823,7 +889,9 @@ class Figure:
             local = [c.at(i * rate) for i in range(n)]
 
         if self.holding and action not in ("pick_up", "put_down"):
-            local = [carry_arm(p, c.view) for p in local]
+            # "front": the forearm holds it up in front; "swing": the arm keeps its own motion
+            # (a walk swings it), just a touch more bent, so the thing swings along
+            local = [carry_arm(p, c.view) if style == "front" else _grip(p) for p in local]
         # hold the previous pose until the action starts
         for f in range(hold_from + 1, s):
             self._put(f, prev_pose, prev_view, prev_facing, prev_x)
@@ -864,7 +932,7 @@ class Figure:
         if action in ("pick_up", "put_down"):
             grab = s + (blend or 0) + int(round(GRAB_AT * fps))
             if action == "pick_up":
-                self.holds.append({"obj": obj, "from": grab, "to": None})
+                self.holds.append({"obj": obj, "from": grab, "to": None, "carry": carry})
                 self.holding = obj
             else:
                 self.holds[-1]["to"] = grab

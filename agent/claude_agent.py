@@ -27,8 +27,10 @@ class ClaudeAgent:
     def __init__(self, name="A3", model=None, timeout=900, fix_rounds=3):
         self.name, self.model, self.timeout, self.fix_rounds = name, model, timeout, fix_rounds
 
-    def run(self, request, w, log=None, check=None, task_id=None):
-        w.call("scene_reset")
+    def run(self, request, w, log=None, check=None, task_id=None, reset=True):
+        """reset=False continues the current scene (a later shot of a story)."""
+        if reset:
+            w.call("scene_reset")
         work = Path(w.out_dir) / "claude_runs" / (task_id or "adhoc")
         work.mkdir(parents=True, exist_ok=True)
         calls_log = work / "mcp_calls.jsonl"

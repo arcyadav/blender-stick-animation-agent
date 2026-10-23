@@ -8,7 +8,7 @@
     "directions": "left / right are screen directions",
     "colours": "a colour name matches if the object's base colour is closest (in hue) to that name among: red, orange, yellow, green, blue, purple, pink, white, black, grey, brown",
     "figure_actions": "action names match the motion library; 'walk' matches walk, walk_happy, walk_sad, walk_worried; a mood walk (walk_sad, …) only matches itself; run is its own action",
-    "library_actions": ["idle", "walk", "walk_happy", "walk_sad", "walk_worried", "run", "wave", "react", "look_down", "handshake"],
+    "library_actions": ["idle", "walk", "walk_happy", "walk_sad", "walk_worried", "run", "wave", "react", "sigh", "look_down", "handshake", "pick_up", "put_down"],
     "library_assets": ["table", "chair", "box", "lamp", "tree", "bench"]
   },
 
@@ -236,11 +236,10 @@
     },
     {
       "id": "q05", "category": "figure_sequence",
-      "request": "a worried stick figure walks a few steps, stops, and looks down for 2 seconds",
+      "request": "a worried stick figure walks a few steps, stops, looks ahead and sighs sadly",
       "roles": {"fig": {"kind": "figure"}},
       "checks": [
-        {"actions_in_order": {"role": "fig", "actions": ["walk_worried", "look_down"]}},
-        {"action_duration": {"role": "fig", "action": "look_down", "min_s": 1.5, "max_s": 2.5}}
+        {"actions_in_order": {"role": "fig", "actions": ["walk_worried", "sigh"]}}
       ]
     },
     {

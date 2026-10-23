@@ -257,6 +257,49 @@ limbs spring from near one point (narrow hips and shoulders). Walks play at **1.
 instead of 30% over a cycle. The run's push-off now pivots on the toe over the second half of the stance
 (a 2-frame pivot made the knee jump).
 
+**Third review (23 Oct):** new actions **handshake** (`to` = the other figure; each reaches half way so the
+hands meet, three pumps), **pick_up / put_down** (`to` = a small object / a surface; bend or squat by the
+least effort that reaches, the hand grabs at 0.62 s, the object then follows the hand every frame through
+later actions and rests where it is put; `carry` = "front", forearm up holding it, or "swing", at the side
+swinging with the walk), and **sigh** (breath in, then a sad slump). The sad walk bows the neck and head;
+`look_down` is the neck and head only (a bending torso read as a bow) with the arms hanging; arm motion
+for carrying is set by joint angles (elbow by the side, the forearm lifts), not by placing the hand
+(that left the elbow high). Far-side limbs are drawn darker (closer to the body colour); every foot is
+drawn at one length; a bouncing ball rolls a little after its last bounce. Tasks: t01 now ends in a
+handshake; q05 is "walks a few steps, stops, looks ahead and sighs sadly". Checks: carried objects are
+excluded from `no_hover` and from collisions with the carrier; new `holds` / `puts` checks.
+
+#### 4.3.0 Stories: one request vs shot by shot (23 Oct)
+`direct.py` directs any free-text request with any agent and renders it. A long story in **one** request
+("The Lost Ball", 8 beats, 2 figures) worked with Claude but needed 37–88 calls and retries: the agent must
+plan the whole timeline at once, and an early choice (the ball set down beside the red figure) broke a
+later beat (the blue figure walked into him). **`story.py` directs it shot by shot, like a storyboard**
+(`stories/lost_ball.json`): each shot is a short request that continues the same scene (state summary
+included) and starts after the previous shot ends; the camera is framed once at the end. The same story
+then took **48 calls, 0 errors, ~4 min**, and every beat read correctly. Tool-layer guards found on the way:
+an object's own animation before it is first picked up is kept (the ball's bounce had been wiped), and an
+action that would end with a figure standing inside another figure (same layer) is undone with an error.
+
+#### 4.3.1 The action library (planned restructure, after the final evaluation runs)
+Today the library is in two places. **Recorded clips** are data in `motions/<action>/` (`motion.json` +
+`meta.json`): the four P3 walks and the P3 wave from my own video. **Keyed actions** (idle, look_down,
+react, sigh, run, handshake, pick_up, put_down) are Python functions in `blender_worker/motion.py` that set
+key poses over time with spline curves, on top of a small pose system (side / front poses, arm and leg
+IK). Adding an action touches four places (the action list, the clip dispatch, the tool schema, the prompt).
+
+Restructure (done after the final runs, so it doesn't change behaviour mid-comparison):
+1. **One manifest**, `motions/library.json`: every action with its family (recorded clip / keyed clip /
+   procedural), source (P3 track, own video, keyed), view, loop, travels or not, parameters and a one-line
+   description. The tool schema, the agent prompt and the docs are generated from it.
+2. **Keyed clips that don't depend on the scene** (idle, react, sigh, run) are **exported as data** to
+   `motions/<action>/motion.json` in the same format as the walks, so the folder holds every fixed clip.
+3. **Procedural actions stay code**, because they are computed from the scene: look_down (how far down
+   the thing is), handshake (where the partner's hand is), pick_up / put_down (object height and distance).
+4. Adding a fixed action becomes: drop a folder in `motions/` (from video via the P3 pipeline, keyframes,
+   or a Blender export) and add one manifest line; a new procedural action is one function plus one line.
+Viva point: motion is data, separate from the character (the P3 lesson); actions come in two families,
+**recorded clips** and **procedural, scene-aware actions**.
+
 ### 4.4 Self-check (the agent's critic)
 **Scene checks** (exact, from scene data):
 - every requested object / figure exists and is **inside the camera view** (projected bounds)
