@@ -4,10 +4,11 @@
  "shots": [
   "A red ball bounces in from the left three times and rolls to a stop a little left of the middle.",
   "A red stick figure walks in happily from the left, stops near the ball and looks down at it, then picks it up and holds it in front of him.",
-  "A blue stick figure walks in slowly and sadly from the right and stops about 2 m from the red figure, then sighs: it is his lost ball.",
-  "The red figure notices the blue figure and gets a small fright, facing him. Then the red figure walks to the bench and puts the ball down on the bench at the end nearest the blue figure.",
-  "The red and blue figures walk up to each other until they stand about 0.9 m apart, facing each other, and shake hands (both start the handshake at the same frame).",
-  "The blue figure picks up the ball from the bench and carries it swinging at his side; then both figures wave at the camera together."
+  "Holding the ball, the red figure turns to the left to check if anyone is around, then turns back to the right.",
+  "A blue stick figure walks in slowly and sadly from the right to the bench, turns to face the front (the camera) and sits down on the bench facing the front.",
+  "The red figure sees the blue figure and waves at him, then walks towards him and puts the ball down on the bench beside him.",
+  "The blue figure, still sitting, looks at the ball, then looks at the red figure; then he stands up and picks up the ball, carrying it swinging at his side.",
+  "Both figures wave at the camera together."
  ],
  "camera": "show the whole park so every shot is in view, then slowly zoom out during the final waves."
 }

@@ -422,9 +422,9 @@ def _carried(S):
     """{(figure, object): frames the object is in that figure's hand, with a margin for the grab}."""
     out = {}
     for fig, F in S.s.get("figures", {}).items():
-        for h in F.get("holds", []):
+        for h in F.get("holds", []) + [g for g in F.get("sits", []) if g.get("obj")]:
             end = h["to"] if h["to"] is not None else S.frames[-1]
-            out.setdefault((fig, h["obj"]), set()).update(range(h["from"] - 12, end + 13))
+            out.setdefault((fig, h["obj"]), set()).update(range(h["from"] - 24, end + 25))
     return out
 
 

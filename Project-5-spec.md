@@ -269,6 +269,24 @@ drawn at one length; a bouncing ball rolls a little after its last bounce. Tasks
 handshake; q05 is "walks a few steps, stops, looks ahead and sighs sadly". Checks: carried objects are
 excluded from `no_hover` and from collisions with the carrier; new `holds` / `puts` checks.
 
+**Last batch before the freeze (24 Oct):** (1) **no unnecessary turning**: a figure remembers which
+way it last faced side-on; side actions keep that facing unless told otherwise; idle stays side-on when
+the figure is side-on (a new side idle); a seated figure never swivels. (2) **Back-steps**: a walk of up
+to 1 m toward the figure's back is the walk cycle played in reverse (slower), not a turn-and-walk-away.
+(3) **Handshake spacing**: each figure shuffles half the difference to a comfortable 1.1 leg lengths
+(~0.85 m) before reaching out (in "The Lost Ball" both figures had turned away to step back, then turned
+back). (4) **Side wave**: `wave to=<figure>` waves in profile with the near arm; no `to` = the front wave
+at the camera. (5) **`look to=<anything>`**: up, down or ahead by neck and head (body language only, no
+face drawn); facing the camera, the head tilts and leans toward the side; only something behind a
+standing figure needs a turn. (6) **sit / stand_up** on a chair (facing away from its back), bench, box
+or the ground: the figure walks to the right spot itself, sits back onto the seat's real height with a
+counter-balancing lean; while seated, look/wave/sigh/react/idle play with the legs folded; walking or
+reaching while seated stands it up first; a seated figure may overlap its seat in the collision check.
+All quality checks hold on a sequence using every new action (grounded, 0 foot slide, no pops); A0 30/30.
+
+**FREEZE (24 Oct):** motion, tools and checks are fixed from here on. New ideas go to §11 (future work);
+the final evaluation runs use this version.
+
 #### 4.3.0 Stories: one request vs shot by shot (23 Oct)
 `direct.py` directs any free-text request with any agent and renders it. A long story in **one** request
 ("The Lost Ball", 8 beats, 2 figures) worked with Claude but needed 37–88 calls and retries: the agent must

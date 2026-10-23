@@ -85,7 +85,13 @@ def main():
             agent.run(req, w, log=lambda tool, args, err: log.append(
                 {"shot": k + 1, "tool": tool, "args": args, **({"error": err} if err else {})}),
                 task_id=f"shot{k + 1}", reset=False)
-            end = w.call("scene_state")["frames"]["end"]
+            after = w.call("scene_state")
+            end = after["frames"]["end"]
+            if k > 0:                   # characters new in this shot appear when the shot starts
+                before = {o["name"] for o in state["objects"]}
+                for o in after["objects"]:
+                    if o["kind"] == "figure" and o["name"] not in before:
+                        w.call("appear_at", name=o["name"], frame=start + 1)
             calls = log[n0:]
             errs = sum(1 for c in calls if c.get("error"))
             name = "camera" if last else f"shot {k + 1}"

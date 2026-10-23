@@ -30,9 +30,11 @@ HEAD_TOP_V = STAND_V + SPINE + NECK + HEAD - 0.075   # standing height above the
 LIB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "motions")
 WALKS = ["walk", "walk_happy", "walk_sad", "walk_worried"]
 TRAVELS = WALKS + ["run"]            # cyclic actions that move the figure along
-ACTIONS = TRAVELS + ["wave", "idle", "look_down", "react", "sigh", "handshake", "pick_up", "put_down"]
+ACTIONS = TRAVELS + ["wave", "idle", "look", "look_down", "react", "sigh", "handshake", "pick_up", "put_down",
+                     "sit", "stand_up", "turn"]
 VIEW = {**{w: "side" for w in TRAVELS}, "wave": "front", "idle": "front", "look_down": "side", "react": "side",
-        "sigh": "side", "handshake": "side", "pick_up": "side", "put_down": "side"}
+        "sigh": "side", "handshake": "side", "pick_up": "side", "put_down": "side", "look": "side",
+        "sit": "side", "stand_up": "side", "turn": "side"}
 GRAB_AT = 0.62            # s into pick_up / put_down when the hand closes / opens
 FPS = 24
 
@@ -336,6 +338,10 @@ def _keyed(keys, t):
 
 
 def _look_down(pitch=50.0, seconds=2.5):
+    return _look_side(pitch, seconds)
+
+
+def _look_side(pitch=50.0, seconds=2.5):
     """Side view: looks down at something `pitch` degrees below eye level. Looking is the neck and
     head (45% / 50%); the body stays upright (a forward-bending torso reads as a bow), the legs
     straight, the arms hanging. Then holds, breathing."""
@@ -347,7 +353,7 @@ def _look_down(pitch=50.0, seconds=2.5):
         poses.append(side_pose(pelvis=(-0.01 * d, STAND_V), lean=0.05 * pitch * d + breathe * 100,
                                neck=0.45 * pitch * d, head=0.5 * pitch * d,
                                arms={"l": (-3, 3), "r": (3, 7)}))     # arms just hang: not reaching for it
-    return Clip("look_down", poses, FPS, False, "side")
+    return Clip("look", poses, FPS, False, "side")
 
 
 # Run foot cycle. The heel rises over the second half of the stance and the start of the swing
@@ -422,23 +428,42 @@ def _ik(root, target, l1, l2, bend):
 HAND_V = 1.4          # handshake height (leg units above the toe line): about waist height
 
 
-def _handshake(reach=0.5, seconds=2.0):
-    """Side view: reach the right hand out to a point `reach` ahead of the feet (half way to the
-    partner, who does the same, so the hands meet), three pumps, let go. The elbow stays bent below."""
+def _handshake(reach=0.5, shift=0.0, seconds=2.0):
+    """Side view: if needed, first a little shuffle of `shift` (toward the partner > 0, away < 0) so the
+    two stand a comfortable distance apart; then reach the right hand out to a point `reach` ahead of
+    the feet (half way to the partner, who does the same, so the hands meet), three pumps, let go."""
     poses = []
     rest = side_pose()
+    pre = 0.55 if abs(shift) > 0.02 else 0.0
+    for i in range(int(pre * FPS)):                # the shuffle: lead foot, then the other, body between
+        t = i / FPS
+        wa = min(max(t / (0.45 * pre), 0.0), 1.0)              # the lead foot, then (after it lands) the other
+        wb = min(max((t - 0.5 * pre) / (0.45 * pre), 0.0), 1.0)
+        a, b = smooth((wa - 0.12) / 0.76), smooth((wb - 0.12) / 0.76)   # sideways only once off the ground
+        lead, trail = ("l", "r") if shift > 0 else ("r", "l")
+        k = smooth(t / pre)
+        feet = {lead: (0.05 if lead == "l" else -0.05) + shift * a,
+                trail: (0.05 if trail == "l" else -0.05) + shift * b}
+        q = side_pose(pelvis=(shift * k, STAND_V), feet=feet)
+        for s_, w in ((lead, wa), (trail, wb)):
+            lift = 0.06 * math.sin(math.pi * w)
+            for j in (f"{s_}_ankle", f"{s_}_toe"):
+                q[j] = (q[j][0], q[j][1] + lift)
+        poses.append(q)
     for i in range(int(seconds * FPS)):
         t = i / FPS
         out = _keyed([(0.0, 0.0), (0.45, 1.0), (1.45, 1.0), (1.9, 0.0)], t)
         pump = 0.05 * math.sin(2 * math.pi * 3 * (t - 0.45) / 1.0) * (0.45 < t < 1.45)
-        p = side_pose(lean=3 * out, head=-2 * out)
+        p = side_pose(pelvis=(shift, STAND_V), lean=3 * out, head=-2 * out,
+                      feet={"l": 0.05 + shift, "r": -0.05 + shift})
         sh = p["r_shoulder"]
-        target = (reach, HAND_V + pump)
+        target = (shift + reach, HAND_V + pump)
         # the arm is drawn ARM_SCALE longer about the shoulder: aim the unscaled arm at a scaled-in target
         aim = (sh[0] + (target[0] - sh[0]) / ARM_SCALE, sh[1] + (target[1] - sh[1]) / ARM_SCALE)
         el = _ik(sh, aim, UPPER, FORE, -1)                         # elbow bends down/back
         reach_pose = dict(p, r_elbow=el, r_wrist=aim)
-        poses.append(lerp_pose(dict(p, r_elbow=rest["r_elbow"], r_wrist=rest["r_wrist"]), reach_pose, out))
+        hang = {j: (rest[j][0] + shift, rest[j][1]) for j in ("r_elbow", "r_wrist")}
+        poses.append(lerp_pose(dict(p, **hang), reach_pose, out))
     return Clip("handshake", poses, FPS, False, "side")
 
 
@@ -561,6 +586,142 @@ def _sigh(seconds=2.6):
     return Clip("sigh", poses, FPS, False, "side")
 
 
+def _idle_side(seconds=4.0):
+    """Standing in profile: breathing, a little sway (loops). Used when the figure is already side-on,
+    so standing still doesn't turn it to the camera."""
+    poses = []
+    n = int(seconds * FPS)
+    for i in range(n):
+        w = 2 * math.pi * i / n
+        poses.append(side_pose(pelvis=(0.01 * math.sin(w), STAND_V - 0.004 + 0.004 * math.cos(2 * w)),
+                               lean=1.2 * math.sin(w), head=2.5 * math.sin(w + 0.6),
+                               arms={"l": (-3 + 2 * math.sin(w), 3 + 2 * math.sin(w)),
+                                     "r": (3 - 2 * math.sin(w), 7 - 2 * math.sin(w))}))
+    return Clip("idle", poses, FPS, True, "side")
+
+
+def _wave_side(arm="r", seconds=2.6):
+    """Waving in profile at someone in front: the near arm comes up forward, the forearm waves back
+    and forth three times, then the arm comes down."""
+    hang = _arm_angles(side_pose(), arm)
+    up = (125.0, 165.0)
+    poses = []
+    for i in range(int(seconds * FPS)):
+        t = i / FPS
+        out = _keyed([(0.0, 0.0), (0.4, 1.0), (2.1, 1.0), (2.5, 0.0)], t)
+        swing = 22 * math.sin(2 * math.pi * 1.8 * (t - 0.4)) * (0.4 < t < 2.1)
+        p = side_pose(head=-3 * out)
+        a = _lerp_angles(hang, (up[0], up[1] + swing), out)
+        poses.append(_set_arm(p, arm, *a))
+    return Clip("wave", poses, FPS, False, "side")
+
+
+def _look_front(turn=15.0, pitch=0.0, seconds=2.5):
+    """Facing the camera, looking to one side (turn > 0 = screen-left) and up/down: the head tilts
+    and leans toward it, the shoulders follow a little (a faceless head shows looking by body language)."""
+    poses = []
+    for i in range(int(seconds * FPS)):
+        t = i / FPS
+        d = _keyed([(0.0, 0.0), (0.15, 0.08), (0.7, 1.0)], t)
+        breathe = 1.0 * math.sin(2 * math.pi * t / 2.5) * d
+        poses.append(front_pose(tilt=0.2 * turn * d, head=(turn + 0.25 * pitch) * d + breathe))
+    return Clip("look", poses, FPS, False, "front")
+
+
+SEAT_BACK = 0.45      # seated: the pelvis this far behind the feet (leg units)
+
+
+def seated_pose(seat_v, lean=4.0, head=0.0, neck=0.0, arms=None):
+    """Sitting in profile: pelvis on the seat behind the feet, thighs forward, shins down to the
+    planted feet; hands resting on the thighs unless `arms` says otherwise."""
+    p = side_pose(pelvis=(-SEAT_BACK, seat_v), lean=lean, head=head, neck=neck,
+                  feet={"l": 0.05, "r": -0.05}, arms=arms or {"l": (-3, 3), "r": (3, 7)})
+    if arms is None:                          # rest the hands on the thighs
+        for s in "lr":
+            k = p[f"{s}_knee"]
+            p = _arm_to(p, s, (_lerp(p["pelvis"][0], k[0], 0.75), k[1] + 0.08))
+    return p
+
+
+def _sit(seat_v, seconds=1.5, stand=False):
+    """Sit down onto a seat at height seat_v (or stand up from it): lean forward to counterbalance,
+    hips go back and down onto the seat, settle upright. Feet stay where they are."""
+    sat = seated_pose(seat_v)
+    poses = []
+    for i in range(int(seconds * FPS)):
+        t = i / FPS
+        k = _keyed([(0.0, 0.0), (1.1, 1.0)], t)
+        k = 1 - k if stand else k
+        lean = 24 * math.sin(math.pi * min(k * 1.15, 1.0))
+        p = side_pose(pelvis=(_lerp(0.0, -SEAT_BACK, k), _lerp(STAND_V, seat_v, k)), lean=lean + 4 * k,
+                      feet={"l": 0.05, "r": -0.05})
+        for s in "lr":
+            p = _set_arm(p, s, *_lerp_angles(_arm_angles(side_pose(), s), _arm_angles(sat, s), k))
+        poses.append(p)
+    return Clip("stand_up" if stand else "sit", poses, FPS, False, "side")
+
+
+def seated_front_pose(seat_v, tilt=0.0, head=0.0, arms=None):
+    """Sitting facing the camera: hips at seat height, thighs pointing at us (so they look short: the
+    knees just below and outside the hips), shins straight down to the feet, hands on the knees."""
+    p = front_pose(pelvis=(0.0, seat_v), tilt=tilt, head=head, arms=arms or {})
+    for s, side in (("l", 1), ("r", -1)):
+        hip = p[f"{s}_hip"]
+        knee = (hip[0] + side * 0.06, seat_v - 0.06)
+        ankle = (side * (HIP_W + 0.1), ANKLE_V)
+        p[f"{s}_knee"], p[f"{s}_ankle"] = knee, ankle
+        p[f"{s}_toe"] = (ankle[0] + side * 0.12, ankle[1] - 0.125)
+    if arms is None:                          # hands resting on the knees, elbows out to the sides
+        for s, side in (("l", 1), ("r", -1)):
+            sh = p[f"{s}_shoulder"]
+            target = (p[f"{s}_knee"][0], p[f"{s}_knee"][1] + 0.1)
+            aim = (sh[0] + (target[0] - sh[0]) / ARM_SCALE, sh[1] + (target[1] - sh[1]) / ARM_SCALE)
+            p[f"{s}_elbow"], p[f"{s}_wrist"] = _ik(sh, aim, UPPER, FORE, side), aim
+    return p
+
+
+def _sit_front(seat_v, seconds=1.5, stand=False):
+    """Sit down facing the camera (or stand up): a small lean, the hips lower straight onto the seat,
+    the knees come forward toward us (they look shorter), the hands go to the knees."""
+    sat = seated_front_pose(seat_v)
+    up = front_pose()
+    poses = []
+    for i in range(int(seconds * FPS)):
+        t = i / FPS
+        k = _keyed([(0.0, 0.0), (1.1, 1.0)], t)
+        k = 1 - k if stand else k
+        poses.append(lerp_pose(up, sat, smooth(k)))
+    return Clip("stand_up" if stand else "sit", poses, FPS, False, "front")
+
+
+def to_seated(p, seat_v, front=False):
+    if front:
+        sat = seated_front_pose(seat_v)
+        dx, dy = sat["pelvis"][0] - p["pelvis"][0], sat["pelvis"][1] - p["pelvis"][1]
+        out = dict(p)
+        for j in JOINTS:
+            if j in ("pelvis", "l_hip", "r_hip") or j[2:] in ("knee", "ankle", "toe"):
+                out[j] = sat[j]
+            else:
+                out[j] = (p[j][0] + dx, p[j][1] + dy)
+        return out
+    return _to_seated_side(p, seat_v)
+
+
+def _to_seated_side(p, seat_v):
+    """An action's pose, played sitting: legs and pelvis from the seated pose, the upper body moved
+    along with the pelvis (so a wave, a sigh or a look happen sitting down)."""
+    sat = seated_pose(seat_v)
+    dx, dy = sat["pelvis"][0] - p["pelvis"][0], sat["pelvis"][1] - p["pelvis"][1]
+    out = dict(p)
+    for j in JOINTS:
+        if j in ("pelvis", "l_hip", "r_hip") or j[2:] in ("knee", "ankle", "toe"):
+            out[j] = sat[j]
+        else:
+            out[j] = (p[j][0] + dx, p[j][1] + dy)
+    return out
+
+
 def _react(seconds=1.75):
     """Side view fright: a tiny anticipation, a fast flinch back with the hands flying up, an
     overshoot, then a trembling hold. Feet stay planted; the knees take the dip."""
@@ -669,6 +830,16 @@ def clip(name, **params):
     if key not in _CACHE:
         if name in WALKS:
             _CACHE[key] = _walk(name)
+        elif name == "idle" and params.get("side"):
+            _CACHE[key] = _idle_side()
+        elif name == "wave" and params.get("arm"):
+            _CACHE[key] = _wave_side(params["arm"])
+        elif name == "look":
+            _CACHE[key] = _look_front(params["turn"], params.get("pitch", 0.0)) if "turn" in params \
+                else _look_side(params.get("pitch", 50.0))
+        elif name in ("sit", "stand_up"):
+            make = _sit_front if params.get("front") else _sit
+            _CACHE[key] = make(params["seat_v"], stand=name == "stand_up")
         else:
             _CACHE[key] = {"wave": _wave, "idle": _idle, "look_down": _look_down, "react": _react,
                            "run": _run, "handshake": _handshake, "sigh": _sigh}[name](**params)
@@ -702,6 +873,9 @@ class Figure:
         self.initial = (rest_pose(view), view, facing, x)
         self.holds = []                     # [{"obj", "from", "to"}]: what the right hand carries, when
         self.holding = None
+        self.side = facing if facing in ("left", "right") else "right"   # the last way it faced side-on
+        self.sits = []                      # [{"obj", "from", "to", "v"}]: when it sits on what
+        self.seat = None                    # the seat it is on now (a sits entry) or None
         self._put(start, *self.initial)
         self.end = start
 
@@ -756,11 +930,13 @@ class Figure:
     # -- playing actions
     def play(self, action, start=None, cycles=None, seconds=None, to_x=None, distance=None, direction=None,
              speed=1.0, fps=24, blend=None, look_at=None, partner_x=None, obj=None, obj_at=None,
-             carry="front"):
+             carry="front", seat=None):
         """Append (or, if start is earlier, replace from `start` on) one action. Returns a summary.
         look_at = (x, z) of what a look_down looks at: it turns toward it and bends just enough.
         pick_up / put_down: obj = the object's name, obj_at = (x, z) where its centre is / will be."""
-        c = None if action in ("pick_up", "put_down") else clip(action)
+        if direction == "front" and action not in ("turn", "sit"):
+            direction = None                     # only turning and sitting can face the camera by direction
+        c = None if action in ("pick_up", "put_down", "look", "look_down", "sit", "stand_up", "turn") else clip(action)
         first = not self.segments
         s = start if start is not None else (self.end + 1 if not first else min(self.poses))
         if s < min(self.poses):
@@ -778,22 +954,94 @@ class Figure:
                 h["to"] = None
         self.holding = next((h["obj"] for h in self.holds if h["to"] is None), None)
         style = next((h.get("carry", "front") for h in self.holds if h["to"] is None), "front")
+        self.sits = [g for g in self.sits if g["from"] < s]
+        for g in self.sits:
+            if g["to"] is not None and g["to"] >= s:
+                g["to"] = None
+        self.seat = next((g for g in self.sits if g["to"] is None), None)
+        sides = [g["facing"] for g in self.segments if g["facing"] in ("left", "right")]
+        if sides:
+            self.side = sides[-1]
         if prev_f is None:
             prev_f = s
             self._put(s, *self.initial)
         hold_from = prev_f
         prev_pose, prev_view, prev_facing, prev_x = self.local[prev_f]
+        sideways = prev_facing if prev_facing in ("left", "right") else None
+        if self.seat and action in ("handshake", "pick_up", "put_down"):
+            raise ValueError(f"the figure is sitting; play stand_up first")
+        if action == "sit":
+            if self.seat:
+                raise ValueError("the figure is already sitting")
+            c = clip("sit", seat_v=round(seat["v"], 3), front=bool(seat.get("front")))
+        if action == "stand_up":
+            if not self.seat:
+                raise ValueError("the figure is not sitting")
+            c = clip("stand_up", seat_v=round(self.seat["v"], 3), front=bool(self.seat.get("front")))
+            direction = None if self.seat.get("front") else (sideways or self.side)
+        seat_front = bool(self.seat and self.seat.get("front"))
+        if seat_front and action not in ("stand_up", "wave", "idle", "look", "look_down"):
+            raise ValueError("sitting facing the camera it can wave, look and idle; stand_up first for other actions")
+        if action == "turn":
+            # turn to face left / right / the camera, and stand a moment (looking around)
+            if self.seat:
+                raise ValueError("the figure is sitting; it can look around, or stand_up first")
+            if direction in (None, "front"):
+                c = clip("idle")
+                direction = None
+            else:
+                c = clip("idle", side=True)
+            if seconds is None:
+                seconds = 1.0
+        if action == "idle":
+            # standing still doesn't turn a figure that is side-on (or sitting) to the camera
+            if (sideways or self.seat) and not seat_front:
+                c = clip("idle", side=True)
+        if action == "wave":
+            facing_now = sideways or self.side
+            if look_at is not None:              # waving at someone: side-on, toward them
+                fx = self._feet_x(self.poses[prev_f])
+                direction = "right" if look_at[0] > fx else "left"
+            if seat_front:
+                direction = None                 # sitting facing us: the front wave
+            elif look_at is not None or self.seat:
+                d_ = direction or facing_now
+                arm = "r" if d_ == "right" else "l"             # the near arm ...
+                if self.holding and arm == "r":                 # ... unless that hand holds something
+                    arm = "l"
+                c = clip("wave", arm=arm)
+        if action in ("look", "look_down"):
+            fx = self._feet_x(self.poses[prev_f])
+            eye = (STAND_V + SPINE + NECK + 0.5 * HEAD - 0.075) * self.L
+            if self.seat:
+                eye -= (STAND_V - self.seat["v"]) * self.L
+            if look_at is None:
+                c = clip("look", pitch=50.0 if action == "look_down" else 0.0)
+            elif prev_facing == "front" and (not self.seat or seat_front):
+                dx = look_at[0] - fx
+                pitch = math.degrees(math.atan2(eye - look_at[1], max(abs(dx), 0.3)))
+                turn = max(-35.0, min(35.0, -math.copysign(12 + 0.2 * abs(pitch), dx)))
+                c = clip("look", turn=round(turn), pitch=round(max(-40, min(60, pitch))))
+            else:
+                dx = look_at[0] - fx
+                if abs(dx) > 0.1 and not self.seat:  # something behind it: turning to see it is needed
+                    direction = "right" if dx > 0 else "left"
+                pitch = math.degrees(math.atan2(eye - look_at[1], max(abs(dx), 0.05)))
+                c = clip("look", pitch=round(min(max(pitch, -55.0), 80.0)))
         if action == "handshake":
             if partner_x is None:
                 raise ValueError("handshake needs `to`: the other figure's name")
             fx = self._feet_x(self.poses[prev_f])
             gap = abs(partner_x - fx)
-            reach = gap / 2 / self.L
-            if not 0.25 <= reach <= 0.75:
-                raise ValueError(f"the figures are {gap:.2f} m apart; a handshake needs them "
-                                 f"{0.5 * self.L:.1f}-{1.5 * self.L:.1f} m apart: walk closer (or apart) first")
+            ideal = 1.1 * self.L                     # comfortable: about 0.85 m for a 1.7 m figure
+            shift = (gap - ideal) / 2 / self.L       # each steps half the difference (> 0 = closer)
+            if abs(shift) > 0.8:
+                raise ValueError(f"the figures are {gap:.2f} m apart; walk them to about {ideal:.1f} m first")
+            if abs(shift) < 0.06:
+                shift = 0.0
             direction = "right" if partner_x > fx else "left"
-            c = clip(action, reach=round(reach, 3))
+            # each hand stops just short of the middle so the two round hands meet, not overlap
+            c = clip(action, reach=round(ideal / 2 / self.L - 0.05, 3), shift=round(shift, 3))
         if action in ("pick_up", "put_down"):
             if action == "pick_up" and self.holding:
                 raise ValueError(f"the figure is already holding '{self.holding}'; put it down first")
@@ -812,24 +1060,31 @@ class Figure:
                 where = "it" if action == "pick_up" else "that spot"
                 raise ValueError(f"{where} is {abs(dx):.2f} m away and out of reach; walk to it first "
                                  "(play_action walk with to=...)")
-        if action == "look_down" and look_at is not None:
-            fx = self._feet_x(self.poses[prev_f])
-            dx = look_at[0] - fx
-            if abs(dx) > 0.1:
-                direction = "right" if dx > 0 else "left"
-            eye = (STAND_V + SPINE + NECK + 0.5 * HEAD - 0.075) * self.L
-            pitch = math.degrees(math.atan2(eye - look_at[1], max(abs(dx), 0.05)))
-            c = clip(action, pitch=round(min(max(pitch, 10.0), 80.0)))
 
+        if self.seat and action not in ("sit", "stand_up"):
+            # seated: the body never swivels on the seat
+            direction = None if seat_front else (sideways or self.side)
         # facing for this action
         if c.view == "front":
             facing = "front"
         else:
-            facing = direction or (prev_facing if prev_facing in ("left", "right") else "right")
+            facing = direction or sideways or self.side
         # the new action starts where the feet are (not the pelvis: a flinch leaves it behind them)
         sign = -1 if facing == "left" else 1
         x0 = self._feet_x(self.poses[prev_f]) - sign * self.L * self._feet_u(c.at(0))
-        if action in TRAVELS and to_x is not None:
+        backward = False
+        if action in WALKS and sideways:
+            feet = self._feet_x(self.poses[prev_f])
+            goal = (to_x - feet) if to_x is not None else (
+                (distance if direction in (None, sideways) else -distance) * (1 if sideways == "right" else -1)
+                if distance is not None else None)
+            behind = goal is not None and (goal > 0) != (sideways == "right")
+            if behind and abs(goal) <= 1.0:
+                # a short move toward its back: step back, don't turn round and walk away
+                backward, facing, direction = True, sideways, sideways
+                if to_x is None:
+                    to_x = feet + goal
+        if action in TRAVELS and to_x is not None and not backward:
             facing = "right" if to_x >= x0 else "left"
             sign = -1 if facing == "left" else 1
             x0 = self._feet_x(self.poses[prev_f]) - sign * self.L * self._feet_u(c.at(0))
@@ -839,7 +1094,10 @@ class Figure:
         stop_frames = settle_n + (brake_n if c.base is not None else 0)
         if action in TRAVELS:
             step = c.stride / 2 * self.L         # metres per step (half a cycle)
-            if to_x is not None:
+            if backward:
+                rate *= 0.75                         # backward steps are slower
+                d = abs(to_x - x0) + SETTLE_U * self.L
+            elif to_x is not None:
                 d = to_x - x0
                 facing = "right" if d >= 0 else "left"
                 d = abs(d)
@@ -847,9 +1105,10 @@ class Figure:
                 d = distance
             else:
                 d = None
-            if d is not None:
+            if d is not None and not backward:
                 # the settle step (and a run's braking step) carries the body on a little
                 d = max(d - (SETTLE_U + (0.15 * 0.38 * 24 / 2 + 0.15 if c.base is not None else 0)) * self.L, 0.05)
+            if d is not None:
                 steps = max(1, round(d / step))
                 scale = d / (steps * step)
                 if steps == 1 and d < 0.05:
@@ -867,8 +1126,13 @@ class Figure:
             ts = _times(total, rate, c.half)
             n = len(ts)
             local = []
+            back = steps * c.stride / 2              # the root's travel over the whole walk
             for t in ts:
-                p = c.at(t)
+                if backward:                         # the walk played in reverse: feet still planted
+                    p = c.at(total - t)
+                    p = {j: (u - back, v) for j, (u, v) in p.items()}
+                else:
+                    p = c.at(t)
                 local.append({j: (u * scale, v) for j, (u, v) in p.items()})
             if abs(scale - 1) > 0.02:
                 note = f"steps stretched x{scale:.2f} to land exactly"
@@ -888,6 +1152,8 @@ class Figure:
                 n = int(round((c.n - 1) / rate)) + 1
             local = [c.at(i * rate) for i in range(n)]
 
+        if self.seat and action not in ("sit", "stand_up"):
+            local = [to_seated(p, self.seat["v"], front=seat_front) for p in local]
         if self.holding and action not in ("pick_up", "put_down"):
             # "front": the forearm holds it up in front; "swing": the arm keeps its own motion
             # (a walk swings it), just a touch more bent, so the thing swings along
@@ -899,6 +1165,8 @@ class Figure:
         if blend is None:
             if first and s == min(self.poses):
                 blend = 0
+            elif action == "handshake":
+                blend = round(0.4 * fps)              # the same for both figures: their pumps stay in step
             else:
                 # long enough that no joint has to whip across: an eased blend over B frames peaks
                 # at 6·d/B² of acceleration, kept under ~3 cm/frame² (0.25-0.7 s at 24 fps)
@@ -938,6 +1206,17 @@ class Figure:
                 self.holds[-1]["to"] = grab
                 self.holding = None
             seg["grab"] = grab
+        if action == "sit":
+            self.seat = {"obj": seat.get("obj"), "v": seat["v"], "from": s + (blend or 0), "to": None,
+                         "front": bool(seat.get("front"))}
+            self.sits.append(self.seat)
+        if action == "stand_up":
+            self.seat["to"] = self.end
+            self.seat = None
+        if facing in ("left", "right"):
+            self.side = facing
+        if backward:
+            seg["backward"] = True
         out = {"name": self.name, "action": action, "frames": [s, self.end], "facing": facing,
                "start_x": round(x0, 2), "end_x": round(self.pelvis_x(), 2),
                "seconds": round(n / fps, 2)}

@@ -7,8 +7,8 @@ valid-tool-call rate in the evaluation still sees them.
 import copy
 
 COLOUR_NAMES = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "white", "black", "grey", "brown"]
-ACTIONS = ["walk", "walk_happy", "walk_sad", "walk_worried", "run", "wave", "idle", "look_down", "react",
-           "sigh", "handshake", "pick_up", "put_down"]
+ACTIONS = ["walk", "walk_happy", "walk_sad", "walk_worried", "run", "wave", "idle", "look", "look_down", "react",
+           "sigh", "handshake", "pick_up", "put_down", "sit", "stand_up", "turn"]
 
 VEC2 = {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}
 VEC3 = {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
@@ -121,26 +121,30 @@ TOOLS = [
            "carry": {"type": "string", "enum": ["front", "swing"]}},
           []),
     _tool("play_action", "Make a stick figure perform an action from the motion library, after its previous "
-                         "action (or from start_frame), blending smoothly (it turns first if it must face "
-                         "another way). Walks: walk, walk_happy, walk_sad, walk_worried, and run (for hurrying "
-                         "or running away); give `to` (an object's name: stops beside it; or an x position), "
-                         "`distance` (m), `seconds` or `cycles`, and `direction` (left/right). Others: wave "
-                         "(at the camera), idle (stands, breathing), look_down (`to`: what to look at, e.g. a "
-                         "ball on a table), react (a sudden fright; `to` = what scared it, it turns to face it), sigh (a sad "
-                         "breath out), handshake (`to` = the other figure; both figures play it "
-                         "with the same start_frame, standing about 0.8-1.1 m apart and facing each other), "
-                         "pick_up (`to` = a small object within reach: walk to it first; it is then carried "
-                         "in the right hand through later actions), put_down (`to` = a surface such as a "
-                         "table, or leave it out for the ground in front). "
-                         "speed: 1 = normal, 0.7 = slow, 1.4 = fast. "
-                         "Waves and idles face the camera.",
+                         "action (or from start_frame), blending smoothly; it keeps facing the way it faced "
+                         "and only turns when an action needs it. Walks: walk, walk_happy, walk_sad, "
+                         "walk_worried, and run (for hurrying or running away); give `to` (an object's name: "
+                         "stops beside it; or an x position), `distance` (m), `seconds` or `cycles`, and "
+                         "`direction` (left/right); a short move (up to 1 m) backwards is a step back. Others: "
+                         "wave (`to` = someone: waves at them side-on; no `to`: at the camera), idle (stands, "
+                         "breathing), look (`to` = what to look at: up, down or ahead), look_down (at the ground "
+                         "in front, or `to`; look with just `direction` = look that way at eye level), turn (`direction` "
+                         "left/right/front, or `to` = someone/something/\"camera\": turns to face it and stands a "
+                         "moment, e.g. to look around), react (a sudden fright; `to` = what scared it), sigh (a sad breath "
+                         "out), handshake (`to` = the other figure; both play it with the same start_frame; they "
+                         "shuffle to a comfortable distance themselves), pick_up (`to` = a small object; it is "
+                         "then carried through later actions), put_down (`to` = a surface such as a table, or "
+                         "leave it out for the ground), sit (`to` = a chair, bench or box, or no `to` for the "
+                         "ground; it walks to the seat itself; direction=\"front\" sits facing the camera; while "
+                         "sitting it can wave, look, idle (side-on also sigh, react)), stand_up. speed: 1 = normal, 0.7 = slow, 1.4 = fast.",
           {"name": {"type": "string"}, "action": {"type": "string", "enum": ACTIONS},
            "start_frame": {"type": "integer", "minimum": 0},
            "to": {"oneOf": [{"type": "string"}, {"type": "number"}]},
            "distance": {"type": "number", "minimum": 0.1, "maximum": 50},
            "seconds": {"type": "number", "minimum": 0.2, "maximum": 60},
            "cycles": {"type": "number", "minimum": 0.5, "maximum": 30},
-           "direction": {"type": "string", "enum": ["left", "right"]},
+           "direction": {"type": "string", "enum": ["left", "right", "front"],
+                         "description": "front only for turn and sit (facing the camera)"},
            "speed": {"type": "number", "minimum": 0.3, "maximum": 3},
            "carry": {"type": "string", "enum": ["front", "swing"],
                      "description": "pick_up only: hold it up in front (default) or carry it at the side, "

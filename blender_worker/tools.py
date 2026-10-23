@@ -750,6 +750,11 @@ def _key_figure(o):
     frames = fig.frames(max(scn.frame_end, fig.end))
     fs = sorted(frames)
     per_frame = {f: _point_positions(frames[f], FOOT_SHOWN * motion.FOOT * fig.L) for f in fs}
+    appear = getattr(fig, "appear", None)
+    if appear:                                   # not on stage yet: far below the ground
+        for f in fs:
+            if f < appear:
+                per_frame[f] = [[(x, y, z - 100.0) for x, y, z in part] for part in per_frame[f]]
     for k, sp in enumerate(cu.splines):
         for j, p in enumerate(sp.points):
             x, y, z = per_frame[fs[0]][k][j]
@@ -833,7 +838,7 @@ def _key_object_path(name):
         if h["to"] is None:
             break
         if h.get("rest"):
-            pos = Vector((h["rest"][0], h["home"][1], h["rest"][2]))
+            pos = Vector(h["rest"])
             keys.append((h["to"] + 1, pos.copy(), rot, False))
     for f, c, r, _ in keys:
         o.location = c + off
@@ -903,8 +908,57 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
         raise ToolError(f"'{name}' is not a stick figure (add one with add_stick_figure)")
     fig = FIGURES[name]
     scn = bpy.context.scene
-    to_x = look_at = partner_x = obj = obj_at = None
+    # where things are when this action starts (a ball that bounced in is in the middle by then, not
+    # where it was on frame 1)
+    scn.frame_set(min(start_frame if start_frame is not None else fig.end + 1, max(scn.frame_end, fig.end + 1)))
+    to_x = look_at = partner_x = obj = obj_at = seat = None
     rest = None
+    pre_steps = []                               # actions played first to get into place
+    if fig.seat and action in motion.TRAVELS + ["handshake", "pick_up", "put_down"] and start_frame is None:
+        pre_steps.append(("stand_up", {}))       # walking off (or reaching) from a seat: stand up first
+    if action == "sit":
+        if to is None:                           # on the ground
+            h, seat_x, obj_name, face = 0.0, None, None, None
+        else:
+            t = _obj(to)
+            if t.get("kind") not in ("chair", "bench", "box"):
+                raise ToolError(f"can't sit on '{to}'; sit on a chair, bench or box, or leave `to` out for the ground")
+            lo, hi = _world_bounds(t)
+            h, seat_x, obj_name = _support_top(t), (lo.x + hi.x) / 2, to
+            face = ("left" if abs(math.degrees(t.rotation_euler.z)) > 90 else "right") if t.get("kind") == "chair" \
+                else None                        # a chair: face away from its back
+        front = direction == "front"
+        seat = {"v": h / fig.L + 0.075 + (0.06 if to is None else 0.0), "obj": obj_name, "front": front}
+        if seat_x is not None:
+            before = [f for f in fig.poses if start_frame is None or f < start_frame]
+            feet = fig._feet_x(fig.poses[max(before) if before else min(fig.poses)])
+            if face is None:                     # a bench or a box: keep facing the way it faced side-on
+                face = fig.side
+            sign = 1 if face == "right" else -1
+            # feet in front of the seat (side-on), or at the seat's middle when sitting facing the camera
+            stand_at = seat_x if front else seat_x + sign * motion.SEAT_BACK * fig.L
+            segs = fig.segments
+            if (start_frame is None and len(segs) >= 2 and segs[-1]["action"] in ("turn", "idle")
+                    and segs[-2]["action"] in motion.TRAVELS and segs[-1]["start"] - segs[-2]["end"] <= 1):
+                # walked up, turned (or paused), and now sits: the sit does the turn itself, so the walk
+                # goes straight on to the sitting spot and the figure stops only once
+                walk = segs[-2]
+                feet = fig._feet_x(fig.poses[walk["start"] - 1]) if walk["start"] - 1 in fig.poses else feet
+                pre_steps.append((walk["action"], {"to_x": stand_at, "start": walk["start"],
+                                                   "speed": walk["speed"]}))
+            elif abs(feet - stand_at) > 0.12:
+                last = fig.segments[-1] if fig.segments else None
+                towards = "right" if stand_at > feet else "left"
+                if (start_frame is None and last and last["action"] in motion.TRAVELS
+                        and last["facing"] == towards and fig.end - last["end"] <= 1):
+                    # it was just walking that way: carry the same walk on to the seat, one smooth walk
+                    pre_steps.append((last["action"], {"to_x": stand_at, "start": last["start"],
+                                                       "speed": last["speed"]}))
+                else:
+                    pre_steps.append(("walk", {"to_x": stand_at}))
+        else:
+            face = fig.side
+        direction = None if front else (direction or face)
     if action == "pick_up":
         if not isinstance(to, str) or to in FIGURES:
             raise ToolError("pick_up needs `to`: the name of the object to pick up")
@@ -942,14 +996,27 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
         other = FIGURES[to]
         before = [f for f in other.poses if start_frame is None or f <= start_frame]
         partner_x = other.pelvis_x(max(before) if before else min(other.poses))
-    elif to is not None and action == "look_down":
-        # look at something: turn toward it and bend just enough
+    elif to is not None and action in ("look", "look_down", "wave"):
+        # look (or wave) at something: turn toward it only if it is behind, bend/raise just enough
         if isinstance(to, str):
-            t = _obj(to)
-            lo, hi = _world_bounds(t)
-            look_at = ((lo.x + hi.x) / 2, (lo.z + hi.z) / 2)
+            if to == "camera" and action == "wave":
+                look_at = None                   # a wave at the camera: the front-view wave
+            else:
+                t = _obj(to)
+                lo, hi = _world_bounds(t)
+                look_at = ((lo.x + hi.x) / 2, (lo.z + hi.z) / 2)
         else:
             look_at = (float(to), 0.0)
+    elif to is not None and action == "turn":
+        # turn to face something / someone (or "camera")
+        if to == "camera":
+            direction = "front"
+        else:
+            t = _obj(to)
+            lo, hi = (FIGURES[to].bounds_x() if to in FIGURES else (lambda b: (b[0].x, b[1].x))(_world_bounds(t)))
+            before = [f for f in fig.poses if start_frame is None or f < start_frame]
+            here = fig._feet_x(fig.poses[max(before) if before else min(fig.poses)])
+            direction = "right" if (lo + hi) / 2 > here else "left"
     elif to is not None and action in ("react", "sigh"):
         # face what caused it (side-view actions): turn toward that object
         t = _obj(to)
@@ -958,9 +1025,10 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
         here = fig._feet_x(fig.poses[max(before) if before else min(fig.poses)])
         if direction is None:
             direction = "right" if (lo + hi) / 2 > here else "left"
-    elif to is not None and action not in ("pick_up", "put_down"):
+    elif to is not None and action not in ("pick_up", "put_down", "sit"):
         if action not in motion.TRAVELS:
-            raise ToolError(f"'to' works with walks, run ({', '.join(motion.TRAVELS)}) and look_down")
+            raise ToolError(f"'to' works with walks, run, look, wave, react, sigh, sit, handshake, "
+                            "pick_up and put_down")
         if isinstance(to, str):
             t = _obj(to)
             if t.name == name:
@@ -979,11 +1047,18 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
             to_x = lo - gap if (lo + hi) / 2 >= here else hi + gap
         else:
             to_x = float(to)
+    if action in ("look", "look_down") and to is None and direction in ("left", "right"):
+        before = [f for f in fig.poses if start_frame is None or f < start_frame]
+        here = fig._feet_x(fig.poses[max(before) if before else min(fig.poses)])
+        look_at = (here + (4.0 if direction == "right" else -4.0), 0.0 if action == "look_down" else 1.5)
     kw = dict(direction=direction, speed=speed, fps=scn.render.fps, look_at=look_at, partner_x=partner_x,
-              obj=obj, obj_at=obj_at, carry=carry)
+              obj=obj, obj_at=obj_at, carry=carry, seat=seat)
     stepped = None
     before_state = copy.deepcopy(fig.__dict__)        # to undo an action that ends inside someone
     try:
+        for pre, args in pre_steps:
+            fig.play(pre, fps=scn.render.fps, **args)
+            start_frame = None
         res = fig.play(action, start=start_frame, cycles=cycles, seconds=seconds, to_x=to_x, distance=distance, **kw)
     except ValueError as e:
         # just out of reach (within a couple of steps): step up to it first, as anyone would
@@ -1015,7 +1090,14 @@ def play_action(name, action, start_frame=None, cycles=None, seconds=None, to=No
         res["holding"] = obj
     elif action == "put_down":
         h = fig.holds[-1]
-        h["rest"] = [rest[0], h["home"][1], rest[1]]
+        # on a surface it takes that surface's layer (just in front of it): a ball put on a bench in the
+        # back is behind the figures, not tangled with their legs; on the ground it keeps its own layer
+        if isinstance(to, str):
+            slo, shi = _world_bounds(_obj(to))
+            ry = (slo.y + shi.y) / 2 - 0.05
+        else:
+            ry = h["home"][1] - h["offset"][1]
+        h["rest"] = [rest[0], ry, rest[1]]
         res["put"] = {"name": obj, "on": to if isinstance(to, str) else "ground"}
 
     if fig.end + 12 > scn.frame_end:
@@ -1056,6 +1138,7 @@ def scene_state():
             entry.update({"colour": colour_name(o["colour"]), "x_at_start": round(fig.pelvis_x(min(fig.poses)), 2),
                           "x_at_end": round(fig.pelvis_x(fig.end), 2), "facing_at_end": fig.facing,
                           "layer": _layer_name(fig.y), **({"holding": fig.holding} if fig.holding else {}),
+                          **({"sitting_on": fig.seat["obj"] or "ground"} if fig.seat else {}),
                           "actions": [{k: g[k] for k in ("action", "start", "end", "facing")} for g in fig.segments]})
         elif o.get("kind") != "ground":
             m = o.data.materials[0] if o.data.materials else None
@@ -1189,6 +1272,7 @@ def sample_scene(vis_step=6):
     for name, fig in FIGURES.items():
         out["figures"][name] = {"segments": fig.segments, "radius": fig.r, "leg": round(fig.L, 4),
                                 "holds": [{k: h[k] for k in ("obj", "from", "to")} for h in fig.holds],
+                                "sits": [{k: g[k] for k in ("obj", "from", "to")} for g in fig.sits],
                                 "joints": {j: [] for j in motion.JOINTS}}
         tracks[name] = fig.frames(scn.frame_end)
     for f in range(scn.frame_start, scn.frame_end + 1):
@@ -1250,6 +1334,17 @@ def set_output(subdir=""):
     return {"out": OUT_DIR}
 
 
+def appear_at(name, frame):
+    """Internal (story mode): a figure that enters in a later shot is kept out of sight (far below
+    the ground) until `frame`, so it doesn't stand waiting at the edge of the shot from the start."""
+    o = _obj(name)
+    if o.get("kind") != "figure":
+        raise ToolError("appear_at is for stick figures")
+    FIGURES[name].appear = frame
+    _key_figure(o)
+    return {"name": name, "appears_at": frame}
+
+
 def save_blend(filename="scene.blend"):
     path = os.path.join(OUT_DIR, filename)
     bpy.ops.wm.save_as_mainfile(filepath=path, copy=True)
@@ -1259,4 +1354,4 @@ def save_blend(filename="scene.blend"):
 TOOLS = {f.__name__: f for f in (
     scene_reset, scene_state, add_primitive, add_asset, set_transform, set_material, add_light, set_camera,
     camera_move, keyframe, set_easing, set_frames, add_stick_figure, play_action, render_check, render_final,
-    sample_scene, set_output, save_blend)}
+    sample_scene, set_output, save_blend, appear_at)}
