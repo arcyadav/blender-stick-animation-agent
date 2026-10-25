@@ -1,0 +1,11 @@
+{
+ "title": "The Falling Ball",
+ "setting": "a room at night: a table in the middle with a yellow ball on it, in the back layer.",
+ "shots": [
+  "An orange stick figure walks in slowly from the left, worried, and stops a little left of the table.",
+  "The yellow ball rolls off the table and bounces twice on the floor.",
+  "The figure gets a fright and runs away to the left.",
+  "The figure walks back slowly, looks down at the ball, picks it up and puts it back on the table."
+ ],
+ "camera": "show the table and the figure; follow the figure when it runs away and comes back."
+}

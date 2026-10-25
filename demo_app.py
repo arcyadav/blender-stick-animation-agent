@@ -256,7 +256,8 @@ def show_result(agent_label, task_label):
 
 
 CSS = """
-.gradio-container {max-width: 1180px !important}
+.gradio-container {max-width: 1500px !important}
+#story .cm-content {white-space: pre-wrap !important; word-break: break-word}
 #log textarea {font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 12.5px}
 """
 
@@ -299,13 +300,13 @@ with gr.Blocks(title="Stick Animation Agent", css=CSS, theme=gr.themes.Soft(prim
         app.load(show_result, [r_agent, r_task], [r_report, r_calls, r_video])
     with gr.Tab("Story", visible=not PUBLIC):
         with gr.Row():
-            with gr.Column(scale=5):
+            with gr.Column(scale=7):
                 pick = gr.Dropdown(STORIES, value=STORIES[0] if STORIES else None, label="Story")
                 story_box = gr.Code(value=load_story(STORIES[0]) if STORIES else "", language="json",
-                                    label="Shots (edit freely)", lines=16)
+                                    label="Shots (edit freely)", lines=20, elem_id="story")
                 go2 = gr.Button("Direct the story, shot by shot", variant="primary")
                 log2 = gr.Textbox(label="Progress", lines=14, elem_id="log", interactive=False)
-            with gr.Column(scale=6):
+            with gr.Column(scale=5):
                 video2 = gr.Video(label="Clip", autoplay=True)
         pick.change(load_story, pick, story_box)
         go2.click(run_story, [story_box, director, ollama], [log2, video2])
