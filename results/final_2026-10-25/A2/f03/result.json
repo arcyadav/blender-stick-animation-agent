@@ -1,0 +1,175 @@
+{
+ "id": "f03",
+ "category": "figure_single",
+ "request": "a stick figure stands still, just breathing, for 3 seconds",
+ "agent": "A2",
+ "passed": true,
+ "error": null,
+ "seconds": 7.5,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 2,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 7.1,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "figure does ['idle']; expected ['idle'] in this order",
+    "default": false
+   },
+   {
+    "check": "action_duration",
+    "ok": true,
+    "detail": "figure does idle for 3.0 s (allowed 2.5\u20133.5 s)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "figure's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "figure's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "figure moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.5 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "fig": "figure"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "facing": "front",
+    "location": [
+     0,
+     0
+    ],
+    "name": "figure"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "figure",
+    "action": "idle",
+    "seconds": 3
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 11 checks pass.",
+   "tool_calls": 2
+  }
+ ],
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You direct a short 2D animation in Blender by calling tools. The scene is already empty and ready (ground line at z = 0, white background, 24 fps). Make exactly what the request asks for: no extra objects, no stick figures unless the request has one.\n\nThe world is 2D, seen from the side like paper:\n- positions are [x, z]: x = left/right (screen-left is negative, about -4 to 4 is on screen), z = height of the object's BOTTOM (0 = standing on the ground). Or use a placement: {\"on_top_of\": \"table\"}, {\"next_to\": \"table\", \"side\": \"left\"}.\n- props (table, chair, bench, box, lamp, tree) come from add_asset; shapes (ball = sphere, cube, cone, ...) from add_primitive. Depth is only a layer: \"back\", \"middle\" (default) or \"front\".\n- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look, look_down, react, sigh, handshake, pick_up, put_down, sit, stand_up, turn). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at; pick_up `to` = a small object (walk to it first); put_down `to` = a surface or the ground. Figures are animated only with play_action. Put props a figure walks past in the back layer.\n- moving objects: keyframe (location, rotation, scale, colour) at frames, then set_easing (gravity for bounces and falls), and set_frames to cover the motion.\n- a figure that \"walks in\" or \"comes in\" starts just off-screen (beyond the camera's shows_x) and walks into view.\n- small props read better a little bigger than life (a phone about 0.3 m, a cup 0.25 m), like cartoons.\n- camera: set_camera(look_at, width) frames the shot; camera_move does pan / zoom_in / zoom_out / follow.\n\nMake the objects, animate them, then frame the camera so everything is in view. When the scene is finished, reply with a short summary and no tool call."
+  },
+  {
+   "role": "user",
+   "content": "a stick figure stands still, just breathing, for 3 seconds"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_l0aqjzfr",
+     "function": {
+      "index": 0,
+      "name": "add_stick_figure",
+      "arguments": {
+       "facing": "front",
+       "location": [
+        0,
+        0
+       ],
+       "name": "figure"
+      }
+     }
+    },
+    {
+     "id": "call_vwjuc8zc",
+     "function": {
+      "index": 1,
+      "name": "play_action",
+      "arguments": {
+       "name": "figure",
+       "action": "idle",
+       "seconds": 3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"figure\",\"x\":0,\"facing\":\"front\",\"height\":1.7,\"layer\":\"middle\",\"width\":0.52,\"actions\":[\"walk\",\"walk_happy\",\"walk_sad\",\"walk_worried\",\"run\",\"wave\",\"idle\",\"look\",\"look_down\",\"react\",\"sigh\",\"handshake\",\"pick_up\",\"put_down\",\"sit\",\"stand_up\",\"turn\"]}",
+   "tool_name": "add_stick_figure"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"figure\",\"action\":\"idle\",\"frames\":[1,72],\"facing\":\"front\",\"start_x\":0.0,\"end_x\":-0.02,\"seconds\":3.0,\"clip_end_frame\":84}",
+   "tool_name": "play_action"
+  },
+  {
+   "role": "assistant",
+   "content": "The scene now includes a stick figure that stands still and breathes for 3 seconds. The figure is positioned at [0, 0] and faces the camera. The idle action is set to play from frame 1 to frame 72, covering the 3-second duration. The clip's frame range is set from 1 to 84 at 24 frames per second.\n\nNext, I will add a table and animate the stick figure walking to it."
+  }
+ ]
+}

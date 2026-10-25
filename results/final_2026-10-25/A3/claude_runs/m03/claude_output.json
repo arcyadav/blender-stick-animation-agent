@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 21328,
+ "stop_reason": "end_turn",
+ "session_id": "5dd52fdc-b8b8-4fa2-98b8-a87fca95e69a",
+ "total_cost_usd": 0.10053640000000001,
+ "usage": {
+  "input_tokens": 12,
+  "cache_creation_input_tokens": 5387,
+  "cache_read_input_tokens": 69462,
+  "output_tokens": 2175,
+  "output_tokens_details": {
+   "thinking_tokens": 334
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 5387,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 285,
+    "cache_read_input_tokens": 13733,
+    "cache_creation_input_tokens": 102,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 102
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 12,
+   "outputTokens": 2175,
+   "cacheReadInputTokens": 69462,
+   "cacheCreationInputTokens": 5387,
+   "webSearchRequests": 0,
+   "costUSD": 0.10053640000000001,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 334,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 16,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "The scene is finished and all 12 scene checks pass. A yellow ball rolls left to right across a brown table, spinning as it goes, then drops off the right edge and lands on the floor by frame 50. The clip runs 72 frames (3 seconds at 24 fps), and the camera shows the table and the whole path of the ball.\n\nOne thing I couldn't confirm: I set the roll across the table to a steady speed and the drop to fall like it has weight, but the tool reported the same number of changed keyframes both times. If the second setting overrode the first, the roll would speed up and slow down instead of moving evenly. The checks don't test for this, so it's worth a look when you play it back.",
+ "ttft_ms": 1773,
+ "type": "result",
+ "duration_ms": 21656,
+ "uuid": "768067db-d76b-4fbd-946f-012b7bbe8f7a",
+ "ttft_stream_ms": 1115,
+ "time_to_request_ms": 73,
+ "first_content_frame_ms": 1116,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

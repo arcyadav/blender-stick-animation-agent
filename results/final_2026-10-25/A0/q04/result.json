@@ -1,0 +1,135 @@
+{
+ "id": "q04",
+ "category": "figure_sequence",
+ "request": "a stick man walks to the right, turns around and walks back to where he started",
+ "agent": "A0",
+ "passed": true,
+ "error": null,
+ "seconds": 0.2,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 5,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "fig1 does ['walk', 'walk']; expected ['walk', 'walk'] in this order",
+    "default": false
+   },
+   {
+    "check": "returns",
+    "ok": true,
+    "detail": "fig1 goes 2.50 m away (\u2265 1 m needed) and ends 0.00 m from its start (within 0.4 m needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "fig1's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "fig1's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "fig1 moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 7.6 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "man": "fig1"
+  }
+ },
+ "calls": [
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "fig1",
+    "location": [
+     -3.0,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "walk",
+    "distance": 2.5,
+    "direction": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "walk",
+    "to": -3.0
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     -1.75,
+     0.98
+    ],
+    "width": 5.0
+   }
+  }
+ ],
+ "rounds": []
+}

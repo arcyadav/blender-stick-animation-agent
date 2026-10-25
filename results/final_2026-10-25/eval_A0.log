@@ -1,0 +1,32 @@
+PASS s01     0.0s   6 calls  0 invalid  three cubes in a row, the middle one blue
+PASS s02     0.0s   6 calls  0 invalid  a red ball on a table, with a chair next to the table
+PASS s03     0.0s   7 calls  0 invalid  a lamp on a table and a green box on the floor to the left of the table, in sunset light
+PASS m01     0.1s  18 calls  0 invalid  a red ball bounces three times on the floor
+PASS m02     0.0s   7 calls  0 invalid  a cube spins around once in 2 seconds
+PASS m03     0.1s  23 calls  0 invalid  a yellow ball rolls from left to right across a table and drops onto the floor
+PASS m04     0.0s   9 calls  0 invalid  a blue sphere grows from nothing to full size, then turns red
+PASS m05     0.1s   8 calls  0 invalid  the camera pans from a tree on the left to a table with a ball on it
+PASS f01     0.4s   4 calls  0 invalid  a stick man walks to the right for 4 seconds
+PASS f02     0.1s   4 calls  0 invalid  a stick figure waves at the camera
+PASS f03     0.1s   4 calls  0 invalid  a stick figure stands still, just breathing, for 3 seconds
+PASS f04     0.1s   4 calls  0 invalid  a sad stick figure walks slowly to the left
+PASS f05     0.1s   4 calls  0 invalid  a happy stick woman walks from the left side of the screen to the right
+PASS f06     0.1s   4 calls  0 invalid  a red stick figure gets a sudden fright
+PASS q01     0.3s   5 calls  0 invalid  a stick man walks in from the left, stops in the middle and waves
+PASS q02     0.4s   6 calls  0 invalid  she walks in, stops, looks down, then walks away sadly
+PASS q03     0.3s   6 calls  0 invalid  a stick figure stands around, gets startled, then hurries off to the right
+PASS q04     0.2s   5 calls  0 invalid  a stick man walks to the right, turns around and walks back to where he started
+PASS q05     0.1s   5 calls  0 invalid  a worried stick figure walks a few steps, stops, looks ahead and sighs sadly
+PASS q06     0.2s   5 calls  0 invalid  she waves at the camera, then walks off happily to the left
+PASS p01     0.2s   6 calls  0 invalid  a stick man walks to the table and waves
+PASS p02     0.2s   7 calls  0 invalid  a stick figure walks up to a chair with a ball on it and looks down at the ball
+PASS p03     0.3s   8 calls  0 invalid  she walks to a box, looks down at it, then walks on past it to a tree
+PASS p04     0.3s   8 calls  0 invalid  a red ball sits on a table; a stick figure walks up to it, gets a fright and walks back
+PASS p05     0.1s   6 calls  0 invalid  two boxes stand on the floor; a stick man walks from the left box to the right box
+PASS p06     0.9s   7 calls  0 invalid  a stick figure walks past a tree while the camera follows him
+PASS t01     0.6s   9 calls  0 invalid  two stick figures walk toward each other, stop face to face and shake hands; the camera slowly zooms in
+PASS t02     0.3s   6 calls  0 invalid  a red and a blue stick figure stand side by side and wave together
+PASS t03     0.3s   6 calls  0 invalid  one stick man waves, and the other one walks over to him
+PASS t04     1.2s   8 calls  0 invalid  two stick figures walk side by side from left to right, and the camera follows them
+
+A0: 30/30 passed (30 on the first try)

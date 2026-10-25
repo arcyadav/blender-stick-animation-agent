@@ -1,0 +1,8 @@
+{"t": 1792932966.4, "tool": "add_stick_figure", "args": {"name": "figure_a", "location": [-2, 0], "facing": "right", "colour": "blue", "layer": "back"}, "warnings": []}
+{"t": 1792932967.21, "tool": "add_stick_figure", "args": {"name": "figure_b", "location": [-1.2, 0], "facing": "right", "colour": "red", "layer": "front"}, "warnings": []}
+{"t": 1792932970.11, "tool": "play_action", "args": {"name": "figure_a", "action": "walk", "direction": "right", "distance": 6, "seconds": 5, "start_frame": 1}, "warnings": []}
+{"t": 1792932971.15, "tool": "play_action", "args": {"name": "figure_b", "action": "walk", "direction": "right", "distance": 6, "seconds": 5, "start_frame": 1}, "warnings": []}
+{"t": 1792932973.52, "tool": "set_camera", "args": {"look_at": [-1.6, 1.6], "width": 6}, "warnings": []}
+{"t": 1792932975.5, "tool": "camera_move", "args": {"kind": "follow", "target": "figure_a", "start_frame": 1, "end_frame": 196}, "warnings": []}
+{"t": 1792932977.81, "tool": "set_frames", "args": {"start": 1, "end": 208}, "warnings": []}
+{"t": 1792932981.29, "check": 1, "passed": true, "report": "All 13 checks pass."}

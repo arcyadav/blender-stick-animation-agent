@@ -1,0 +1,185 @@
+{
+ "id": "p03",
+ "category": "figure_props",
+ "request": "she walks to a box, looks down at it, then walks on past it to a tree",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 14.8,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 8,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 14.7,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "she does ['walk', 'look_down', 'walk']; expected ['walk', 'look_down', 'walk'] in this order",
+    "default": false
+   },
+   {
+    "check": "passes",
+    "ok": true,
+    "detail": "she starts to the left of box and ends to the right",
+    "default": false
+   },
+   {
+    "check": "reaches",
+    "ok": true,
+    "detail": "she ends 0.30 m from tree (within 0.6 m needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "she's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "she's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "she moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 10.3 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "she": "she",
+   "box": "box",
+   "tree": "tree"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "box",
+    "name": "box",
+    "location": [
+     0,
+     0
+    ],
+    "layer": "back"
+   }
+  },
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "tree",
+    "name": "tree",
+    "location": [
+     3,
+     0
+    ],
+    "layer": "back"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "she",
+    "location": [
+     -3,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "she",
+    "action": "walk",
+    "to": "box",
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "she",
+    "action": "look_down",
+    "to": "box"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "she",
+    "action": "walk",
+    "to": "tree",
+    "direction": "right"
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 248
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1.5
+    ],
+    "width": 9
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 8
+  }
+ ]
+}

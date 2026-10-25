@@ -1,0 +1,231 @@
+{
+ "id": "t01",
+ "category": "two_figures_camera",
+ "request": "two stick figures walk toward each other, stop face to face and shake hands; the camera slowly zooms in",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 24.4,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 10,
+ "invalid_calls": 0,
+ "tool_errors": 1,
+ "llm_seconds": 24.4,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "left_person does ['walk', 'handshake']; expected ['walk', 'handshake'] in this order",
+    "default": false
+   },
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "right_person does ['walk', 'handshake']; expected ['walk', 'handshake'] in this order",
+    "default": false
+   },
+   {
+    "check": "same_time",
+    "ok": true,
+    "detail": "left_person and right_person do handshake together for 2.4 s (\u2265 0.5 s needed)",
+    "default": false
+   },
+   {
+    "check": "faces",
+    "ok": true,
+    "detail": "left_person faces right at the end; right_person is to the right",
+    "default": false
+   },
+   {
+    "check": "faces",
+    "ok": true,
+    "detail": "right_person faces left at the end; left_person is to the left",
+    "default": false
+   },
+   {
+    "check": "distance_end",
+    "ok": true,
+    "detail": "left_person and right_person end 0.68 m apart (allowed 0.4\u20131.2 m)",
+    "default": false
+   },
+   {
+    "check": "camera_move",
+    "ok": true,
+    "detail": "visible width goes 8.0 \u2192 4.8 m (\u2264 80% needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "left_person's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm); right_person's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "left_person's planted feet slide at most 0.00 cm per frame (allowed 0.5); right_person's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "left_person moves smoothly (no joint jumps or spikes); right_person moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 6.5 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "a": "left_person",
+   "b": "right_person"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "left_person",
+    "location": [
+     -3,
+     0
+    ],
+    "facing": "right",
+    "colour": "blue"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "right_person",
+    "location": [
+     3,
+     0
+    ],
+    "facing": "left",
+    "colour": "red"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "left_person",
+    "action": "walk",
+    "to": "-0.4",
+    "start_frame": 1
+   },
+   "error": "no object named '-0.4'. Objects in the scene: camera, ground, left_person, right_person"
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "right_person",
+    "action": "walk",
+    "to": 0.4,
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "left_person",
+    "action": "walk",
+    "distance": 2.6,
+    "direction": "right",
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "left_person",
+    "action": "handshake",
+    "to": "right_person",
+    "start_frame": 86
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "right_person",
+    "action": "handshake",
+    "to": "left_person",
+    "start_frame": 86
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 155
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1.2
+    ],
+    "width": 8
+   }
+  },
+  {
+   "tool": "camera_move",
+   "args": {
+    "kind": "zoom_in",
+    "target": [
+     0,
+     1.1
+    ],
+    "start_frame": 1,
+    "end_frame": 150,
+    "amount": 0.6
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 16 checks pass.",
+   "tool_calls": 10
+  }
+ ]
+}

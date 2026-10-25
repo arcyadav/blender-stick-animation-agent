@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 14721,
+ "stop_reason": "end_turn",
+ "session_id": "518ca517-4681-4f3a-b6b9-c88fc9f8c52b",
+ "total_cost_usd": 0.05184520000000001,
+ "usage": {
+  "input_tokens": 10,
+  "cache_creation_input_tokens": 3306,
+  "cache_read_input_tokens": 52886,
+  "output_tokens": 739,
+  "output_tokens_details": {
+   "thinking_tokens": 0
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 3306,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 79,
+    "cache_read_input_tokens": 11682,
+    "cache_creation_input_tokens": 72,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 72
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 10,
+   "outputTokens": 739,
+   "cacheReadInputTokens": 52886,
+   "cacheCreationInputTokens": 3306,
+   "webSearchRequests": 0,
+   "costUSD": 0.05184520000000001,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 0,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 8,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "A 1 m cube floats 1 m above the ground and spins one full turn at a steady speed over 2 seconds (frames 1\u201349 at 24 fps), framed in a 6 m-wide shot; all 10 scene checks pass.",
+ "ttft_ms": 3898,
+ "type": "result",
+ "duration_ms": 14914,
+ "uuid": "9298fc53-5a4f-456a-a170-f00146db2370",
+ "ttft_stream_ms": 2514,
+ "time_to_request_ms": 92,
+ "first_content_frame_ms": 2515,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

@@ -1,0 +1,8 @@
+{"t": 1792932555.78, "tool": "add_primitive", "args": {"type": "sphere", "name": "ball", "colour": "blue", "size": 1.5, "location": [0, 0]}, "warnings": []}
+{"t": 1792932556.5, "tool": "set_frames", "args": {"start": 1, "end": 96}, "warnings": []}
+{"t": 1792932559.04, "tool": "keyframe", "args": {"name": "ball", "property": "scale", "frame": 1, "value": 0}, "warnings": []}
+{"t": 1792932559.6, "tool": "keyframe", "args": {"name": "ball", "property": "scale", "frame": 48, "value": 1}, "warnings": []}
+{"t": 1792932560.3, "tool": "keyframe", "args": {"name": "ball", "property": "colour", "frame": 54, "value": "blue"}, "warnings": []}
+{"t": 1792932560.89, "tool": "keyframe", "args": {"name": "ball", "property": "colour", "frame": 78, "value": "red"}, "warnings": []}
+{"t": 1792932563.35, "tool": "set_camera", "args": {"look_at": [0, 0.9], "width": 6}, "warnings": []}
+{"t": 1792932563.7, "check": 1, "passed": true, "report": "All 11 checks pass."}

@@ -1,0 +1,7 @@
+{"t": 1792932516.8, "tool": "add_primitive", "args": {"type": "cube", "name": "cube", "size": 1, "location": [0, 1]}, "warnings": []}
+{"t": 1792932516.82, "tool": "set_frames", "args": {"start": 1, "end": 49}, "warnings": []}
+{"t": 1792932519.64, "tool": "keyframe", "args": {"name": "cube", "property": "rotation", "frame": 1, "value": 0}, "warnings": []}
+{"t": 1792932520.08, "tool": "keyframe", "args": {"name": "cube", "property": "rotation", "frame": 49, "value": 360}, "warnings": []}
+{"t": 1792932522.77, "tool": "set_easing", "args": {"name": "cube", "property": "rotation", "interpolation": "linear"}, "warnings": []}
+{"t": 1792932523.15, "tool": "set_camera", "args": {"look_at": [0, 1.5], "width": 6}, "warnings": []}
+{"t": 1792932525.09, "check": 1, "passed": true, "report": "All 10 checks pass."}

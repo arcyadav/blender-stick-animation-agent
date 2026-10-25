@@ -1,0 +1,4 @@
+{"t": 1792932763.49, "tool": "add_stick_figure", "args": {"name": "woman", "location": [1, 0], "facing": "front"}, "warnings": []}
+{"t": 1792932766.19, "tool": "play_action", "args": {"name": "woman", "action": "wave", "start_frame": 1}, "warnings": []}
+{"t": 1792932766.65, "tool": "play_action", "args": {"name": "woman", "action": "walk_happy", "direction": "left", "to": -5.5}, "warnings": []}
+{"t": 1792932769.5, "check": 1, "passed": true, "report": "All 11 checks pass."}

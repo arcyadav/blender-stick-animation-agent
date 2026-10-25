@@ -1,0 +1,7 @@
+{"t": 1792932778.15, "tool": "add_asset", "args": {"asset": "table", "name": "table", "location": [2, 0]}, "warnings": []}
+{"t": 1792932778.18, "tool": "add_stick_figure", "args": {"name": "man", "location": [-2.5, 0], "facing": "right"}, "warnings": []}
+{"t": 1792932780.23, "tool": "play_action", "args": {"name": "man", "action": "walk", "to": "table", "start_frame": 1}, "warnings": []}
+{"t": 1792932782.14, "tool": "play_action", "args": {"name": "man", "action": "wave"}, "warnings": []}
+{"t": 1792932784.15, "tool": "set_camera", "args": {"look_at": [0, 1.6], "width": 8}, "warnings": []}
+{"t": 1792932784.42, "tool": "set_frames", "args": {"start": 1, "end": 259}, "warnings": []}
+{"t": 1792932787.16, "check": 1, "passed": true, "report": "All 11 checks pass."}

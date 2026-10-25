@@ -1,0 +1,237 @@
+{
+ "id": "s01",
+ "category": "static_layout",
+ "request": "three cubes in a row, the middle one blue",
+ "agent": "A2",
+ "passed": true,
+ "error": null,
+ "seconds": 24.6,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 3,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 24.6,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "count",
+    "ok": true,
+    "detail": "3 object(s) match 'cubes', expected 3",
+    "default": false
+   },
+   {
+    "check": "row",
+    "ok": true,
+    "detail": "row ['cube_left', 'cube_middle', 'cube_right']: off the line by 0.00 m, gaps [1.0, 1.0]",
+    "default": false
+   },
+   {
+    "check": "middle_of_row",
+    "ok": true,
+    "detail": "middle of the row is cube_middle, 'mid' is cube_middle",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "cubes": [
+    "cube_left",
+    "cube_middle",
+    "cube_right"
+   ],
+   "mid": "cube_middle"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_primitive",
+   "args": {
+    "layer": "middle",
+    "name": "cube_left",
+    "type": "cube",
+    "location": {
+     "x": -1,
+     "z": 0
+    },
+    "size": 0.2
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "cube",
+    "location": {
+     "x": 0,
+     "z": 0
+    },
+    "size": 0.2,
+    "layer": "middle",
+    "name": "cube_middle",
+    "colour": "blue"
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "name": "cube_right",
+    "type": "cube",
+    "location": {
+     "x": 1,
+     "z": 0
+    },
+    "size": 0.2,
+    "layer": "middle"
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 3
+  }
+ ],
+ "transcript": [
+  {
+   "role": "system",
+   "content": "You direct a short 2D animation in Blender by calling tools. The scene is already empty and ready (ground line at z = 0, white background, 24 fps). Make exactly what the request asks for: no extra objects, no stick figures unless the request has one.\n\nThe world is 2D, seen from the side like paper:\n- positions are [x, z]: x = left/right (screen-left is negative, about -4 to 4 is on screen), z = height of the object's BOTTOM (0 = standing on the ground). Or use a placement: {\"on_top_of\": \"table\"}, {\"next_to\": \"table\", \"side\": \"left\"}.\n- props (table, chair, bench, box, lamp, tree) come from add_asset; shapes (ball = sphere, cube, cone, ...) from add_primitive. Depth is only a layer: \"back\", \"middle\" (default) or \"front\".\n- if the request has a stick figure: add_stick_figure, then one play_action per action, in order (walk, walk_happy, walk_sad, walk_worried, run, wave, idle, look, look_down, react, sigh, handshake, pick_up, put_down, sit, stand_up, turn). Walks take `to` (an object's name: it stops beside it) or `distance` / `seconds` with `direction`. look_down takes `to` = what to look at; pick_up `to` = a small object (walk to it first); put_down `to` = a surface or the ground. Figures are animated only with play_action. Put props a figure walks past in the back layer.\n- moving objects: keyframe (location, rotation, scale, colour) at frames, then set_easing (gravity for bounces and falls), and set_frames to cover the motion.\n- a figure that \"walks in\" or \"comes in\" starts just off-screen (beyond the camera's shows_x) and walks into view.\n- small props read better a little bigger than life (a phone about 0.3 m, a cup 0.25 m), like cartoons.\n- camera: set_camera(look_at, width) frames the shot; camera_move does pan / zoom_in / zoom_out / follow.\n\nMake the objects, animate them, then frame the camera so everything is in view. When the scene is finished, reply with a short summary and no tool call."
+  },
+  {
+   "role": "user",
+   "content": "three cubes in a row, the middle one blue"
+  },
+  {
+   "role": "assistant",
+   "content": "",
+   "tool_calls": [
+    {
+     "id": "call_hzdcc43a",
+     "function": {
+      "index": 0,
+      "name": "add_primitive",
+      "arguments": {
+       "layer": "middle",
+       "name": "cube_left",
+       "type": "cube",
+       "location": {
+        "x": -1,
+        "z": 0
+       },
+       "size": 0.2
+      }
+     }
+    },
+    {
+     "id": "call_218rrlsv",
+     "function": {
+      "index": 1,
+      "name": "add_primitive",
+      "arguments": {
+       "type": "cube",
+       "location": {
+        "x": 0,
+        "z": 0
+       },
+       "size": 0.2,
+       "layer": "middle",
+       "name": "cube_middle",
+       "colour": "blue"
+      }
+     }
+    },
+    {
+     "id": "call_eqmts6cj",
+     "function": {
+      "index": 2,
+      "name": "add_primitive",
+      "arguments": {
+       "name": "cube_right",
+       "type": "cube",
+       "location": {
+        "x": 1,
+        "z": 0
+       },
+       "size": 0.2,
+       "layer": "middle"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_left\",\"bottom_centre\":[-1.0,0.0,0.0],\"size\":[0.2,0.2,0.2],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_middle\",\"bottom_centre\":[0.0,0.0,0.0],\"size\":[0.2,0.2,0.2],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "tool",
+   "content": "{\"name\":\"cube_right\",\"bottom_centre\":[1.0,0.0,0.0],\"size\":[0.2,0.2,0.2],\"layer\":\"middle\"}",
+   "tool_name": "add_primitive"
+  },
+  {
+   "role": "assistant",
+   "content": "The scene now includes three cubes in a row, with the middle one being blue. Here is a summary of the objects added:\n\n- A cube named \"cube_left\" at position [-1, 0] with a size of 0.2 m.\n- A blue cube named \"cube_middle\" at position [0, 0] with a size of 0.2 m.\n- A cube named \"cube_right\" at position [1, 0] with a size of 0.2 m."
+  }
+ ]
+}

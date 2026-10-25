@@ -1,0 +1,13 @@
+{"t": 1792932917.16, "tool": "add_stick_figure", "args": {"name": "red", "colour": "red", "facing": "front", "location": [-0.6, 0]}, "warnings": []}
+{"t": 1792932917.77, "tool": "add_stick_figure", "args": {"name": "blue", "colour": "blue", "facing": "front", "location": [0.6, 0]}, "warnings": []}
+{"t": 1792932920.33, "tool": "play_action", "args": {"name": "red", "action": "wave", "start_frame": 1}, "warnings": []}
+{"t": 1792932920.82, "tool": "play_action", "args": {"name": "blue", "action": "wave", "start_frame": 1}, "warnings": []}
+{"t": 1792932923.19, "tool": "set_camera", "args": {"look_at": [0, 1.2], "width": 5}, "warnings": []}
+{"t": 1792932925.12, "check": 1, "passed": false, "report": "1 of 11 checks fail:\n- relation: gap between red and blue is 0.68 m (max 0.5)"}
+{"t": 1792932928.13, "tool": "scene_reset", "args": {}, "warnings": []}
+{"t": 1792932928.98, "tool": "add_stick_figure", "args": {"name": "red", "colour": "red", "facing": "front", "location": [-0.4, 0]}, "warnings": []}
+{"t": 1792932929.72, "tool": "add_stick_figure", "args": {"name": "blue", "colour": "blue", "facing": "front", "location": [0.4, 0]}, "warnings": []}
+{"t": 1792932932.32, "tool": "play_action", "args": {"name": "red", "action": "wave", "start_frame": 1}, "warnings": []}
+{"t": 1792932932.95, "tool": "play_action", "args": {"name": "blue", "action": "wave", "start_frame": 1}, "warnings": []}
+{"t": 1792932933.14, "tool": "set_camera", "args": {"look_at": [0, 1.2], "width": 5}, "warnings": []}
+{"t": 1792932936.44, "check": 2, "passed": true, "report": "All 11 checks pass."}

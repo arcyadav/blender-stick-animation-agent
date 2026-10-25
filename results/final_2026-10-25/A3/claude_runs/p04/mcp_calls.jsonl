@@ -1,0 +1,8 @@
+{"t": 1792932826.97, "tool": "add_asset", "args": {"asset": "table", "name": "table", "location": [1.5, 0]}, "warnings": []}
+{"t": 1792932827.6, "tool": "add_stick_figure", "args": {"name": "figure", "location": [-3, 0], "facing": "right"}, "warnings": []}
+{"t": 1792932830.67, "tool": "add_primitive", "args": {"type": "sphere", "name": "ball", "colour": "red", "size": 0.3, "location": {"on_top_of": "table"}}, "warnings": []}
+{"t": 1792932831.29, "tool": "play_action", "args": {"name": "figure", "action": "walk", "to": "table", "start_frame": 1}, "warnings": []}
+{"t": 1792932833.36, "tool": "play_action", "args": {"name": "figure", "action": "react", "to": "ball"}, "warnings": []}
+{"t": 1792932835.6, "tool": "play_action", "args": {"name": "figure", "action": "walk", "direction": "left", "to": -3}, "warnings": []}
+{"t": 1792932837.84, "tool": "set_camera", "args": {"look_at": [-0.5, 1.2], "width": 8}, "warnings": []}
+{"t": 1792932839.49, "check": 1, "passed": true, "report": "All 12 checks pass."}

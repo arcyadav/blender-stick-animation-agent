@@ -1,0 +1,132 @@
+PASS s01    24.6s   3 calls  0 invalid  three cubes in a row, the middle one blue
+FAIL s02    23.5s   9 calls  0 invalid  a red ball on a table, with a chair next to the table
+     4 of 11 checks fail:
+     - on_surface: ball rests on nothing at frame 72, expected table
+     - on_surface: chair is floating or sunk (bottom at 0.35 m); table is floating or sunk (bottom at 0.35 m); ball is floating or sunk (bottom at 0.10 m)
+     - no_collision: table passes through chair (from frame 1)
+     - no_hover: ball hangs in the air at 0.10 m with nothing under it (frames 2–8); chair hangs in the air at 0.35 m with nothing under it (frames 2–8); table hangs in the air at 0.35 m with nothing under it (frames 2–8)
+FAIL s03    81.5s  10 calls  2 invalid  a lamp on a table and a green box on the floor to the left of the table, in sunset light
+     5 of 13 checks fail:
+     - on_surface: nothing in the scene matches 'box': the request needs a green box (add_asset(asset='box', colour='green'))
+     - relation: nothing in the scene matches 'box': the request needs a green box (add_asset(asset='box', colour='green'))
+     - light: light is day, expected sunset
+     - on_surface: table is floating or sunk (bottom at -0.38 m)
+     - no_hover: table hangs in the air at -0.38 m with nothing under it (frames 2–8)
+FAIL m01    32.3s  10 calls  0 invalid  a red ball bounces three times on the floor
+     1 of 10 checks fail:
+     - bounces: ball bounces 0 time(s) (frames []), expected 3
+FAIL m02    35.8s   6 calls  0 invalid  a cube spins around once in 2 seconds
+     2 of 10 checks fail:
+     - spins: cube turns 1.00 time(s) in 0.04 s, expected 1 in 2 s
+     - clip_length_s: clip is 0.1 s (allowed 2–20 s)
+FAIL m03    31.4s   7 calls  0 invalid  a yellow ball rolls from left to right across a table and drops onto the floor
+     3 of 12 checks fail:
+     - on_surface: nothing in the scene matches 'table': the request needs a table (add_asset(asset='table'))
+     - on_surface: ball rests on nothing at frame 72, expected ground
+     - no_hover: ball hangs in the air at -0.10 m with nothing under it (frames 49–55)
+FAIL m04    41.5s  11 calls  0 invalid  a blue sphere grows from nothing to full size, then turns red
+     2 of 11 checks fail:
+     - scale_change: blue_sphere scale goes 0.20 → 0.50, expected 0.0 → 1.0
+     - clip_length_s: clip is 1.0 s (allowed 2–20 s)
+FAIL m05    34.6s   7 calls  0 invalid  the camera pans from a tree on the left to a table with a ball on it
+     4 of 13 checks fail:
+     - on_surface: ball rests on nothing at frame 24, expected table
+     - on_surface: ball is floating or sunk (bottom at 0.10 m)
+     - no_hover: ball hangs in the air at 0.10 m with nothing under it (frames 2–8)
+     - clip_length_s: clip is 1.0 s (allowed 2–20 s)
+FAIL f01    33.0s   7 calls  4 invalid  a stick man walks to the right for 4 seconds
+     4 of 12 checks fail:
+     - actions_in_order: figure does nothing; expected ['walk'] in this order
+     - action_duration: figure does walk for 0.0 s (allowed 3.5–4.5 s)
+     - moves: figure moves 0.00 m right (as seen by the camera), at least 1.5 m needed
+     - in_view: figure not fully in view on 72 frame(s) (e.g. frame 1)
+PASS f02     6.8s   2 calls  0 invalid  a stick figure waves at the camera
+PASS f03     7.5s   2 calls  0 invalid  a stick figure stands still, just breathing, for 3 seconds
+PASS f04    25.5s   7 calls  1 invalid  a sad stick figure walks slowly to the left
+PASS f05     7.3s   2 calls  0 invalid  a happy stick woman walks from the left side of the screen to the right
+PASS f06     5.3s   2 calls  0 invalid  a red stick figure gets a sudden fright
+FAIL q01    77.7s  30 calls 21 invalid  a stick man walks in from the left, stops in the middle and waves
+     4 of 12 checks fail:
+     - actions_in_order: nothing in the scene matches 'man': the request needs a stick figure (add_stick_figure)
+     - moves: nothing in the scene matches 'man': the request needs a stick figure (add_stick_figure)
+     - in_view: nothing in the scene matches 'man': the request needs a stick figure (add_stick_figure)
+     - clip_length_s: clip is 1.0 s (allowed 2–20 s)
+PASS q02    16.8s   5 calls  0 invalid  she walks in, stops, looks down, then walks away sadly
+FAIL q03    27.0s   4 calls  0 invalid  a stick figure stands around, gets startled, then hurries off to the right
+     1 of 11 checks fail:
+     - in_view: figure not fully in view on 80 frame(s) (e.g. frame 29)
+FAIL q04    29.8s   3 calls  0 invalid  a stick man walks to the right, turns around and walks back to where he started
+     3 of 11 checks fail:
+     - actions_in_order: stick_man does ['walk', 'turn']; expected ['walk', 'walk'] in this order
+     - returns: stick_man goes 0.61 m away (≥ 1 m needed) and ends 0.53 m from its start (within 0.4 m needed)
+     - in_view: stick_man not fully in view on 139 frame(s) (e.g. frame 1)
+FAIL q05   113.3s 116 calls  0 invalid  a worried stick figure walks a few steps, stops, looks ahead and sighs sadly
+     1 of 10 checks fail:
+     - actions_in_order: nothing in the scene matches 'fig': the request needs a stick figure (add_stick_figure)
+FAIL q06    98.1s  37 calls  1 invalid  she waves at the camera, then walks off happily to the left
+     1 of 11 checks fail:
+     - in_view: figure1 not fully in view on 203 frame(s) (e.g. frame 191)
+FAIL p01   232.2s  51 calls 26 invalid  a stick man walks to the table and waves
+     2 of 11 checks fail:
+     - actions_in_order: figure does nothing; expected ['walk', 'wave'] in this order
+     - in_view: figure not fully in view on 72 frame(s) (e.g. frame 1)
+FAIL p02   116.3s  49 calls 21 invalid  a stick figure walks up to a chair with a ball on it and looks down at the ball
+     8 of 12 checks fail:
+     - on_surface: ball rests on ground at frame 30, expected chair
+     - actions_in_order: figure does nothing; expected ['walk', 'look_down'] in this order
+     - reaches: figure ends 0.29 m from chair (within 0.6 m needed), facing None (not toward chair)
+     - in_view: chair not fully in view on 30 frame(s) (e.g. frame 1)
+     - on_surface: chair is floating or sunk (bottom at -0.48 m)
+     - no_collision: ball passes through figure (from frame 1)
+     - no_hover: chair hangs in the air at -0.48 m with nothing under it (frames 2–8)
+     - clip_length_s: clip is 1.2 s (allowed 2–20 s)
+FAIL p03    71.3s  16 calls  8 invalid  she walks to a box, looks down at it, then walks on past it to a tree
+     6 of 12 checks fail:
+     - actions_in_order: figure does nothing; expected ['walk', 'look_down', 'walk'] in this order
+     - passes: figure starts to the right of box and ends to the right
+     - reaches: figure ends 2.24 m from tree (within 0.6 m needed)
+     - in_view: box not fully in view on 72 frame(s) (e.g. frame 1); figure not fully in view on 72 frame(s) (e.g. frame 1); tree not fully in view on 72 frame(s) (e.g. frame 1)
+     - on_surface: tree is floating or sunk (bottom at 0.30 m); box is floating or sunk (bottom at 0.30 m)
+     - no_hover: box hangs in the air at 0.30 m with nothing under it (frames 2–8); tree hangs in the air at 0.30 m with nothing under it (frames 2–8)
+FAIL p04   126.5s  41 calls  6 invalid  a red ball sits on a table; a stick figure walks up to it, gets a fright and walks back
+     6 of 12 checks fail:
+     - on_surface: ball rests on nothing at frame 72, expected table
+     - actions_in_order: figure does nothing; expected ['walk', 'react', 'walk'] in this order
+     - returns: figure goes 0.00 m away (≥ 1 m needed) and ends 0.00 m from its start (within 0.6 m needed)
+     - in_view: ball not fully in view on 72 frame(s) (e.g. frame 1); table not fully in view on 72 frame(s) (e.g. frame 1)
+     - on_surface: table is floating or sunk (bottom at 0.75 m); ball is floating or sunk (bottom at 0.10 m)
+     - no_hover: ball hangs in the air at 0.10 m with nothing under it (frames 2–8); table hangs in the air at 0.75 m with nothing under it (frames 2–8)
+FAIL p05    44.5s   5 calls  0 invalid  two boxes stand on the floor; a stick man walks from the left box to the right box
+     1 of 12 checks fail:
+     - no_collision: box_left passes through stick_man (from frame 1)
+FAIL p06    52.5s  14 calls  3 invalid  a stick figure walks past a tree while the camera follows him
+     5 of 12 checks fail:
+     - actions_in_order: figure does nothing; expected ['walk'] in this order
+     - passes: figure starts to the left of tree and ends to the left
+     - camera_move: figure in the middle third on 72/72 frames, camera travels 0.0 m
+     - on_surface: tree is floating or sunk (bottom at 0.50 m)
+     - no_hover: tree hangs in the air at 0.50 m with nothing under it (frames 2–8)
+FAIL t01    56.8s  23 calls  9 invalid  two stick figures walk toward each other, stop face to face and shake hands; the camera slowly zooms in
+     7 of 16 checks fail:
+     - actions_in_order: nothing in the scene matches 'a': the request needs a stick figure (add_stick_figure)
+     - actions_in_order: nothing in the scene matches 'b': the request needs a stick figure (add_stick_figure)
+     - same_time: nothing in the scene matches 'a': the request needs a stick figure (add_stick_figure)
+     - faces: nothing in the scene matches 'a': the request needs a stick figure (add_stick_figure)
+     - faces: nothing in the scene matches 'b': the request needs a stick figure (add_stick_figure)
+     - distance_end: nothing in the scene matches 'a': the request needs a stick figure (add_stick_figure)
+     - camera_move: nothing in the scene matches 'a': the request needs a stick figure (add_stick_figure)
+FAIL t02    84.2s  36 calls  0 invalid  a red and a blue stick figure stand side by side and wave together
+     3 of 11 checks fail:
+     - relation: gap between red_stick_figure and blue_stick_figure is 3.22 m (max 0.5)
+     - in_view: blue_stick_figure not fully in view on 24 frame(s) (e.g. frame 1)
+     - clip_length_s: clip is 1.0 s (allowed 2–20 s)
+PASS t03    14.3s   4 calls  0 invalid  one stick man waves, and the other one walks over to him
+FAIL t04   137.0s  30 calls 14 invalid  two stick figures walk side by side from left to right, and the camera follows them
+     5 of 13 checks fail:
+     - same_time: figure never does walk
+     - moves: figure moves 0.00 m right (as seen by the camera), at least 1.5 m needed
+     - moves: figure2 moves 0.00 m right (as seen by the camera), at least 1.5 m needed
+     - camera_move: figure in the middle third on 0/72 frames, camera travels 0.0 m
+     - in_view: figure not fully in view on 72 frame(s) (e.g. frame 1); figure2 not fully in view on 72 frame(s) (e.g. frame 1)
+
+A2: 8/30 passed (8 on the first try)

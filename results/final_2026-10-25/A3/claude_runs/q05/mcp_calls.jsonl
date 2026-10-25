@@ -1,0 +1,12 @@
+{"t": 1792932733.13, "tool": "add_stick_figure", "args": {"name": "figure", "location": [-2, 0], "facing": "right"}, "warnings": []}
+{"t": 1792932735.83, "tool": "play_action", "args": {"name": "figure", "action": "walk_worried", "distance": 2, "direction": "right", "start_frame": 1}, "warnings": []}
+{"t": 1792932736.41, "tool": "play_action", "args": {"name": "figure", "action": "look", "to": "ahead"}, "error": "no object named 'ahead'. Objects in the scene: camera, figure, ground"}
+{"t": 1792932736.77, "tool": "play_action", "args": {"name": "figure", "action": "sigh"}, "warnings": []}
+{"t": 1792932740.61, "tool": "scene_reset", "args": {}, "warnings": []}
+{"t": 1792932741.14, "tool": "add_stick_figure", "args": {"name": "figure", "location": [-2, 0], "facing": "right"}, "warnings": []}
+{"t": 1792932744.02, "tool": "play_action", "args": {"name": "figure", "action": "walk_worried", "distance": 2, "direction": "right", "start_frame": 1}, "warnings": []}
+{"t": 1792932746.33, "tool": "play_action", "args": {"name": "figure", "action": "look", "direction": "right"}, "warnings": []}
+{"t": 1792932748.39, "tool": "play_action", "args": {"name": "figure", "action": "sigh"}, "warnings": []}
+{"t": 1792932751.76, "tool": "scene_state", "args": {}, "warnings": []}
+{"t": 1792932754.35, "tool": "set_camera", "args": {"look_at": [-1, 1.2], "width": 6}, "warnings": []}
+{"t": 1792932755.14, "check": 1, "passed": true, "report": "All 10 checks pass."}

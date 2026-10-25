@@ -518,3 +518,19 @@ passes on top bring drift back.
 - **Model Context Protocol** (Anthropic, 2024): the standard for exposing tools to LLMs
 - R. Williams, *The Animator's Survival Kit* (2001): ball → figure → walk training ladder; pose-to-pose blocking
 - Project 3 (own work): motion library, foot lock, critic + fix loop
+
+### 25 Oct: final runs, demo and deployment
+
+- Final runs on the frozen version (`results/final_2026-10-25`): A0 30/30 (30 first try), A1 qwen2.5:3b 3/30 (2),
+  A2 qwen2.5:7b 8/30 (8), A3 Claude 30/30 (27). qwen ran on a Kaggle T4 (same notebook as v1).
+- Two changes after the freeze, both checked against the eval:
+  - A0's keyword rules learned sit / stand up / look at / pick up / put down / turn (the demo's live director
+    dropped them silently). Re-run: still 30/30; only q05's calls changed (it now does its "looks ahead").
+  - Bug fix in `camera_move(kind="follow")`: it kept the camera's gap to the target measured at start_frame, so a
+    `set_camera(look_at=target)` made at another frame left the camera metres away. It now centres when aimed at
+    the target or when the gap would put the target off-screen. All 120 final runs replayed on the fixed tools
+    give their recorded pass/fail (`scripts/replay_results.py`).
+- Demo: `demo_app.py` (Gradio, local: Direct, Results, Story, Task + checks). Deployed page (free static
+  Hugging Face Space; Gradio/Docker Spaces now need PRO): https://arcyadav-stick-animation-agent.static.hf.space,
+  built by `space/build_static.py`. `space/Dockerfile` (tested in WSL) is the live-server option if ever needed.
+- Second story: `stories/ball_that_goes_away.json` (Claude, 64 calls, 0 errors).

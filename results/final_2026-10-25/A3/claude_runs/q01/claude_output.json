@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 8901,
+ "stop_reason": "end_turn",
+ "session_id": "498bc5d5-ba60-42eb-a86c-2beba4d74425",
+ "total_cost_usd": 0.0401898,
+ "usage": {
+  "input_tokens": 8,
+  "cache_creation_input_tokens": 2877,
+  "cache_read_input_tokens": 41009,
+  "output_tokens": 447,
+  "output_tokens_details": {
+   "thinking_tokens": 0
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 2877,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 87,
+    "cache_read_input_tokens": 11228,
+    "cache_creation_input_tokens": 97,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 97
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 8,
+   "outputTokens": 447,
+   "cacheReadInputTokens": 41009,
+   "cacheCreationInputTokens": 2877,
+   "webSearchRequests": 0,
+   "costUSD": 0.0401898,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 0,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 5,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "The stick man starts just off-screen on the left at x = -5, walks to the middle (x = 0) over frames 1\u2013155, then turns to the camera and waves until frame 288. The clip runs to frame 300 with the default camera, and all 12 scene checks pass.",
+ "ttft_ms": 2301,
+ "type": "result",
+ "duration_ms": 13564,
+ "uuid": "a139485d-8c0c-4ed2-8867-662d018175da",
+ "ttft_stream_ms": 1835,
+ "time_to_request_ms": 99,
+ "first_content_frame_ms": 1835,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

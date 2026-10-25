@@ -1,0 +1,9 @@
+{"t": 1792932810.31, "tool": "add_asset", "args": {"asset": "box", "name": "box", "location": [0, 0], "layer": "back"}, "warnings": []}
+{"t": 1792932810.94, "tool": "add_asset", "args": {"asset": "tree", "name": "tree", "location": [3, 0], "layer": "back"}, "warnings": []}
+{"t": 1792932811.89, "tool": "add_stick_figure", "args": {"name": "she", "location": [-3, 0], "facing": "right"}, "warnings": []}
+{"t": 1792932813.9, "tool": "play_action", "args": {"name": "she", "action": "walk", "to": "box", "start_frame": 1}, "warnings": []}
+{"t": 1792932814.41, "tool": "play_action", "args": {"name": "she", "action": "look_down", "to": "box"}, "warnings": []}
+{"t": 1792932814.98, "tool": "play_action", "args": {"name": "she", "action": "walk", "to": "tree", "direction": "right"}, "warnings": []}
+{"t": 1792932816.96, "tool": "set_frames", "args": {"start": 1, "end": 248}, "warnings": []}
+{"t": 1792932817.27, "tool": "set_camera", "args": {"look_at": [0, 1.5], "width": 9}, "warnings": []}
+{"t": 1792932819.63, "check": 1, "passed": true, "report": "All 12 checks pass."}

@@ -1,0 +1,164 @@
+{
+ "id": "p05",
+ "category": "figure_props",
+ "request": "two boxes stand on the floor; a stick man walks from the left box to the right box",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 14.7,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 5,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 14.7,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "count",
+    "ok": true,
+    "detail": "2 object(s) match 'boxes', expected 2",
+    "default": false
+   },
+   {
+    "check": "start_near",
+    "ok": true,
+    "detail": "man starts 0.34 m from left_box (within 0.6 m needed)",
+    "default": false
+   },
+   {
+    "check": "reaches",
+    "ok": true,
+    "detail": "man ends 0.06 m from right_box (within 0.6 m needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "man's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "man's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "man moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 7.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "boxes": [
+    "left_box",
+    "right_box"
+   ],
+   "man": "man"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "box",
+    "name": "left_box",
+    "location": [
+     -3,
+     0
+    ],
+    "layer": "back"
+   }
+  },
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "box",
+    "name": "right_box",
+    "location": [
+     3,
+     0
+    ],
+    "layer": "back"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "man",
+    "location": {
+     "next_to": "left_box",
+     "side": "right"
+    },
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "man",
+    "action": "walk",
+    "to": "right_box",
+    "direction": "right",
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1.2
+    ],
+    "width": 9
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 5
+  }
+ ]
+}

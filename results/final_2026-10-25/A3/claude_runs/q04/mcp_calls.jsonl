@@ -1,0 +1,6 @@
+{"t": 1792932716.78, "tool": "add_stick_figure", "args": {"name": "man", "location": [-2, 0], "facing": "right"}, "warnings": []}
+{"t": 1792932719.57, "tool": "play_action", "args": {"name": "man", "action": "walk", "to": 2, "direction": "right"}, "warnings": []}
+{"t": 1792932720.08, "tool": "play_action", "args": {"name": "man", "action": "turn", "direction": "left"}, "warnings": []}
+{"t": 1792932720.63, "tool": "play_action", "args": {"name": "man", "action": "walk", "to": -2, "direction": "left"}, "warnings": []}
+{"t": 1792932723.21, "tool": "set_camera", "args": {"look_at": [0, 1.2], "width": 7}, "warnings": []}
+{"t": 1792932724.41, "check": 1, "passed": true, "report": "All 11 checks pass."}

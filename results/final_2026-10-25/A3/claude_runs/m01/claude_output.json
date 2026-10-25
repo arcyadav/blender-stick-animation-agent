@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 37375,
+ "stop_reason": "end_turn",
+ "session_id": "704a34f1-5da5-430b-bca3-23bb22e7d851",
+ "total_cost_usd": 0.1193196,
+ "usage": {
+  "input_tokens": 14,
+  "cache_creation_input_tokens": 5964,
+  "cache_read_input_tokens": 83558,
+  "output_tokens": 2742,
+  "output_tokens_details": {
+   "thinking_tokens": 412
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 5964,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 280,
+    "cache_read_input_tokens": 14316,
+    "cache_creation_input_tokens": 96,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 96
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 14,
+   "outputTokens": 2742,
+   "cacheReadInputTokens": 83558,
+   "cacheCreationInputTokens": 5964,
+   "webSearchRequests": 0,
+   "costUSD": 0.1193196,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 412,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 20,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "A red ball drops from 2.5 m and bounces three times as it moves left to right, each bounce lower than the one before (1.7 m, then 1.0 m, then a small 0.4 m hop). It hits the floor at frames 14, 38 and 58 and comes to rest at frame 74. The clip runs frames 1\u201380, and the 8 m camera shot keeps the whole path in view. All 10 checks pass.\n\nOn the first check, the checker counted only two bounces because I had the ball roll to a stop after the third hit. I added the small final hop, after which the third bounce counted. Because of that, the ball touches the floor a fourth time when it lands at frame 74.",
+ "ttft_ms": 5059,
+ "type": "result",
+ "duration_ms": 38096,
+ "uuid": "05f9d271-e400-4f4c-838b-daf418874277",
+ "ttft_stream_ms": 3779,
+ "time_to_request_ms": 92,
+ "first_content_frame_ms": 3780,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

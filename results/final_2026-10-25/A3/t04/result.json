@@ -1,0 +1,186 @@
+{
+ "id": "t04",
+ "category": "two_figures_camera",
+ "request": "two stick figures walk side by side from left to right, and the camera follows them",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 24.8,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 7,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 24.7,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "same_time",
+    "ok": true,
+    "detail": "figure_a and figure_b do walk together for 8.2 s (\u2265 0.5 s needed)",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "figure_a moves 5.93 m right (as seen by the camera), at least 1.5 m needed",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "figure_b moves 5.93 m right (as seen by the camera), at least 1.5 m needed",
+    "default": false
+   },
+   {
+    "check": "camera_move",
+    "ok": true,
+    "detail": "figure_a in the middle third on 208/208 frames, camera travels 5.9 m",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "figure_a's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm); figure_b's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "figure_a's planted feet slide at most 0.00 cm per frame (allowed 0.5); figure_b's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "figure_a moves smoothly (no joint jumps or spikes); figure_b moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 8.7 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "a": "figure_a",
+   "b": "figure_b"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "figure_a",
+    "location": [
+     -2,
+     0
+    ],
+    "facing": "right",
+    "colour": "blue",
+    "layer": "back"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "figure_b",
+    "location": [
+     -1.2,
+     0
+    ],
+    "facing": "right",
+    "colour": "red",
+    "layer": "front"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "figure_a",
+    "action": "walk",
+    "direction": "right",
+    "distance": 6,
+    "seconds": 5,
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "figure_b",
+    "action": "walk",
+    "direction": "right",
+    "distance": 6,
+    "seconds": 5,
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     -1.6,
+     1.6
+    ],
+    "width": 6
+   }
+  },
+  {
+   "tool": "camera_move",
+   "args": {
+    "kind": "follow",
+    "target": "figure_a",
+    "start_frame": 1,
+    "end_frame": 196
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 208
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 13 checks pass.",
+   "tool_calls": 7
+  }
+ ]
+}

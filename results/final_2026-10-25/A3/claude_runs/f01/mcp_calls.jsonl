@@ -1,0 +1,4 @@
+{"t": 1792932586.12, "tool": "add_stick_figure", "args": {"name": "man", "location": [-3, 0], "facing": "right"}, "warnings": []}
+{"t": 1792932587.07, "tool": "play_action", "args": {"name": "man", "action": "walk", "seconds": 4, "direction": "right"}, "warnings": []}
+{"t": 1792932589.46, "tool": "set_camera", "args": {"look_at": [-1.5, 1.2], "width": 8}, "warnings": []}
+{"t": 1792932589.94, "check": 1, "passed": true, "report": "All 12 checks pass."}

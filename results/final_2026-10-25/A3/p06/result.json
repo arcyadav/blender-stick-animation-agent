@@ -1,0 +1,176 @@
+{
+ "id": "p06",
+ "category": "figure_props",
+ "request": "a stick figure walks past a tree while the camera follows him",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 23.0,
+ "passed_first": false,
+ "fix_rounds_used": 1,
+ "tool_calls": 7,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 23.0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "man does ['walk']; expected ['walk'] in this order",
+    "default": false
+   },
+   {
+    "check": "passes",
+    "ok": true,
+    "detail": "man starts to the left of tree and ends to the right",
+    "default": false
+   },
+   {
+    "check": "camera_move",
+    "ok": true,
+    "detail": "man in the middle third on 208/208 frames, camera travels 5.9 m",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "man's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "man's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "man moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 8.7 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "fig": "man",
+   "tree": "tree"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "tree",
+    "name": "tree",
+    "layer": "back",
+    "location": [
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "man",
+    "facing": "right",
+    "location": [
+     -3,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "man",
+    "action": "walk",
+    "direction": "right",
+    "distance": 6,
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "man",
+    "width": 6
+   }
+  },
+  {
+   "tool": "camera_move",
+   "args": {
+    "kind": "follow",
+    "target": "man",
+    "start_frame": 1,
+    "end_frame": 196
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "man",
+    "width": 8
+   }
+  },
+  {
+   "tool": "camera_move",
+   "args": {
+    "kind": "follow",
+    "target": "man",
+    "start_frame": 1,
+    "end_frame": 196
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": false,
+   "report": "1 of 12 checks fail:\n- in_view: tree not fully in view on 56 frame(s) (e.g. frame 1)",
+   "tool_calls": 5
+  },
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 7
+  }
+ ]
+}

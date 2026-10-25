@@ -563,6 +563,10 @@ def camera_move(kind, target=None, start_frame=None, end_frame=None, amount=None
             scn.frame_set(f)
             xs[f] = _centre(o.name).x
         off = c0.x - xs[s]
+        # set_camera(look_at=target) centres on where the target is at the current frame, which may not be
+        # start_frame; if aimed at it, or it would start off-screen, centre on it instead of keeping that gap
+        if cam.get("look_at") == o.name or abs(off) > w0 * 0.4:
+            off = 0.0
         for f in range(s, e + 1):
             win = [xs[g] for g in range(max(s, f - 6), min(e, f + 6) + 1)]
             key(f, Vector((sum(win) / len(win) + off, c0.y)), w0)

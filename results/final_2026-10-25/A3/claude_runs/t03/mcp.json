@@ -1,0 +1,17 @@
+{
+ "mcpServers": {
+  "blender": {
+   "command": "C:\\Users\\ysarc\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\python.exe",
+   "args": [
+    "-m",
+    "blender_worker.mcp_server"
+   ],
+   "env": {
+    "P5_WORKER_PORT": "65369",
+    "P5_LOG": "C:\\Users\\ysarc\\projects\\aids_project_5\\outputs\\eval\\A3\\claude_runs\\t03\\mcp_calls.jsonl",
+    "PYTHONPATH": "C:\\Users\\ysarc\\projects\\aids_project_5",
+    "P5_TASK": "t03"
+   }
+  }
+ }
+}

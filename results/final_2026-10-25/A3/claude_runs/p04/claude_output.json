@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 17009,
+ "stop_reason": "end_turn",
+ "session_id": "d12e1d4f-ed73-48b3-ab4f-f42577d67176",
+ "total_cost_usd": 0.06290000000000001,
+ "usage": {
+  "input_tokens": 12,
+  "cache_creation_input_tokens": 3868,
+  "cache_read_input_tokens": 65540,
+  "output_tokens": 940,
+  "output_tokens_details": {
+   "thinking_tokens": 0
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 3868,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 116,
+    "cache_read_input_tokens": 12000,
+    "cache_creation_input_tokens": 316,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 316
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 12,
+   "outputTokens": 940,
+   "cacheReadInputTokens": 65540,
+   "cacheCreationInputTokens": 3868,
+   "webSearchRequests": 0,
+   "costUSD": 0.06290000000000001,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 0,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 9,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "I've built the scene and it passes all 12 checks. A red ball sits on a table at x = 1.5. A stick figure walks in from x = -3 up to the table, gets a fright at the ball, then turns and walks back to x = -3. The clip runs to frame 287 (about 12 seconds), and the 8 m camera shot keeps everything in view.",
+ "ttft_ms": 2800,
+ "type": "result",
+ "duration_ms": 18936,
+ "uuid": "846b7fa1-c0e9-40cd-8c2c-aa25c13fd406",
+ "ttft_stream_ms": 1830,
+ "time_to_request_ms": 89,
+ "first_content_frame_ms": 1830,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

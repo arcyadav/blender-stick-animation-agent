@@ -1,0 +1,6 @@
+{"t": 1792932946.11, "tool": "add_stick_figure", "args": {"name": "waver", "location": [2, 0], "facing": "left"}, "warnings": []}
+{"t": 1792932946.84, "tool": "add_stick_figure", "args": {"name": "walker", "location": [-2.5, 0], "facing": "right", "colour": "blue"}, "warnings": []}
+{"t": 1792932948.78, "tool": "play_action", "args": {"name": "waver", "action": "wave", "to": "walker", "start_frame": 1}, "warnings": []}
+{"t": 1792932950.7, "tool": "play_action", "args": {"name": "walker", "action": "walk", "to": "waver", "start_frame": 40}, "warnings": []}
+{"t": 1792932952.23, "tool": "set_camera", "args": {"look_at": [0, 1.2], "width": 8}, "warnings": []}
+{"t": 1792932955.21, "check": 1, "passed": true, "report": "All 12 checks pass."}

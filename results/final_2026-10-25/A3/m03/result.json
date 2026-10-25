@@ -1,0 +1,242 @@
+{
+ "id": "m03",
+ "category": "object_motion",
+ "request": "a yellow ball rolls from left to right across a table and drops onto the floor",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 23.3,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 14,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 23.3,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "ball rests on table at frame 1, expected table",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "ball moves 1.50 m right (as seen by the camera), at least 0.5 m needed",
+    "default": false
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "ball rests on ground at frame 72, expected ground",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 3.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "ball": "ball",
+   "table": "table"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "table",
+    "name": "table",
+    "location": [
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "sphere",
+    "name": "ball",
+    "colour": "yellow",
+    "size": 0.25,
+    "location": [
+     -0.5,
+     0.75
+    ]
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "location",
+    "frame": 1,
+    "value": [
+     -0.5,
+     0.75
+    ]
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "location",
+    "frame": 36,
+    "value": [
+     0.65,
+     0.75
+    ]
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "location",
+    "frame": 50,
+    "value": [
+     1,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "rotation",
+    "frame": 1,
+    "value": 0
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "rotation",
+    "frame": 36,
+    "value": 527
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "rotation",
+    "frame": 50,
+    "value": 690
+   }
+  },
+  {
+   "tool": "set_easing",
+   "args": {
+    "name": "ball",
+    "property": "location",
+    "interpolation": "linear",
+    "from_frame": 1,
+    "to_frame": 36
+   }
+  },
+  {
+   "tool": "set_easing",
+   "args": {
+    "name": "ball",
+    "property": "location",
+    "interpolation": "gravity",
+    "from_frame": 36,
+    "to_frame": 50
+   }
+  },
+  {
+   "tool": "set_easing",
+   "args": {
+    "name": "ball",
+    "property": "rotation",
+    "interpolation": "linear"
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 72
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0.3,
+     0.8
+    ],
+    "width": 5
+   }
+  },
+  {
+   "tool": "scene_state",
+   "args": {}
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 12 checks pass.",
+   "tool_calls": 14
+  }
+ ]
+}

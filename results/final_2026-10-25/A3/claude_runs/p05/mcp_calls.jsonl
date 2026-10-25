@@ -1,0 +1,6 @@
+{"t": 1792932851.72, "tool": "add_asset", "args": {"asset": "box", "name": "left_box", "location": [-3, 0], "layer": "back"}, "warnings": []}
+{"t": 1792932852.47, "tool": "add_asset", "args": {"asset": "box", "name": "right_box", "location": [3, 0], "layer": "back"}, "warnings": []}
+{"t": 1792932854.33, "tool": "add_stick_figure", "args": {"name": "man", "location": {"next_to": "left_box", "side": "right"}, "facing": "right"}, "warnings": []}
+{"t": 1792932856.24, "tool": "play_action", "args": {"name": "man", "action": "walk", "to": "right_box", "direction": "right", "start_frame": 1}, "warnings": []}
+{"t": 1792932857.84, "tool": "set_camera", "args": {"look_at": [0, 1.2], "width": 9}, "warnings": []}
+{"t": 1792932858.7, "check": 1, "passed": true, "report": "All 12 checks pass."}

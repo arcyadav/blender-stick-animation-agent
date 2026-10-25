@@ -1,0 +1,148 @@
+{
+ "id": "t02",
+ "category": "two_figures_camera",
+ "request": "a red and a blue stick figure stand side by side and wave together",
+ "agent": "A0",
+ "passed": true,
+ "error": null,
+ "seconds": 0.4,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 6,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "relation",
+    "ok": true,
+    "detail": "gap between fig1 and fig2 is 0.38 m (max 0.5)",
+    "default": false
+   },
+   {
+    "check": "same_time",
+    "ok": true,
+    "detail": "fig1 and fig2 do wave together for 5.2 s (\u2265 0.5 s needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "fig1's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm); fig2's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "fig1's planted feet slide at most 0.00 cm per frame (allowed 0.5); fig2's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "fig1 moves smoothly (no joint jumps or spikes); fig2 moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 5.7 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "red": "fig1",
+   "blue": "fig2"
+  }
+ },
+ "calls": [
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "fig1",
+    "location": [
+     -0.45,
+     0
+    ],
+    "facing": "front",
+    "colour": "red"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "fig2",
+    "location": [
+     0.45,
+     0
+    ],
+    "facing": "front",
+    "colour": "blue"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "wave",
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig2",
+    "action": "wave",
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0.0,
+     0.98
+    ],
+    "width": 5.0
+   }
+  }
+ ],
+ "rounds": []
+}

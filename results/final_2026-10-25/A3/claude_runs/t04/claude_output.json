@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 16727,
+ "stop_reason": "end_turn",
+ "session_id": "68b231ca-f8cd-4c62-93e9-1c211311f079",
+ "total_cost_usd": 0.0688288,
+ "usage": {
+  "input_tokens": 10,
+  "cache_creation_input_tokens": 4159,
+  "cache_read_input_tokens": 54684,
+  "output_tokens": 1229,
+  "output_tokens_details": {
+   "thinking_tokens": 109
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 4159,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 163,
+    "cache_read_input_tokens": 12369,
+    "cache_creation_input_tokens": 238,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 238
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 10,
+   "outputTokens": 1229,
+   "cacheReadInputTokens": 54684,
+   "cacheCreationInputTokens": 4159,
+   "webSearchRequests": 0,
+   "costUSD": 0.0688288,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 109,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 9,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "The scene is done and all 13 checks in check_scene pass. A blue figure and a red figure (0.8 m apart, on the back and front layers) walk 6 m to the right side by side, from frame 1 to frame 196. The camera follows them and the clip runs to frame 208. I asked for a 5-second walk, but the walk tool stretched it to about 8.2 seconds so the steps land evenly.",
+ "ttft_ms": 3089,
+ "type": "result",
+ "duration_ms": 22152,
+ "uuid": "eed4960e-39a3-4a2a-bea9-a7091982876c",
+ "ttft_stream_ms": 2151,
+ "time_to_request_ms": 205,
+ "first_content_frame_ms": 2152,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

@@ -1,0 +1,134 @@
+{
+ "id": "f04",
+ "category": "figure_single",
+ "request": "a sad stick figure walks slowly to the left",
+ "agent": "A0",
+ "passed": true,
+ "error": null,
+ "seconds": 0.1,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 4,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "fig1 does ['walk_sad']; expected ['walk_sad'] in this order",
+    "default": false
+   },
+   {
+    "check": "speed",
+    "ok": true,
+    "detail": "fig1 does walk_sad at speed 0.70 (slow \u2264 0.85, fast \u2265 1.2), expected slow",
+    "default": false
+   },
+   {
+    "check": "moves",
+    "ok": true,
+    "detail": "fig1 moves 2.39 m left (as seen by the camera), at least 1.0 m needed",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "fig1's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "fig1's planted feet slide at most 0.32 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "fig1 moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 7.4 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "fig": "fig1"
+  }
+ },
+ "calls": [
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "fig1",
+    "location": [
+     3.0,
+     0
+    ],
+    "facing": "left"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "walk_sad",
+    "speed": 0.7,
+    "distance": 2.5,
+    "direction": "left"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     1.77,
+     0.98
+    ],
+    "width": 5.0
+   }
+  }
+ ],
+ "rounds": []
+}

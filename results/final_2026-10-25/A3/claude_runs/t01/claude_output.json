@@ -1,0 +1,99 @@
+{
+ "duration_api_ms": 19512,
+ "stop_reason": "end_turn",
+ "session_id": "3ab20581-0451-4cae-989b-4e72052041e7",
+ "total_cost_usd": 0.0809458,
+ "usage": {
+  "input_tokens": 14,
+  "cache_creation_input_tokens": 4669,
+  "cache_read_input_tokens": 79289,
+  "output_tokens": 1384,
+  "output_tokens_details": {
+   "thinking_tokens": 8
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 4669,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [
+   {
+    "input_tokens": 2,
+    "output_tokens": 99,
+    "cache_read_input_tokens": 13013,
+    "cache_creation_input_tokens": 104,
+    "cache_creation": {
+     "ephemeral_5m_input_tokens": 0,
+     "ephemeral_1h_input_tokens": 104
+    },
+    "type": "message"
+   }
+  ],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 14,
+   "outputTokens": 1384,
+   "cacheReadInputTokens": 79289,
+   "cacheCreationInputTokens": 4669,
+   "webSearchRequests": 0,
+   "costUSD": 0.0809458,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 8,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 12,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "A blue figure and a red figure walk toward each other from x = \u22123 and x = 3 and stop face to face near the middle. They shake hands while the camera slowly zooms in from 8 m wide to about 4.8 m over the 155 frames; all 16 scene checks pass.",
+ "ttft_ms": 2460,
+ "type": "result",
+ "duration_ms": 22221,
+ "uuid": "12764ded-4030-4309-8345-60bee5126cd1",
+ "ttft_stream_ms": 1501,
+ "time_to_request_ms": 84,
+ "first_content_frame_ms": 1501,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

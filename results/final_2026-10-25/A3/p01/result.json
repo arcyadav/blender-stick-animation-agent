@@ -1,0 +1,155 @@
+{
+ "id": "p01",
+ "category": "figure_props",
+ "request": "a stick man walks to the table and waves",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 18.1,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 6,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 18.0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "man does ['walk', 'wave']; expected ['walk', 'wave'] in this order",
+    "default": false
+   },
+   {
+    "check": "reaches",
+    "ok": true,
+    "detail": "man ends 0.27 m from table (within 0.5 m needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "man's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "man's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "man moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 10.8 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "man": "man",
+   "table": "table"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "table",
+    "name": "table",
+    "location": [
+     2,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "man",
+    "location": [
+     -2.5,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "man",
+    "action": "walk",
+    "to": "table",
+    "start_frame": 1
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "man",
+    "action": "wave"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     1.6
+    ],
+    "width": 8
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 259
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 11 checks pass.",
+   "tool_calls": 6
+  }
+ ]
+}

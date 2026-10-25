@@ -1,0 +1,170 @@
+{
+ "id": "m05",
+ "category": "object_motion",
+ "request": "the camera pans from a tree on the left to a table with a ball on it",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 15.4,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 6,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 15.4,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": false
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "ball rests on table at frame 96, expected table",
+    "default": false
+   },
+   {
+    "check": "relation",
+    "ok": true,
+    "detail": "tree is 12.00 m to the left of table (as seen by the camera)",
+    "default": false
+   },
+   {
+    "check": "camera_move",
+    "ok": true,
+    "detail": "camera slides 12.0 m sideways (\u2265 1 m needed), width 6.0 \u2192 6.0 m, table ends at 50% across the frame",
+    "default": false
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 4.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "tree": "tree",
+   "table": "table",
+   "ball": "ball"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "tree",
+    "name": "tree",
+    "location": [
+     -6,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "table",
+    "name": "table",
+    "location": [
+     6,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "sphere",
+    "name": "ball",
+    "size": 0.3,
+    "colour": "red",
+    "location": {
+     "on_top_of": "table"
+    }
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": "tree",
+    "width": 6
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 96
+   }
+  },
+  {
+   "tool": "camera_move",
+   "args": {
+    "kind": "pan",
+    "target": "table",
+    "start_frame": 12,
+    "end_frame": 84
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 13 checks pass.",
+   "tool_calls": 6
+  }
+ ]
+}

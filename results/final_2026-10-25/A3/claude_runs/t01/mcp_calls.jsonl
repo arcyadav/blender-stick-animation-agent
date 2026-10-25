@@ -1,0 +1,11 @@
+{"t": 1792932890.16, "tool": "add_stick_figure", "args": {"name": "left_person", "location": [-3, 0], "facing": "right", "colour": "blue"}, "warnings": []}
+{"t": 1792932891.54, "tool": "add_stick_figure", "args": {"name": "right_person", "location": [3, 0], "facing": "left", "colour": "red"}, "warnings": []}
+{"t": 1792932893.96, "tool": "play_action", "args": {"name": "left_person", "action": "walk", "to": "-0.4", "start_frame": 1}, "error": "no object named '-0.4'. Objects in the scene: camera, ground, left_person, right_person"}
+{"t": 1792932894.65, "tool": "play_action", "args": {"name": "right_person", "action": "walk", "to": 0.4, "start_frame": 1}, "warnings": []}
+{"t": 1792932896.93, "tool": "play_action", "args": {"name": "left_person", "action": "walk", "distance": 2.6, "direction": "right", "start_frame": 1}, "warnings": []}
+{"t": 1792932899.42, "tool": "play_action", "args": {"name": "left_person", "action": "handshake", "to": "right_person", "start_frame": 86}, "warnings": []}
+{"t": 1792932899.92, "tool": "play_action", "args": {"name": "right_person", "action": "handshake", "to": "left_person", "start_frame": 86}, "warnings": []}
+{"t": 1792932902.0, "tool": "set_frames", "args": {"start": 1, "end": 155}, "warnings": []}
+{"t": 1792932902.5, "tool": "set_camera", "args": {"look_at": [0, 1.2], "width": 8}, "warnings": []}
+{"t": 1792932903.45, "tool": "camera_move", "args": {"kind": "zoom_in", "target": [0, 1.1], "start_frame": 1, "end_frame": 150, "amount": 0.6}, "warnings": []}
+{"t": 1792932907.48, "check": 1, "passed": true, "report": "All 16 checks pass."}

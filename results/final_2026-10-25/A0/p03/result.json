@@ -1,0 +1,174 @@
+{
+ "id": "p03",
+ "category": "figure_props",
+ "request": "she walks to a box, looks down at it, then walks on past it to a tree",
+ "agent": "A0",
+ "passed": true,
+ "error": null,
+ "seconds": 0.7,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 8,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "fig1 does ['walk', 'look_down', 'walk']; expected ['walk', 'look_down', 'walk'] in this order",
+    "default": false
+   },
+   {
+    "check": "passes",
+    "ok": true,
+    "detail": "fig1 starts to the left of box and ends to the right",
+    "default": false
+   },
+   {
+    "check": "reaches",
+    "ok": true,
+    "detail": "fig1 ends 0.29 m from tree (within 0.6 m needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "fig1's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "fig1's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "fig1 moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 9.2 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "she": "fig1",
+   "box": "box",
+   "tree": "tree"
+  }
+ },
+ "calls": [
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "box",
+    "name": "box",
+    "location": [
+     -1.3,
+     0
+    ],
+    "layer": "back"
+   }
+  },
+  {
+   "tool": "add_asset",
+   "args": {
+    "asset": "tree",
+    "name": "tree",
+    "location": [
+     1.3,
+     0
+    ],
+    "layer": "back"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "fig1",
+    "location": [
+     -3.8,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "walk",
+    "to": "box"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "look_down",
+    "to": "box"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "walk",
+    "to": "tree"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     -0.9,
+     1.64
+    ],
+    "width": 8.34
+   }
+  }
+ ],
+ "rounds": []
+}

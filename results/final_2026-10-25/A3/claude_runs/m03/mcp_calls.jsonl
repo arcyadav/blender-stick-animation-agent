@@ -1,0 +1,15 @@
+{"t": 1792932531.24, "tool": "add_asset", "args": {"asset": "table", "name": "table", "location": [0, 0]}, "warnings": []}
+{"t": 1792932532.32, "tool": "add_primitive", "args": {"type": "sphere", "name": "ball", "colour": "yellow", "size": 0.25, "location": [-0.5, 0.75]}, "warnings": []}
+{"t": 1792932536.48, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 1, "value": [-0.5, 0.75]}, "warnings": []}
+{"t": 1792932537.28, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 36, "value": [0.65, 0.75]}, "warnings": []}
+{"t": 1792932538.04, "tool": "keyframe", "args": {"name": "ball", "property": "location", "frame": 50, "value": [1, 0]}, "warnings": []}
+{"t": 1792932538.78, "tool": "keyframe", "args": {"name": "ball", "property": "rotation", "frame": 1, "value": 0}, "warnings": []}
+{"t": 1792932539.54, "tool": "keyframe", "args": {"name": "ball", "property": "rotation", "frame": 36, "value": 527}, "warnings": []}
+{"t": 1792932540.14, "tool": "keyframe", "args": {"name": "ball", "property": "rotation", "frame": 50, "value": 690}, "warnings": []}
+{"t": 1792932542.23, "tool": "set_easing", "args": {"name": "ball", "property": "location", "interpolation": "linear", "from_frame": 1, "to_frame": 36}, "warnings": []}
+{"t": 1792932543.14, "tool": "set_easing", "args": {"name": "ball", "property": "location", "interpolation": "gravity", "from_frame": 36, "to_frame": 50}, "warnings": []}
+{"t": 1792932543.79, "tool": "set_easing", "args": {"name": "ball", "property": "rotation", "interpolation": "linear"}, "warnings": []}
+{"t": 1792932544.23, "tool": "set_frames", "args": {"start": 1, "end": 72}, "warnings": []}
+{"t": 1792932544.66, "tool": "set_camera", "args": {"look_at": [0.3, 0.8], "width": 5}, "warnings": []}
+{"t": 1792932546.01, "tool": "scene_state", "args": {}, "warnings": []}
+{"t": 1792932547.42, "check": 1, "passed": true, "report": "All 12 checks pass."}

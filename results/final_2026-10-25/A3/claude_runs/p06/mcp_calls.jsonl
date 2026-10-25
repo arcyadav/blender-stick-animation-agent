@@ -1,0 +1,9 @@
+{"t": 1792932865.62, "tool": "add_asset", "args": {"asset": "tree", "name": "tree", "layer": "back", "location": [0, 0]}, "warnings": []}
+{"t": 1792932866.11, "tool": "add_stick_figure", "args": {"name": "man", "facing": "right", "location": [-3, 0]}, "warnings": []}
+{"t": 1792932868.32, "tool": "play_action", "args": {"name": "man", "action": "walk", "direction": "right", "distance": 6, "start_frame": 1}, "warnings": []}
+{"t": 1792932870.27, "tool": "set_camera", "args": {"look_at": "man", "width": 6}, "warnings": []}
+{"t": 1792932871.4, "tool": "camera_move", "args": {"kind": "follow", "target": "man", "start_frame": 1, "end_frame": 196}, "warnings": []}
+{"t": 1792932874.13, "check": 1, "passed": false, "report": "1 of 12 checks fail:\n- in_view: tree not fully in view on 56 frame(s) (e.g. frame 1)"}
+{"t": 1792932878.15, "tool": "set_camera", "args": {"look_at": "man", "width": 8}, "warnings": []}
+{"t": 1792932879.29, "tool": "camera_move", "args": {"kind": "follow", "target": "man", "start_frame": 1, "end_frame": 196}, "warnings": []}
+{"t": 1792932882.13, "check": 2, "passed": true, "report": "All 12 checks pass."}

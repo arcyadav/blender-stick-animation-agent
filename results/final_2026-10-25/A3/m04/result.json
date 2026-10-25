@@ -1,0 +1,165 @@
+{
+ "id": "m04",
+ "category": "object_motion",
+ "request": "a blue sphere grows from nothing to full size, then turns red",
+ "agent": "A3",
+ "passed": true,
+ "error": null,
+ "seconds": 14.4,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 7,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 14.4,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "scale_change",
+    "ok": true,
+    "detail": "ball scale goes 0.00 \u2192 1.00, expected 0.0 \u2192 1.0",
+    "default": false
+   },
+   {
+    "check": "colour_change",
+    "ok": true,
+    "detail": "ball colour goes blue \u2192 red, expected blue \u2192 red",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "no figures",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 4.0 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "sphere": "ball"
+  }
+ },
+ "calls": [
+  {
+   "tool": "add_primitive",
+   "args": {
+    "type": "sphere",
+    "name": "ball",
+    "colour": "blue",
+    "size": 1.5,
+    "location": [
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "tool": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 96
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "scale",
+    "frame": 1,
+    "value": 0
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "scale",
+    "frame": 48,
+    "value": 1
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "colour",
+    "frame": 54,
+    "value": "blue"
+   }
+  },
+  {
+   "tool": "keyframe",
+   "args": {
+    "name": "ball",
+    "property": "colour",
+    "frame": 78,
+    "value": "red"
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0,
+     0.9
+    ],
+    "width": 6
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "passed": true,
+   "report": "All 11 checks pass.",
+   "tool_calls": 7
+  }
+ ]
+}

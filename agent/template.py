@@ -74,7 +74,13 @@ def _relations(text, mentions):
                 o.place = {"on_top_of": mentions[i - 1][1][0].name}
             continue
         rel = REL_END.search(seg)
-        if rel and nxt and not re.search(r"\b(rolls?|walks?|moves?|across|looks?|stick)\b", seg):
+        # "sits on the bench" / "puts the ball on the table" are actions, not where things stand
+        acted = re.search(r"\b(?:puts?|sets?|places?|drops?|picks? up|grabs?)\s+(?:the|a|an)?\s*$",
+                          text[max(0, m.start() - 16): m.start()])
+        # "a ball sits on a table" places the ball; "…to the table, sits on a chair" is the figure sitting
+        sits = re.search(r"\b(sits?|stands?)\b", seg) and not re.match(r"\s*(sits?|stands?)\b", seg)
+        if rel and nxt and nxt[1] is not group and not acted and not sits and \
+                not re.search(r"\b(rolls?|walks?|moves?|across|looks?|stick)\b", seg):
             target = nxt[1][0].name
             word = rel.group(1)
             for o in subject:
@@ -361,16 +367,31 @@ class _Figures:
 
     def _events(self, text):
         """Ordered (kind, clause) events found in the text."""
-        clauses = re.split(r",|;|\bthen\b|\band\b(?= (?:waves?|looks?|walks?|gets?|stops?|turns?|hurries))", text)
+        clauses = re.split(r",|;|\bthen\b|\band\b(?= (?:waves?|looks?|walks?|gets?|stops?|turns?|hurries|sits?|"
+                           r"stands?|picks?|puts?|sets?|places?|sighs?|shakes?))", text)
         ev = []
         for c in clauses:
             before = len(ev)
+            if re.search(r"\bstands? up\b|\bgets? up\b", c):
+                ev.append(("stand_up", c))
             if re.search(rf"\b({WALK_WORDS})\b", c):
                 ev.append(("walk", c))
+            if re.search(r"\bpicks? (?:it |them )?up\b|\bpicks? (?:a|the) \w+ up\b|\bgrabs?\b", c):
+                ev.append(("pick_up", c))
+            if re.search(r"\b(?:puts?|sets?|places?|drops?) (?:it|them|(?:a|the) \w+)(?: \w+)?\b", c) and \
+                    not re.search(r"\bdrops? off\b", c):
+                ev.append(("put_down", c))
+            if re.search(r"\bsits?\b|\btakes? a seat\b", c) and \
+                    not re.search(rf"\b(?:{'|'.join(_NOUNS)})e?s? sits?\b", c):    # "a ball sits on a table"
+                ev.append(("sit", c))
+            if re.search(r"\bturns? (?:to (?:the )?)?(?:left|right|to face|towards?)\b", c):
+                ev.append(("turn", c))
             if re.search(r"\bwaves?\b|\bwave together\b", c):
                 ev.append(("wave", c))
             if re.search(r"looks? down", c):
                 ev.append(("look_down", c))
+            elif re.search(r"\blooks? (?:up|at|around|ahead|over|towards?|back)\b", c):
+                ev.append(("look", c))
             if re.search(r"fright|startled|scared|shock", c):
                 ev.append(("react", c))
             if re.search(r"\bsighs?\b", c):
@@ -493,7 +514,7 @@ class _Figures:
         start_x = x0
         here = x0
         r = None
-        last_target = None
+        last_target = last_dir = None
         for kind, clause in events:
             secs = _seconds(clause)
             if kind == "walk":
@@ -518,7 +539,7 @@ class _Figures:
                     args["to"] = round(start_x, 2)
                 elif re.search(r"\baway\b|\boff\b", clause):
                     args["direction"] = "left" if "left" in clause else "right" if "right" in clause else (
-                        "right" if here >= 0 else "left")
+                        last_dir or ("right" if here >= 0 else "left"))     # walks on the way it was going
                     args["distance"] = 4.0 if args["action"] == "run" else 2.5
                 elif re.search(r"walks in", clause):
                     args["to"] = 0.0
@@ -539,6 +560,7 @@ class _Figures:
                 if "to" in args and isinstance(args["to"], str) and args["to"] == "it":
                     args["to"] = self._prop_any()
                 r = self.call("play_action", **args)
+                last_dir = r.get("facing") if r.get("facing") in ("left", "right") else last_dir
                 here = r["end_x"]
                 path.append((here, 1.7))
                 last_target = args["to"] if isinstance(args.get("to"), str) else last_target
@@ -556,13 +578,51 @@ class _Figures:
                         args["direction"] = "left"
                     elif re.search(r"\bleft\b", away):
                         args["direction"] = "right"
-                if kind == "look_down":
-                    # "looks down at the ball" / "at it": look at that thing
-                    at = re.search(r"\bat (?:a|the) (\w+)", clause)
+                if kind in ("look_down", "look"):
+                    # "looks down at the ball" / "looks up at the tree" / "at it": look at that thing
+                    at = re.search(r"\b(?:at|towards?) (?:a|the) (\w+)", clause)
                     thing = self._prop(at.group(1)) if at else (last_target if re.search(r"\bat it\b", clause) else None)
                     if thing:
                         args["to"] = thing
+                    elif kind == "look":
+                        args["direction"] = "right" if re.search(r"\bright\b", clause) else "left" if re.search(
+                            r"\bleft\b", clause) else None
+                        if not args["direction"]:
+                            args.pop("direction")
+                            args["action"] = "idle"            # "looks around" with nothing to look at
+                            args["seconds"] = secs or 2.0
+                if kind == "sit":
+                    seat = re.search(r"\b(?:on|in) (?:a|the|it) ?(\w+)?", clause)
+                    thing = self._prop(seat.group(1)) if seat and seat.group(1) else None
+                    thing = thing or (last_target if last_target in self.results and
+                                      last_target.rstrip("0123456789") in ("bench", "chair", "box") else None)
+                    if thing:
+                        args["to"] = thing
+                    if re.search(r"facing (?:the )?(?:front|camera|us)", clause):
+                        args["direction"] = "front"
+                if kind == "turn":
+                    if re.search(r"to face (?:the )?(?:front|camera|us)", clause):
+                        args["direction"] = "front"
+                    else:
+                        d = re.search(r"\b(left|right)\b", clause)
+                        args["direction"] = d.group(1) if d else "front"
+                if kind == "pick_up":
+                    m = re.search(r"\bup (?:a|the) (\w+)|\b(?:picks?|grabs?) (?:a|the) (\w+)", clause)
+                    thing = self._prop(next(g for g in m.groups() if g)) if m else None
+                    thing = thing or next((self._prop(s) for s in SHAPES if self._prop(s)), None)
+                    if not thing:
+                        continue
+                    args["to"] = thing
+                    if re.search(r"\bat (?:his|her|the) side\b|\bswing", clause):
+                        args["carry"] = "swing"
+                if kind == "put_down":
+                    on = re.search(r"\b(?:on|onto|on top of) (?:a|the) (\w+)", clause)
+                    thing = self._prop(on.group(1)) if on else None
+                    if thing:
+                        args["to"] = thing
                 r = self.call("play_action", **args)
+                if kind == "sit" and "to" in args:
+                    last_target = args["to"]
         if r is None:
             r = self.call("play_action", name=name, action="idle", seconds=3)
         return self._end(r), path

@@ -1,0 +1,206 @@
+{
+ "id": "t01",
+ "category": "two_figures_camera",
+ "request": "two stick figures walk toward each other, stop face to face and shake hands; the camera slowly zooms in",
+ "agent": "A0",
+ "passed": true,
+ "error": null,
+ "seconds": 0.6,
+ "passed_first": true,
+ "fix_rounds_used": 0,
+ "tool_calls": 9,
+ "invalid_calls": 0,
+ "tool_errors": 0,
+ "llm_seconds": 0,
+ "stopped": null,
+ "report": {
+  "passed": true,
+  "results": [
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "fig1 does ['walk', 'handshake']; expected ['walk', 'handshake'] in this order",
+    "default": false
+   },
+   {
+    "check": "actions_in_order",
+    "ok": true,
+    "detail": "fig2 does ['walk', 'handshake']; expected ['walk', 'handshake'] in this order",
+    "default": false
+   },
+   {
+    "check": "same_time",
+    "ok": true,
+    "detail": "fig1 and fig2 do handshake together for 2.4 s (\u2265 0.5 s needed)",
+    "default": false
+   },
+   {
+    "check": "faces",
+    "ok": true,
+    "detail": "fig1 faces right at the end; fig2 is to the right",
+    "default": false
+   },
+   {
+    "check": "faces",
+    "ok": true,
+    "detail": "fig2 faces left at the end; fig1 is to the left",
+    "default": false
+   },
+   {
+    "check": "distance_end",
+    "ok": true,
+    "detail": "fig1 and fig2 end 0.79 m apart (allowed 0.4\u20131.2 m)",
+    "default": false
+   },
+   {
+    "check": "camera_move",
+    "ok": true,
+    "detail": "visible width goes 9.6 \u2192 5.8 m (\u2264 80% needed)",
+    "default": false
+   },
+   {
+    "check": "in_view",
+    "ok": true,
+    "detail": "in view",
+    "default": true
+   },
+   {
+    "check": "not_hidden",
+    "ok": true,
+    "detail": "visible",
+    "default": true
+   },
+   {
+    "check": "on_surface",
+    "ok": true,
+    "detail": "everything rests on something",
+    "default": true
+   },
+   {
+    "check": "grounded",
+    "ok": true,
+    "detail": "fig1's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm); fig2's lowest foot is 0.0 cm above the ground at worst (frame 1, allowed 1.5 cm)",
+    "default": true
+   },
+   {
+    "check": "no_foot_slide",
+    "ok": true,
+    "detail": "fig1's planted feet slide at most 0.00 cm per frame (allowed 0.5); fig2's planted feet slide at most 0.00 cm per frame (allowed 0.5)",
+    "default": true
+   },
+   {
+    "check": "no_pops",
+    "ok": true,
+    "detail": "fig1 moves smoothly (no joint jumps or spikes); fig2 moves smoothly (no joint jumps or spikes)",
+    "default": true
+   },
+   {
+    "check": "no_collision",
+    "ok": true,
+    "detail": "no collisions",
+    "default": true
+   },
+   {
+    "check": "no_hover",
+    "ok": true,
+    "detail": "nothing hangs in the air",
+    "default": true
+   },
+   {
+    "check": "clip_length_s",
+    "ok": true,
+    "detail": "clip is 6.5 s (allowed 2\u201320 s)",
+    "default": true
+   }
+  ],
+  "binding": {
+   "a": "fig1",
+   "b": "fig2"
+  }
+ },
+ "calls": [
+  {
+   "tool": "scene_reset",
+   "args": {}
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "fig1",
+    "location": [
+     -3.0,
+     0
+    ],
+    "facing": "right"
+   }
+  },
+  {
+   "tool": "add_stick_figure",
+   "args": {
+    "name": "fig2",
+    "location": [
+     3.0,
+     0
+    ],
+    "facing": "left"
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "walk",
+    "to": -0.45
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig2",
+    "action": "walk",
+    "to": 0.45
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig1",
+    "action": "handshake",
+    "to": "fig2",
+    "start_frame": 86
+   }
+  },
+  {
+   "tool": "play_action",
+   "args": {
+    "name": "fig2",
+    "action": "handshake",
+    "to": "fig1",
+    "start_frame": 86
+   }
+  },
+  {
+   "tool": "set_camera",
+   "args": {
+    "look_at": [
+     0.0,
+     1.9
+    ],
+    "width": 9.64
+   }
+  },
+  {
+   "tool": "camera_move",
+   "args": {
+    "kind": "zoom_in",
+    "target": [
+     0.0,
+     0.9
+    ],
+    "start_frame": 1,
+    "end_frame": 155
+   }
+  }
+ ],
+ "rounds": []
+}
