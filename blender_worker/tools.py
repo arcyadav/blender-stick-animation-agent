@@ -311,9 +311,11 @@ def _flat_look():
     scn = bpy.context.scene
     scn.render.engine = "BLENDER_WORKBENCH"
     sh = scn.display.shading
-    sh.light, sh.color_type = "FLAT", "MATERIAL"
+    puppets = any(o.get("kind") == "puppet" for o in bpy.data.objects)
+    # a drawn puppet needs its pictures (plain materials keep their colour) and has its own outlines
+    sh.light, sh.color_type = "FLAT", "TEXTURE" if puppets else "MATERIAL"
     sh.show_shadows = sh.show_cavity = sh.show_specular_highlight = False
-    sh.show_object_outline = True
+    sh.show_object_outline = not puppets
     sh.object_outline_color = (0.0, 0.0, 0.0)
     scn.display.render_aa = "16"
     scn.view_settings.view_transform = "Standard"
@@ -1349,6 +1351,44 @@ def appear_at(name, frame):
     return {"name": name, "appears_at": frame}
 
 
+def dress_figure(name, outfit=None, style=None):
+    """Internal (demo): draw a stick figure as a simple dressed cartoon character (look only; the motion
+    and checks are unchanged). outfit: {"shirt", "trousers", "skirt", "shoes", "skin", "hair"} as colour names
+    or rgb; style="female" adds long hair and a skirt."""
+    import costume
+    o = _obj(name)
+    if o.get("kind") != "figure":
+        raise ToolError("dress_figure is for stick figures")
+    fig = FIGURES[name]
+    scn = bpy.context.scene
+    frames = fig.frames(max(scn.frame_end, fig.end))
+    look = {k: (_rgb(v) if isinstance(v, str) else tuple(v)) for k, v in (outfit or {}).items()}
+    parts = costume.dress(name, fig, o["colour"], look, frames, appear=getattr(fig, "appear", None),
+                          apply_colour=_apply_colour, fcurves=_fcurves, style=style)
+    o.hide_render = True
+    o.hide_viewport = True
+    return {"name": name, "parts": len(parts)}
+
+
+def puppet_figure(name, character="girl"):
+    """Internal (demo): draw a stick figure as a drawn cut-out character (assets/<character>/parts), a look
+    only: the motion and checks are unchanged. Side and front views."""
+    import puppet
+    o = _obj(name)
+    if o.get("kind") != "figure":
+        raise ToolError("puppet_figure is for stick figures")
+    fig = FIGURES[name]
+    scn = bpy.context.scene
+    frames = fig.frames(max(scn.frame_end, fig.end))
+    parts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", character,
+                             "parts")
+    parts = puppet.dress(name, fig, frames, parts_dir, appear=getattr(fig, "appear", None), fcurves=_fcurves)
+    o.hide_render = True
+    o.hide_viewport = True
+    _flat_look()
+    return {"name": name, "parts": len(parts)}
+
+
 def save_blend(filename="scene.blend"):
     path = os.path.join(OUT_DIR, filename)
     bpy.ops.wm.save_as_mainfile(filepath=path, copy=True)
@@ -1358,4 +1398,4 @@ def save_blend(filename="scene.blend"):
 TOOLS = {f.__name__: f for f in (
     scene_reset, scene_state, add_primitive, add_asset, set_transform, set_material, add_light, set_camera,
     camera_move, keyframe, set_easing, set_frames, add_stick_figure, play_action, render_check, render_final,
-    sample_scene, set_output, save_blend, appear_at)}
+    sample_scene, set_output, save_blend, appear_at, dress_figure, puppet_figure)}
