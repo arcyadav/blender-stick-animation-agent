@@ -1,0 +1,11 @@
+{
+ "title": "Waiting",
+ "setting": "a park: a chair on the left and a tree on the right, both in the back layer.",
+ "shots": [
+  "A blue stick figure sits on the chair, facing the front, and looks down sadly.",
+  "A red stick figure walks in happily from the right towards the chair.",
+  "The blue figure looks at the red figure, stands up and waves.",
+  "They both turn to face the camera and wave together."
+ ],
+ "camera": "show the whole park, then slowly zoom in during the final wave."
+}
