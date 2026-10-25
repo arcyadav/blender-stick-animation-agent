@@ -2,18 +2,22 @@
 
     python -m scripts.results                 # all agents found
     python -m scripts.results A0 A1 A2 A3
+    P5_EVAL=results/final_2026-10-25 python -m scripts.results A0 A1 A2 A3     # a saved run
 """
 import json
+import os
 import sys
 from collections import defaultdict
+from pathlib import Path
 
 import config
 
+EVAL = Path(os.environ.get("P5_EVAL") or config.OUTPUTS / "eval")
 CATS = ["static_layout", "object_motion", "figure_single", "figure_sequence", "figure_props", "two_figures_camera"]
 
 
 def load(agent):
-    d = config.OUTPUTS / "eval" / agent
+    d = EVAL / agent
     out = []
     for p in sorted(d.glob("*/result.json")):
         out.append(json.loads(p.read_text(encoding="utf-8")))
@@ -59,5 +63,5 @@ def main(agents):
 
 
 if __name__ == "__main__":
-    found = sorted(p.name for p in (config.OUTPUTS / "eval").iterdir() if p.is_dir())
+    found = sorted(p.name for p in EVAL.iterdir() if p.is_dir())
     main(sys.argv[1:] or found)
