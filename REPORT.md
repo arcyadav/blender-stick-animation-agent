@@ -5,6 +5,7 @@
 - Deployed page: https://arcyadav-stick-animation-agent.static.hf.space
 - Code: https://github.com/arcyadav/blender-stick-animation-agent
 - Local live demo: `python demo_app.py`
+- Project 3, which this project continues: https://huggingface.co/spaces/Arcyadav/drift-free-2d-animation-agent
 
 ---
 
