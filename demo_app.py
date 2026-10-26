@@ -2,6 +2,8 @@
 and watch it direct the scene in Blender: tool calls stream in live, then the clip plays.
 
     python demo_app.py                  # opens http://127.0.0.1:7860
+    python demo_app.py --share          # also a public https://….gradio.live link (runs on this laptop)
+    $env:P5_PASSWORD="…"; python demo_app.py --share     # the link asks for user "viva" + this password
     $env:P5_OLLAMA_URL="https://…"; python demo_app.py      # qwen on a Kaggle GPU
 
 Directors: A3 Claude (claude -p, MCP), A2 / A1 qwen2.5 7b / 3b (Ollama), A0 template rules.
@@ -9,6 +11,7 @@ Directors: A3 Claude (claude -p, MCP), A2 / A1 qwen2.5 7b / 3b (Ollama), A0 temp
 import json
 import os
 import queue
+import sys
 import threading
 import time
 from pathlib import Path
@@ -326,4 +329,8 @@ if __name__ == "__main__":
         app.queue(default_concurrency_limit=1).launch(server_name="0.0.0.0", server_port=7860,
                                                       allowed_paths=[str(CLIPS), str(OUT)])
     else:
-        app.queue(default_concurrency_limit=1).launch(inbrowser=True, allowed_paths=[str(CLIPS), str(OUT)])
+        # --share: a public link to this laptop's app (Blender, Claude and qwen still run here)
+        pw = os.environ.get("P5_PASSWORD")
+        app.queue(default_concurrency_limit=1).launch(inbrowser=True, share="--share" in sys.argv,
+                                                      auth=("viva", pw) if pw else None,
+                                                      allowed_paths=[str(CLIPS), str(OUT)])
