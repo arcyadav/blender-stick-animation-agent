@@ -198,6 +198,17 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   </div>
   <p>Arrows: the agent sends <b>tool calls (JSON)</b>; each is validated, then run in Blender; the result comes back
     to the agent. When the agent is done, the checker reads the scene; a failing report goes back to the agent.</p>
+  <ul>
+    <li><b>Validation</b> (before): checks each tool call is well-formed (tool exists, arguments present, right types
+      and values) before Blender sees it; a bad call changes nothing and returns an error the agent can fix.</li>
+    <li><b>Blender worker</b> (the work): Blender running headless in the background, keeping one scene and carrying
+      out each valid call: placing props, animating figures from the motion library, moving the camera, rendering.</li>
+    <li><b>Checker</b> (after): reads the finished scene's real data (positions, joints, timeline, camera) and tests
+      it against the request; a failing report goes back to the agent to fix, up to 3 times.</li>
+  </ul>
+  <div class="callout"><b>One line for the viva:</b> "Validation catches badly written calls before they run, the
+    worker carries out the good ones in Blender, and the checker proves from the scene data that the result matches
+    the request."</div>
 </section>
 
 <section id="components">
