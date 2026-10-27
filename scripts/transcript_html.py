@@ -3,6 +3,7 @@ and Claude's response sits under it in a collapsed block (with the tools it used
 
     python -m scripts.transcript_html                       # this project's session log -> transcript.html
     python -m scripts.transcript_html path/to/session.jsonl out.html
+    python -m scripts.transcript_html --until 165            # stop after turn 165
 
 It reads Claude Code's session log (.jsonl), which keeps every sitting; `/export transcript.md` only
 keeps the part after the last time the conversation was condensed.
@@ -167,8 +168,14 @@ def render(turns, title):
 
 
 if __name__ == "__main__":
-    src = Path(sys.argv[1]) if len(sys.argv) > 1 else LOG
-    dst = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "transcript.html"
-    turns = load(src)
+    args = sys.argv[1:]
+    until = None
+    if "--until" in args:
+        k = args.index("--until")
+        until = int(args[k + 1])
+        del args[k:k + 2]
+    src = Path(args[0]) if len(args) > 0 else LOG
+    dst = Path(args[1]) if len(args) > 1 else ROOT / "transcript.html"
+    turns = load(src)[:until]
     dst.write_text(render(turns, "UMC301 Project 5 · Stick Animation Agent · Transcript"), encoding="utf-8")
     print(f"{len(turns)} turns -> {dst} ({dst.stat().st_size / 1e6:.1f} MB)")

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Viva Prep · Stick Animation Agent</title>
 <style>
-/* An offline study sheet: a contents rail on the left, sections on the right; Q&A folds open. */
+/* A study sheet to read before the viva: contents on the left, plain-language sections on the right. */
 :root {
   --bg: #f7f7f5; --card: #ffffff; --ink: #17181b; --muted: #5f646c; --rule: #dfe1e5;
   --accent: #c63b2c; --soft: #fbeeec; --blue: #2f62c4; --ok: #1f7a4a; --okbg: #e7f4ec; --code: #f0f1f4;
@@ -18,8 +18,8 @@
     --accent: #ef6b5b; --soft: #2a1d1b; --blue: #7ea6f2; --ok: #6fcf97; --okbg: #17281e; --code: #23262b; color-scheme: dark; }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 15.5px/1.65 var(--body); }
-.layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; gap: 28px;
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 var(--body); }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); max-width: 1120px; margin: 0 auto; gap: 28px;
   padding: 28px max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px)); }
 nav { position: sticky; top: 16px; align-self: start; font-size: .9rem; }
 nav a { display: block; padding: 4px 8px; color: var(--muted); text-decoration: none; border-radius: 5px; }
@@ -28,30 +28,31 @@ nav .title { font: 600 .75rem var(--mono); letter-spacing: .1em; text-transform:
 @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } nav { position: static; } }
 main { min-width: 0; }
 h1 { font: 700 2.1rem/1.15 var(--display); margin: 0 0 6px; text-wrap: balance; }
-h2 { font: 700 1.45rem/1.2 var(--display); margin: 0 0 12px; text-wrap: balance; }
+h2 { font: 700 1.4rem/1.25 var(--display); margin: 0 0 12px; text-wrap: balance; }
 h3 { font: 600 1.05rem/1.3 var(--display); margin: 18px 0 6px; }
-p { margin: 8px 0; max-width: 72ch; }
+p { margin: 8px 0; max-width: 70ch; }
 .lede { color: var(--muted); font-size: 1.05rem; }
 section { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 22px 24px; margin: 18px 0; }
 .num { font: 600 .75rem var(--mono); color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
 a { color: var(--blue); }
-code, .mono { font-family: var(--mono); font-size: .88em; background: var(--code); padding: 1px 5px; border-radius: 4px; }
-pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font: .82rem/1.5 var(--mono); }
-ul, ol { padding-left: 22px; margin: 6px 0; } li { margin: 3px 0; max-width: 72ch; }
+code { font-family: var(--mono); font-size: .86em; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font: .82rem/1.55 var(--mono); }
+ul, ol { padding-left: 22px; margin: 6px 0; } li { margin: 4px 0; max-width: 70ch; }
 .tbl { overflow-x: auto; margin: 10px 0; }
-table { border-collapse: collapse; width: 100%; font-size: .92rem; font-variant-numeric: tabular-nums; }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; font-variant-numeric: tabular-nums; }
 th, td { border-bottom: 1px solid var(--rule); padding: 7px 10px; text-align: left; vertical-align: top; }
-th { font: 600 .75rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+th { font: 600 .74rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .links { display: grid; gap: 6px; margin: 14px 0 0; }
-.links div { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 10px; }
+.links div { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 10px; }
 .links span { color: var(--muted); }
 .links a { overflow-wrap: anywhere; }
-.callout { background: var(--soft); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 6px; margin: 12px 0; }
-.good { background: var(--okbg); border-left: 3px solid var(--ok); padding: 10px 14px; border-radius: 6px; margin: 12px 0; }
+.say { background: var(--soft); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 6px; margin: 12px 0; }
+.say b:first-child { display: block; font: 600 .74rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
+.code-note { font-size: .82rem; color: var(--muted); }
+.code-note code { font-size: .8rem; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .comp { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; }
 .comp h3 { margin-top: 0; }
-.comp .where { font: .78rem var(--mono); color: var(--muted); }
 details { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
 details summary { cursor: pointer; font-weight: 600; }
 details[open] summary { margin-bottom: 6px; }
@@ -64,7 +65,7 @@ details[open] summary { margin-bottom: 6px; }
 .diagram .small { font-size: 11px; fill: var(--muted); }
 .steps { counter-reset: s; list-style: none; padding: 0; }
 .steps li { counter-increment: s; position: relative; padding-left: 36px; margin: 10px 0; }
-.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 24px; height: 24px; border-radius: 50%;
+.steps li::before { content: counter(s); position: absolute; left: 0; top: 2px; width: 24px; height: 24px; border-radius: 50%;
   background: var(--accent); color: #fff; font: 600 .8rem/24px var(--mono); text-align: center; }
 .kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
 .kpi div { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; }
@@ -82,30 +83,34 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 <nav>
   <p class="title">Contents</p>
   <a href="#links">Links</a>
-  <a href="#pitch">The 2-minute pitch</a>
-  <a href="#agent">What is an agent?</a>
-  <a href="#architecture">Architecture</a>
-  <a href="#components">Components</a>
-  <a href="#trace">One request, step by step</a>
-  <a href="#p3">Project 3 (the start)</a>
-  <a href="#experiments">Experiments</a>
-  <a href="#results">Results</a>
+  <a href="#pitch">My 2-minute story</a>
+  <a href="#agent">What's an agent?</a>
+  <a href="#big">The big picture</a>
+  <a href="#parts">The parts, simply</a>
+  <a href="#words">Words → tool call → Blender</a>
+  <a href="#routing">How a request travels</a>
+  <a href="#checker">The checker, in detail</a>
+  <a href="#tools">The 16 commands</a>
+  <a href="#motion">The motion library</a>
+  <a href="#p3">Project 3</a>
+  <a href="#tested">What I tested</a>
+  <a href="#results">What I found</a>
   <a href="#well">What went well</a>
-  <a href="#limits">Limitations</a>
-  <a href="#learn">Learnings</a>
-  <a href="#improve">What I'd improve</a>
-  <a href="#cost">Cost vs video models</a>
+  <a href="#limits">What's not perfect</a>
+  <a href="#learn">What I learned</a>
+  <a href="#next">What I'd do next</a>
+  <a href="#cost">Cost</a>
   <a href="#demo">Demo plan</a>
-  <a href="#qa">Viva questions</a>
-  <a href="#glossary">Glossary</a>
+  <a href="#qa">Practice questions</a>
+  <a href="#glossary">Words to know</a>
 </nav>
 
 <main>
 <header>
   <span class="num">UMC301 · Projects 3 + 5 · Archana Yadav · October 2026</span>
   <h1>Viva Prep: Stick Animation Agent</h1>
-  <p class="lede">Everything needed to explain the project: what an agent is, every component and how they
-    talk to each other, the experiments, the results, and the questions likely to come up.</p>
+  <p class="lede">My notes for explaining the project in plain words: what it does, how the pieces work together,
+    what I tested, what I found, and some practice questions.</p>
   <div class="bar"><button id="openAll">Open all answers</button><button id="closeAll">Close all answers</button></div>
 </header>
 
@@ -113,380 +118,596 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   <span class="num">Links</span>
   <h2>Where everything is</h2>
   <div class="links">
-    <div><span>Project 5 (deployed)</span><a href="https://arcyadav-stick-animation-agent.static.hf.space">https://arcyadav-stick-animation-agent.static.hf.space</a></div>
-    <div><span>Project 3 (deployed)</span><a href="https://huggingface.co/spaces/Arcyadav/drift-free-2d-animation-agent">https://huggingface.co/spaces/Arcyadav/drift-free-2d-animation-agent</a></div>
+    <div><span>Project 5 website</span><a href="https://arcyadav-stick-animation-agent.static.hf.space">https://arcyadav-stick-animation-agent.static.hf.space</a></div>
+    <div><span>Project 3 website</span><a href="https://arcyadav-drift-free-2d-animation-agent.static.hf.space">https://arcyadav-drift-free-2d-animation-agent.static.hf.space</a></div>
     <div><span>Code</span><a href="https://github.com/arcyadav/blender-stick-animation-agent">https://github.com/arcyadav/blender-stick-animation-agent</a></div>
-    <div><span>Report</span><span><code>REPORT.md</code> in the repo</span></div>
-    <div><span>Live demo</span><span><code>run_demo.bat</code> (prints a public gradio.live link; laptop must stay on)</span></div>
+    <div><span>Live demo</span><span>Double-click <code>run_demo.bat</code> on my laptop; the website's Live demo section shows it while it runs.</span></div>
   </div>
 </section>
 
 <section id="pitch">
   <span class="num">Say this first</span>
-  <h2>The 2-minute pitch</h2>
-  <p><b>Project 3</b> tried to animate a drawn character from a character sheet: cut it into body parts and move
-    them with a motion library. The <b>motion transferred</b> to a new character with no new animation work, but the
-    <b>appearance broke</b>: cutting a flat drawing into parts means guessing the areas hidden behind other parts,
-    and those guesses showed as seams. Lesson: <b>motion and appearance are separate problems</b>.</p>
-  <p><b>Project 5</b> separates them. An <b>AI agent directs animation inside Blender</b>, real professional software,
-    through <b>16 checked tools</b>. Characters are <b>stick figures</b>, so only the motion matters. Every result is
-    <b>checked from Blender's own scene data</b>, and a failing report goes back to the agent to fix.</p>
-  <p>Four directors, same tools, same 30 tasks: hand-written rules <b>30/30</b>, qwen2.5 3b <b>3/30</b>, qwen2.5 7b
-    <b>8/30</b>, <b>Claude 30/30</b> (it fixed its own 3 first-try failures). Claude also directs multi-shot stories,
-    e.g. a 54 s, 7-shot story in 44 tool calls with 0 errors, for about <b>a cent per second</b> of animation.</p>
+  <h2>My 2-minute story</h2>
+  <p>In <b>Project 3</b> I tried to animate a drawn character from a character sheet. I cut the drawing into body parts
+    and moved them with a library of motions. The motion part worked: the same motions worked on a second character with
+    no extra animation work. But the <b>look broke</b>. When you cut a flat drawing into parts, some areas are hidden
+    behind other parts and were never drawn, so I had to guess them, and the guesses showed up as seams.</p>
+  <p>So my lesson was: <b>motion and appearance are two different problems</b>.</p>
+  <p>In <b>Project 5</b> I separated them. An <b>AI agent directs animation inside Blender</b>, a real animation
+    program, using a small set of <b>checked commands</b>. The characters are <b>stick figures</b>, so only the motion matters.
+    After each animation, a <b>checker</b> looks at Blender's own data: are the feet on the ground, did the actions happen
+    in the right order, is everything in view? If something's wrong, the agent gets told and fixes it.</p>
+  <p>I compared four "directors" on the same 30 tasks. <b>Claude got all 30 right</b>, and fixed its own three
+    mistakes after the checker told it what was wrong. The smaller open models got 8 and 3. Claude can also direct whole
+    short stories, like a 54-second, 7-shot one with no errors, for about a cent per second of animation.</p>
 </section>
 
 <section id="agent">
   <span class="num">Concept</span>
-  <h2>What is an agent? What makes this "agentic"?</h2>
-  <p>A <b>language model on its own</b> only writes text. An <b>agent</b> is a language model placed in a loop
-    where it can <b>act</b> on the world through <b>tools</b>, <b>observe</b> what happened, and decide the next step,
-    until a goal is reached.</p>
+  <h2>What's an agent?</h2>
+  <p>A language model on its own just writes text. An <b>agent</b> is a language model that can <b>do things</b>: it
+    has some tools (commands it can use), it uses one, looks at what happened, and decides what to do next, again and
+    again, until the job is done.</p>
+  <p>Think of a film <b>director</b> who can't hold a camera. They give instructions ("put a table here, walk him to it"),
+    the crew does it, they look at the result, and they give the next instruction.</p>
   <div class="tbl"><table>
-    <tr><th>Part of an agent</th><th>In this project</th></tr>
-    <tr><td>Goal</td><td>The request, e.g. "a stick man walks to the table and waves"</td></tr>
-    <tr><td>Brain (policy)</td><td>The language model: qwen2.5 3b / 7b, or Claude. (A0 is rules, not a model: the baseline.)</td></tr>
-    <tr><td>Actions (tools)</td><td>16 functions such as <code>add_asset</code>, <code>add_stick_figure</code>, <code>play_action</code>, <code>set_camera</code></td></tr>
-    <tr><td>Environment</td><td>A Blender scene, running headless</td></tr>
-    <tr><td>Observations</td><td>Each tool's JSON result, <code>scene_state</code>, and error messages</td></tr>
-    <tr><td>Feedback / self-check</td><td>The checker's report: which checks failed and why</td></tr>
-    <tr><td>Stopping</td><td>The model says it is done; the checker passes, or 3 fix rounds are used up</td></tr>
+    <tr><th>Agent idea</th><th>In my project</th></tr>
+    <tr><td>The goal</td><td>The request, e.g. "a stick man walks to the table and waves"</td></tr>
+    <tr><td>The brain</td><td>The language model (qwen or Claude) deciding what to do</td></tr>
+    <tr><td>The tools</td><td>16 commands like "add a table", "add a stick figure", "make him walk", "set the camera"</td></tr>
+    <tr><td>The world</td><td>A Blender scene</td></tr>
+    <tr><td>What it sees back</td><td>The result of each command, or an error message</td></tr>
+    <tr><td>Feedback</td><td>The checker's report: what's still wrong</td></tr>
   </table></div>
-  <p>This pattern is <b>ReAct</b> (reason, act, observe, repeat). Feeding the failure report back so the model
-    corrects itself is the idea behind <b>Reflexion</b>. The model never writes Blender code; it only chooses
-    tool calls, which keeps it safe and checkable.</p>
-  <div class="callout"><b>One-line answer:</b> "An agent is an LLM that works in a loop: it calls tools to change
-    the world, reads the results, and keeps going until the goal is met. Here the world is a Blender scene, the
-    tools are 16 animation commands, and a checker tells it what is still wrong."</div>
+  <p>The model never writes Blender code itself; it only picks commands from my list. That keeps it safe, and it means
+    every result can be checked.</p>
+  <div class="say"><b>Say it like this</b>"An agent is a language model that works in a loop: it uses tools to change
+    something, looks at what happened, and keeps going until the goal is met. Here the tools are animation commands for
+    Blender, and a checker tells it what's still wrong."</div>
 </section>
 
-<section id="architecture">
+<section id="big">
   <span class="num">Big picture</span>
-  <h2>Architecture</h2>
+  <h2>How the pieces fit</h2>
   <div class="diagram">
-    <svg viewBox="0 0 900 330" role="img" aria-label="Request to agent to validated tools to Blender worker to checker, with the report looping back to the agent">
+    <svg viewBox="0 0 900 330" role="img" aria-label="Request goes to the agent, then validation, then the Blender worker, which makes the video; the checker reads the scene and sends a report back to the agent">
       <rect class="box" x="10" y="40" width="130" height="60" rx="8"/>
       <text x="75" y="66" text-anchor="middle" font-weight="600">Request</text>
-      <text x="75" y="86" text-anchor="middle" class="small">plain language</text>
+      <text x="75" y="86" text-anchor="middle" class="small">what I type</text>
       <rect class="box" x="180" y="30" width="160" height="80" rx="8"/>
       <text x="260" y="58" text-anchor="middle" font-weight="600">Agent (director)</text>
-      <text x="260" y="78" text-anchor="middle" class="small">A0 rules · A1/A2 qwen</text>
-      <text x="260" y="94" text-anchor="middle" class="small">A3 Claude via MCP</text>
+      <text x="260" y="78" text-anchor="middle" class="small">rules, qwen or Claude</text>
+      <text x="260" y="94" text-anchor="middle" class="small">picks the commands</text>
       <rect class="box" x="380" y="30" width="150" height="80" rx="8"/>
       <text x="455" y="58" text-anchor="middle" font-weight="600">Validation</text>
-      <text x="455" y="78" text-anchor="middle" class="small">schema.py: names, types,</text>
-      <text x="455" y="94" text-anchor="middle" class="small">clear error messages</text>
+      <text x="455" y="78" text-anchor="middle" class="small">is the command</text>
+      <text x="455" y="94" text-anchor="middle" class="small">written correctly?</text>
       <rect class="box" x="570" y="30" width="170" height="80" rx="8"/>
       <text x="655" y="58" text-anchor="middle" font-weight="600">Blender worker</text>
-      <text x="655" y="78" text-anchor="middle" class="small">tools.py + motion.py</text>
-      <text x="655" y="94" text-anchor="middle" class="small">one scene, headless</text>
+      <text x="655" y="78" text-anchor="middle" class="small">Blender doing the work</text>
+      <text x="655" y="94" text-anchor="middle" class="small">(no window)</text>
       <rect class="box" x="780" y="30" width="110" height="80" rx="8"/>
-      <text x="835" y="64" text-anchor="middle" font-weight="600">MP4 +</text>
-      <text x="835" y="84" text-anchor="middle" font-weight="600">.blend</text>
+      <text x="835" y="64" text-anchor="middle" font-weight="600">Video +</text>
+      <text x="835" y="84" text-anchor="middle" font-weight="600">.blend file</text>
       <rect class="box hot" x="570" y="200" width="170" height="80" rx="8"/>
       <text x="655" y="228" text-anchor="middle" font-weight="600">Checker</text>
-      <text x="655" y="248" text-anchor="middle" class="small">sample_scene → checks</text>
-      <text x="655" y="264" text-anchor="middle" class="small">checker.py, figure_checks.py</text>
+      <text x="655" y="248" text-anchor="middle" class="small">did it come out right?</text>
       <path class="line" d="M140 70 H180"/><path class="line" d="M340 70 H380"/><path class="line" d="M530 70 H570"/><path class="line" d="M740 70 H780"/>
       <path class="line" d="M655 110 V200"/>
       <path class="line" d="M570 240 H260 V110"/>
-      <text x="415" y="232" text-anchor="middle" class="small">failing report → fix (≤ 3 rounds)</text>
+      <text x="415" y="232" text-anchor="middle" class="small">"this is still wrong" → fix it (up to 3 times)</text>
       <path class="line" d="M600 110 C 560 150, 380 150, 300 110"/>
-      <text x="450" y="150" text-anchor="middle" class="small">tool results + errors</text>
-      <text x="676" y="160" class="small">scene data</text>
+      <text x="450" y="150" text-anchor="middle" class="small">result of each command</text>
     </svg>
   </div>
-  <p>Arrows: the agent sends <b>tool calls (JSON)</b>; each is validated, then run in Blender; the result comes back
-    to the agent. When the agent is done, the checker reads the scene; a failing report goes back to the agent.</p>
   <ul>
-    <li><b>Validation</b> (before): checks each tool call is well-formed (tool exists, arguments present, right types
-      and values) before Blender sees it; a bad call changes nothing and returns an error the agent can fix.</li>
-    <li><b>Blender worker</b> (the work): Blender running headless in the background, keeping one scene and carrying
-      out each valid call: placing props, animating figures from the motion library, moving the camera, rendering.</li>
-    <li><b>Checker</b> (after): reads the finished scene's real data (positions, joints, timeline, camera) and tests
-      it against the request; a failing report goes back to the agent to fix, up to 3 times.</li>
+    <li><b>Validation</b> checks each command is written correctly before Blender sees it, like a receptionist checking your form is filled in.</li>
+    <li><b>The Blender worker</b> carries out the good commands, like a film crew building the set and moving the actors.</li>
+    <li><b>The checker</b> looks at the finished scene and tests it against the request, like a quality inspector measuring the product against the order.</li>
   </ul>
-  <div class="callout"><b>One line for the viva:</b> "Validation catches badly written calls before they run, the
-    worker carries out the good ones in Blender, and the checker proves from the scene data that the result matches
-    the request."</div>
+  <div class="say"><b>Say it like this</b>"Validation catches badly written commands before they run, Blender carries
+    out the good ones, and the checker proves from the scene data that the result matches the request."</div>
 </section>
 
-<section id="components">
+<section id="parts">
   <span class="num">Parts</span>
-  <h2>Each component in a little detail</h2>
+  <h2>The parts, simply</h2>
   <div class="grid2">
-    <div class="comp"><h3>1. Task set</h3><p class="where">tasks.json</p>
-      <p>30 requests written before building, each with machine-checkable checks. Six categories following the
-        animator's ladder: static layout, object motion, single figure action, sequences, figure + props, two
-        figures + camera. Roles ("the table", "the walker") are matched to whatever names the agent chose.</p></div>
-    <div class="comp"><h3>2. The directors (agents)</h3><p class="where">agent/template.py, llm_agent.py, claude_agent.py</p>
-      <ul><li><b>A0</b>: keyword rules → fixed tool sequence (baseline, no AI)</li>
-        <li><b>A1/A2</b>: qwen2.5 3b / 7b via Ollama, tool calling, temperature 0, seed 0, 8k context; ran on a Kaggle T4 GPU behind a Cloudflare tunnel</li>
-        <li><b>A3</b>: Claude through <code>claude -p</code>, with only this project's MCP server as its tools</li></ul>
-      <p>A1–A3 get the same system prompt: the tools, the 2D world, the actions, "make only what is asked".</p></div>
-    <div class="comp"><h3>3. Tools + validation</h3><p class="where">blender_worker/schema.py</p>
-      <p>16 tools: <code>scene_reset</code>, <code>scene_state</code>, <code>add_primitive</code>, <code>add_asset</code>,
-        <code>set_transform</code>, <code>set_material</code>, <code>add_light</code>, <code>set_camera</code>, <code>camera_move</code>,
-        <code>keyframe</code>, <code>set_easing</code>, <code>set_frames</code>, <code>add_stick_figure</code>, <code>play_action</code>,
-        <code>render_check</code>, <code>render_final</code>.</p>
-      <p>Every call is checked against a JSON schema first; a bad call changes nothing and returns an error the model
-        can act on. Helpers avoid arithmetic: <code>{"on_top_of": "table"}</code>, <code>play_action(to="table")</code>.
-        A repeat guard answers a third identical call with "already done, do the next step".</p></div>
-    <div class="comp"><h3>4. Blender worker</h3><p class="where">blender_worker/worker.py, tools.py, client.py</p>
-      <p>Blender 4.5 LTS runs <b>headless</b> as one long-running process; Python sends it JSON commands over a local
-        socket. It keeps one scene. Look: a flat <b>2D world</b>: orthographic side camera, white background, ground line,
-        Workbench renderer. Positions are <code>[x, z]</code>; depth is only a layer (back / middle / front). Output: MP4 at
-        24 fps plus an editable <code>.blend</code>.</p></div>
-    <div class="comp"><h3>5. Stick figures + motion library</h3><p class="where">blender_worker/motion.py</p>
-      <p>A figure is one curve object whose 18 joints are keyframed every frame. 17 actions:</p>
-      <ul><li>Captured: walks (normal, happy, sad, worried) from Project 3's joint tracks; the wave from my own video</li>
-        <li>Keyed / computed: idle, look, look down, react, sigh, run, handshake, pick up / put down, sit / stand up, turn</li>
-        <li>Joining: eased blends, foot locked to the ground, settle step after walks, turn before acting, keep the last facing</li></ul></div>
-    <div class="comp"><h3>6. Checker</h3><p class="where">checks/checker.py, figure_checks.py</p>
-      <p><code>sample_scene</code> exports positions, joint tracks, the action timeline and the camera every frame
-        (visibility and collisions every 6th frame). Plain Python then checks: 9 defaults for every task
-        (in view, not hidden, on a surface, no hovering, no collisions, grounded ±1.5 cm, no foot slide ≤ 0.5 cm/frame,
-        no pops, clip 2–20 s) plus the task's own checks (bounces, actions in order, reaches, camera move…).
-        The report lists failures first, written for the agent.</p></div>
-    <div class="comp"><h3>7. MCP server (for Claude)</h3><p class="where">blender_worker/mcp_server.py</p>
-      <p>Model Context Protocol: an open way to offer tools to a model. Hand-written (JSON-RPC over stdio, no SDK).
-        It offers the same validated tools plus <code>check_scene</code>, and <b>attaches to the same Blender worker</b>
-        the evaluation uses, so the checker sees exactly Claude's scene.</p></div>
-    <div class="comp"><h3>8. Story mode</h3><p class="where">story.py</p>
-      <p>A story is split into shots, like a storyboard. Each shot is a short request continuing the same scene;
-        the agent is told what exists and where the timeline ends. New characters appear when their shot starts;
-        the camera is directed once at the end.</p></div>
-    <div class="comp"><h3>9. Demo + deployment</h3><p class="where">demo_app.py, space/build_static.py</p>
-      <p>Local Gradio app: Direct, Story, Task + checks, Results. Deployed as a free static Hugging Face Space
-        (every final run, its calls, checks and clip). Live use: <code>run_demo.bat</code> gives a public link to the laptop.</p></div>
+    <div class="comp"><h3>The 30 tasks</h3>
+      <p>30 requests I wrote before building anything, from easy to hard, in the order animators learn: place objects →
+        bounce a ball → one action → a sequence of actions → acting with props → two characters with a camera move. Each
+        task says what the checker must see.</p>
+      <p class="code-note">In the code: <code>tasks.json</code></p></div>
+    <div class="comp"><h3>The four directors</h3>
+      <ul><li><b>Rules</b>: hand-written "if the request says X, do Y". No AI; it's the baseline.</li>
+        <li><b>qwen 3b and qwen 7b</b>: small free open models. They ran on a free Kaggle GPU.</li>
+        <li><b>Claude</b>: the big model, through Claude Code on my subscription.</li></ul>
+      <p>All three AI directors get the same instructions and the same commands.</p>
+      <p class="code-note">In the code: <code>agent/</code></p></div>
+    <div class="comp"><h3>The commands (tools)</h3>
+      <p>16 commands such as "add a table", "add a stick figure", "make him walk to the table", "move the camera",
+        "render". I made them easy to use correctly: you can say "walk <i>to the table</i>" instead of working out
+        distances, or "put the ball <i>on the table</i>" instead of giving coordinates.</p>
+      <p class="code-note">In the code: <code>blender_worker/schema.py</code>, <code>tools.py</code></p></div>
+    <div class="comp"><h3>Blender (the worker)</h3>
+      <p>Blender, the real animation program, running in the background with no window. It keeps one scene open and
+        does whatever command it receives. The look is a flat 2D world: side view, white background, a ground line.
+        It saves an MP4 video and an editable Blender file.</p>
+      <p class="code-note">In the code: <code>blender_worker/worker.py</code></p></div>
+    <div class="comp"><h3>The stick figures and their moves</h3>
+      <p>17 actions: walk (normal, happy, sad, worried), run, wave, idle, look, look down, a fright, sigh, handshake,
+        pick up, put down, sit, stand up, turn. The walks come from Project 3's recorded motions, and the wave from a video
+        of me. I added animator tricks so the moves join smoothly and the feet never slide.</p>
+      <p class="code-note">In the code: <code>blender_worker/motion.py</code></p></div>
+    <div class="comp"><h3>The checker</h3>
+      <p>After the agent finishes, it reads Blender's data for every frame and tests it: feet on the ground, no sliding,
+        nothing floating or passing through things, everything in view, actions in the right order. It writes a short
+        report the agent can act on, like "the ball bounces 2 times, expected 3".</p>
+      <p class="code-note">In the code: <code>checks/</code></p></div>
+    <div class="comp"><h3>The MCP connection (for Claude)</h3>
+      <p>MCP is a standard way to give a model a set of tools. I wrote a small MCP server so Claude can use my 16
+        commands, plus "check my scene". It talks to the same Blender the checker reads.</p>
+      <p class="code-note">In the code: <code>blender_worker/mcp_server.py</code></p></div>
+    <div class="comp"><h3>Story mode</h3>
+      <p>For longer stories, the story is split into shots, like a storyboard. The agent directs one shot at a time,
+        continuing the same scene, and the camera is planned at the end.</p>
+      <p><b>Who splits it?</b> A person. The story is an input already written as shots: a JSON file in
+        <code>stories/</code>, or the "Shots" box on the demo page. For each shot, the program tells the agent what already
+        happened and what's in the scene now, and asks it to do only that shot. Splitting it automatically isn't built yet
+        (see <a href="#next">next steps</a>).</p>
+      <p class="code-note">In the code: <code>story.py</code></p></div>
   </div>
 </section>
 
-<section id="trace">
-  <span class="num">Walkthrough</span>
-  <h2>One request, step by step (real run)</h2>
-  <p>Request p01: <b>"a stick man walks to the table and waves"</b>, directed by Claude. Its actual tool calls:</p>
-<pre>add_asset        {"asset": "table", "name": "table", "location": [2, 0]}
-add_stick_figure {"name": "man", "location": [-2.5, 0], "facing": "right"}
-play_action      {"name": "man", "action": "walk", "to": "table", "start_frame": 1}
-play_action      {"name": "man", "action": "wave"}
-set_camera       {"look_at": [0, 1.6], "width": 8}
-set_frames       {"start": 1, "end": 259}
-check_scene  →  "All 11 checks pass."</pre>
+<section id="words">
+  <span class="num">Under the hood</span>
+  <h2>From words to a tool call to Blender</h2>
+  <h3>1. How a sentence becomes a command</h3>
+  <p>With every request, the model also gets a list of my commands: their names, what they do, and what information
+    each one needs. Models like Claude and qwen are trained so that, when a command would help, they write a small
+    structured block instead of a normal sentence:</p>
+<pre>{"tool": "play_action", "arguments": {"name": "man", "action": "walk", "to": "table"}}</pre>
+  <p>It's still just text the model wrote, but in a format my code can read like a function call. My code runs it and
+    sends the result back as text (e.g. "he walked from x = −2.5 to 1.3 in frames 1–120"). The model reads that and
+    decides the next command.</p>
+  <h3>2. How the command happens in Blender</h3>
+  <p>By hand, you'd add a cube, move it, press <b>I</b> to set a keyframe at frame 1, go to frame 24, move it, and press
+    <b>I</b> again. In Blender, <b>every button is also a Python command</b>, so code can do the same:</p>
+<pre>ball.location = (-2.0, 0.0, 1.5)
+ball.keyframe_insert("location", frame=1)     # the same as pressing I at frame 1
+ball.location = (0.0, 0.0, 0.0)
+ball.keyframe_insert("location", frame=24)    # Blender fills in the frames between</pre>
+  <p>"Walk him to the table" does what an animator would: finds the table, works out a walk that ends there, and sets a
+    keyframe for every joint on every frame (thousands of key presses, automatically).</p>
+  <h3>3. What "headless" means</h3>
+  <p>Headless means <b>running a program without its window</b>. Started with <code>blender -b</code>, Blender opens no
+    screen at all; it just runs my script and waits for commands. Like a kitchen with no dining room: orders go in,
+    food comes out. It's faster, needs nobody to click, and can run on a server.</p>
+  <h3>4. What a socket is</h3>
+  <p>A socket is a <b>connection between two programs</b> so they can send each other messages, like a phone line.
+    Blender runs as its own program and listens on a "port" (a room number on my laptop); my Python code connects to it
+    and sends one command per line, and Blender answers with one result per line. That keeps one Blender and one scene
+    open the whole time, and lets the agent's tools and the checker talk to the same scene.</p>
+  <div class="say"><b>Say it like this</b>"The model gets descriptions of my commands and answers with structured
+    commands instead of sentences. My code checks each one and sends it over a socket to Blender running in the
+    background, where each command does in code what an animator would do by hand."</div>
+</section>
+
+<section id="routing">
+  <span class="num">Under the hood</span>
+  <h2>How a request travels through the system</h2>
   <ol class="steps">
-    <li><b>Request</b> goes to the agent with the system prompt and the tool list.</li>
-    <li><b>Agent</b> decides the calls above. It never computes the walk distance: <code>to="table"</code> does that.</li>
-    <li><b>Validation</b> checks each call's names and types before Blender sees it.</li>
-    <li><b>Blender worker</b> builds the scene; <code>play_action</code> asks the motion library for the walk (foot locked,
-      settle step), blends into the wave, and keys every joint every frame.</li>
-    <li><b>Checker</b> runs 11 checks: actions in order (walk then wave), reaches the table, in view, not hidden,
-      on surface, grounded, no foot slide, no pops, no collision, no hover, clip length. All pass.</li>
-    <li><b>Render</b>: MP4 + <code>.blend</code>.</li>
+    <li><b>Browser → my app.</b> The request is typed on the demo page. It goes to the app running on my laptop (through the public link if it's used remotely).</li>
+    <li><b>App → Blender.</b> The app starts Blender in the background and connects to it over a socket.</li>
+    <li><b>App → the chosen director.</b> Claude runs on Anthropic's servers and uses my MCP server to reach the commands; qwen runs on Ollama (on a Kaggle GPU) and gets the command list over the internet; the rules are plain Python.</li>
+    <li><b>Each command → validation → Blender.</b> Checked, then sent to Blender, which changes the scene and answers. The answer goes back to the model, which picks the next command.</li>
+    <li><b>When it's done → checker.</b> The checker reads the same Blender scene. If something's wrong, the report goes back to the model to fix (up to 3 times).</li>
+    <li><b>Render → back to the browser.</b> Blender makes the video, and the app shows it on the page.</li>
   </ol>
-  <h3>A fix from the report (m01: "a red ball bounces three times on the floor")</h3>
-  <p>Claude keyframed the ball, then called <code>check_scene</code>: <i>"bounces: ball bounces 2 time(s), expected 3"</i>
-    (its last bounce was too low to count). It raised the last bounce's keyframes, checked again: <b>all 10 checks pass</b>.
-    That is the self-check loop working.</p>
+  <div class="say"><b>Say it like this</b>"The browser talks to my app, the app sends the request to the chosen model,
+    every command the model makes is checked and passed to Blender running in the background, and at the end the
+    checker reads that same scene before the video comes back."</div>
+</section>
+
+<section id="checker">
+  <span class="num">Under the hood</span>
+  <h2>The checker, in detail</h2>
+  <h3>Two different checks, at two different times</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>Validation</th><th>The checker</th></tr>
+    <tr><td><b>When</b></td><td>On <b>every single command</b>, before Blender runs it</td><td><b>Once</b>, after the agent says it's done (then again after each fix)</td></tr>
+    <tr><td><b>Asks</b></td><td>"Is this a legal command?" Right tool, right kind of values, numbers in range, the object exists</td><td>"Is the animation right?" Does the scene actually do what the request asked</td></tr>
+    <tr><td><b>Catches</b></td><td>Bad commands</td><td>A wrong animation</td></tr>
+    <tr><td><b>If it fails</b></td><td>Blender never sees the command; the error goes straight back to the model</td><td>The report goes back to the model as a message; it gets up to 3 fix rounds</td></tr>
+    <tr><td><b>Code</b></td><td><code>blender_worker/schema.py</code> (<code>validate()</code>)</td><td><code>checks/checker.py</code>, <code>checks/figure_checks.py</code></td></tr>
+  </table></div>
+  <p>Validation also quietly cleans small slips, like <code>"1"</code> → <code>1</code> or <code>{x, z}</code> → <code>[x, z]</code>.
+    The checker can't run after every command, because halfway through, the scene isn't finished: the ball exists but
+    hasn't been made to bounce yet, so "bounces 3 times" would fail even though nothing is wrong.</p>
+  <p>For the small models, my code calls the checker when the model stops making commands. For Claude, the checker is a
+    tool called <code>check_scene</code>, and Claude decides when to call it ("call it when you think you are done").
+    Either way, after the agent finishes, the evaluation runs the checker one final time, and that run decides pass or fail.</p>
+
+  <h3>Step 1: Blender writes down the whole scene, frame by frame</h3>
+  <p>A tool called <code>sample_scene</code> steps Blender's timeline through <b>every frame</b> of the clip (a 5-second
+    clip at 24 fps is 120 frames) and writes down, for each frame:</p>
+  <ul>
+    <li>every object's position, rotation, colour and box (its lowest and highest points)</li>
+    <li>where each object sits on the screen, as the camera sees it (0 to 1 across)</li>
+    <li>each stick figure's 18 joints, and what it's sitting on or holding</li>
+    <li>the camera's position and how wide it is</li>
+  </ul>
+  <p>It checks every frame's <b>data</b>, not every frame's <b>picture</b>: nothing is rendered for the checker. Blender just
+    moves to each frame and reads the numbers, which takes a second or two. One thing is only done on every 6th frame (and the
+    last one): "is it hidden behind something?", because that means tracing lines from the camera to the object, which is slower.
+    The few preview images (<code>render_check</code>) are for humans only; the checker never looks at them.</p>
+  <p>All of that goes out as one big block of data, and from here on the checker is <b>plain Python</b>, not Blender.</p>
+
+  <h3>Step 2: Match the request's things to the scene's objects</h3>
+  <p>Each task in <code>tasks.json</code> says what should exist and what must be true:</p>
+<pre>m01  "a red ball bounces three times on the floor"
+roles:  ball = a sphere that is red
+checks: bounces → ball, 3 times, on the ground</pre>
+  <p>The agent might have called the ball <code>ball</code>, <code>red_ball</code> or <code>sphere1</code>. The checker
+    <b>ignores names</b>: it finds whatever is a sphere and red, and treats that as "the ball". If several objects could
+    fit, it tries every way of matching them up and keeps the one where the most checks pass. That's called <b>binding</b>.</p>
+
+  <h3>Step 3: Each check is a small maths test on those numbers</h3>
+  <p>Every check returns pass or fail and one plain sentence. The bounce check, for example:</p>
+  <ol class="steps">
+    <li>Take the ball's height above the ground on every frame.</li>
+    <li>An <b>arrival</b> is a frame where it goes from in the air to touching (within 2 cm).</li>
+    <li>It's a <b>bounce</b> only if the ball then rises clearly again (at least 5 cm), so a tiny wobble doesn't count.</li>
+    <li>Count the bounces and compare with 3: <code>"ball bounces 2 time(s) (frames [12, 30]), expected 3"</code>.</li>
+  </ol>
+  <p>Other checks work the same way: <b>row</b> (are the cubes lined up?), <b>middle of row</b> (is the blue one in the
+    middle?), <b>spins</b> (add up the rotation, ÷ 360 = turns), <b>sits on</b> (is the figure attached to the bench, hips at seat height?),
+    <b>action order</b> (did he walk, then sit, then look up?).</p>
+
+  <h3>Plus 9 checks on every task</h3>
+  <p>These catch things that look wrong even when the request is met:</p>
+  <div class="tbl"><table>
+    <tr><td><b>In view</b></td><td>everything is inside the camera on most frames</td></tr>
+    <tr><td><b>Not hidden</b></td><td>nothing important is behind something else</td></tr>
+    <tr><td><b>On a surface</b></td><td>things that don't move rest on the ground or on a prop</td></tr>
+    <tr><td><b>Grounded</b></td><td>stick figures' feet are on the ground</td></tr>
+    <tr><td><b>No foot slide</b></td><td>a planted foot moves less than 0.5 cm per frame</td></tr>
+    <tr><td><b>No pops</b></td><td>no joint suddenly jumps (more than 3× its normal speed)</td></tr>
+    <tr><td><b>No collision</b></td><td>nothing passes through anything else</td></tr>
+    <tr><td><b>No hover</b></td><td>nothing floats just above a surface</td></tr>
+    <tr><td><b>Clip length</b></td><td>between 2 and 20 seconds</td></tr>
+  </table></div>
+
+  <h3>What comes out</h3>
+<pre>2 of 12 checks fail:
+- bounces: ball bounces 2 time(s) (frames [12, 30]), expected 3
+- in_view: ball is outside the camera on 40% of frames</pre>
+  <p>The sentences are written <b>for the agent</b>, so this report goes straight back to the model as its fix message.</p>
+
+  <h3>Who wrote it, and why it isn't an AI</h3>
+  <p>The checker is ordinary hand-coded Python with fixed rules and fixed tolerances (2 cm for "touching", 5 cm for a real
+    bounce, 0.5 cm a frame for sliding). There's no model inside it, so the same scene always gets the same verdict. That's
+    on purpose: if an AI judged whether another AI did the job, I couldn't fully trust the score. I built it with Claude Code
+    as my coding assistant: I decided what to check and how strict to be, tested it on real runs and on deliberately
+    broken scenes, and tuned the tolerances.</p>
+  <div class="say"><b>Say it like this</b>"Blender writes down where everything is on every frame. The checker matches the
+    request's things to the scene by kind and colour, not by name, and each check is a small test on those numbers, like
+    counting how often the ball's height reaches zero and rises again. Failures come back as plain sentences the agent can fix."</div>
+</section>
+
+<section id="tools">
+  <span class="num">Under the hood</span>
+  <h2>The 16 commands</h2>
+  <p>These are all the agent can do. It never writes Blender code itself.</p>
+  <div class="tbl"><table>
+    <tr><th>Group</th><th>Command</th><th>What it does</th></tr>
+    <tr><td rowspan="4">Scene</td><td><code>scene_reset</code></td><td>Starts an empty 2D "paper" scene: ground line at height 0, camera looking from the side</td></tr>
+    <tr><td><code>scene_state</code></td><td>Describes what's in the scene now (objects, colours, positions, figures, keyframes): the agent's way to "look"</td></tr>
+    <tr><td><code>set_frames</code></td><td>Clip length and frame rate (e.g. 120 frames at 24 fps = 5 s)</td></tr>
+    <tr><td><code>add_light</code></td><td>Background mood: day, studio, sunset or night</td></tr>
+    <tr><td rowspan="4">Objects</td><td><code>add_primitive</code></td><td>A basic shape (cube, sphere, cylinder…) resting at a position</td></tr>
+    <tr><td><code>add_asset</code></td><td>A ready-made prop drawn side-on: table, chair, bench, box, tree, lamp…; things can go <code>on_top_of</code> it</td></tr>
+    <tr><td><code>set_transform</code></td><td>Move, rotate or scale an object</td></tr>
+    <tr><td><code>set_material</code></td><td>An object's or figure's colour</td></tr>
+    <tr><td rowspan="2">Animation</td><td><code>keyframe</code></td><td>"This property has this value at this frame"; Blender fills in between</td></tr>
+    <tr><td><code>set_easing</code></td><td>How it moves between keyframes: linear, smooth, or <code>gravity</code> for bounces and falls</td></tr>
+    <tr><td rowspan="2">Stick figures</td><td><code>add_stick_figure</code></td><td>A 1.7 m stick person facing front, left or right, optionally holding something</td></tr>
+    <tr><td><code>play_action</code></td><td>Perform an action from the motion library: walk, run, wave, sit, pick up, shake hands…</td></tr>
+    <tr><td rowspan="2">Camera</td><td><code>set_camera</code></td><td>Frame the shot: what to centre on and how wide</td></tr>
+    <tr><td><code>camera_move</code></td><td>Pan, zoom in or out, or follow</td></tr>
+    <tr><td rowspan="2">Output</td><td><code>render_check</code></td><td>A few quick preview frames</td></tr>
+    <tr><td><code>render_final</code></td><td>The final MP4, once, at the end</td></tr>
+  </table></div>
+  <ul>
+    <li><b>4 more internal ones</b> the agent never sees: <code>sample_scene</code> (feeds the checker), <code>set_output</code>,
+      <code>save_blend</code>, and <code>appear_at</code> (story mode: keeps a character off stage until their shot). That's why
+      <code>tools.py</code> lists 20.</li>
+    <li><b>Claude through MCP</b> doesn't get the two render commands (the evaluation renders separately) but gets
+      <code>check_scene</code> instead, so it sees 14 + 1 = 15.</li>
+  </ul>
+
+  <h3>I made these; they're not built into Blender</h3>
+  <p>Blender has no "tools" for an AI. What it has is a <b>Python interface called <code>bpy</code></b>: thousands of small
+    functions like "create a mesh", "set location", "insert a keyframe". Each of my commands is a function in
+    <code>blender_worker/tools.py</code> that wraps many of those into one simple, safe action:</p>
+  <div class="tbl"><table>
+    <tr><th>My command</th><th>What it does with Blender's <code>bpy</code></th></tr>
+    <tr><td><code>keyframe</code></td><td>Sets the value, then calls Blender's own <code>keyframe_insert()</code>. The closest to built-in.</td></tr>
+    <tr><td><code>set_easing</code></td><td>Changes the interpolation on Blender's animation curves; "gravity" is my own</td></tr>
+    <tr><td><code>add_primitive</code></td><td>Blender's add-mesh, then moves it so its <i>bottom</i> sits at the height given, and gives it a flat colour</td></tr>
+    <tr><td><code>add_asset</code></td><td>Mine: a bench or tree is built from several shapes. Blender has no "bench"</td></tr>
+    <tr><td><code>add_stick_figure</code></td><td>Mine: builds the head, body and limbs and registers the figure</td></tr>
+    <tr><td><code>play_action</code></td><td>Mine: asks the motion library for the poses, then keys them on every frame</td></tr>
+    <tr><td><code>camera_move</code></td><td>Mine: works out the camera path, then keys Blender's camera</td></tr>
+    <tr><td><code>render_final</code></td><td>Sets Blender's render settings (Workbench, flat 2D look) and calls Blender's render</td></tr>
+  </table></div>
+  <p>Why wrap them instead of letting the model write <code>bpy</code> code? <b>Simpler</b> ("add a bench" is one call, not
+    30 lines, so even small models can use it), <b>safer</b> (every call is validated and no random code runs), <b>2D rules built in</b>
+    (things snap to the ground, fixed layers, the camera stays flat), and <b>checkable</b> (each command records what it did).</p>
+
+  <h3>How many characters can be in a clip?</h3>
+  <p>The code has no limit: <code>add_stick_figure</code> only needs each one to have a different name. I only tested up to
+    <b>two</b> (handshake, waving together, one walking over to the other, walking side by side). With more, give each a
+    different colour so the checker can tell them apart, make the camera wide enough, and remember there are only three
+    depth layers and that handshakes are between two people. Crowds are future work.</p>
+  <div class="say"><b>Say it like this</b>"Blender gives a raw Python interface. I designed 16 higher-level commands on top of
+    it, so the agent works at the level of 'add a bench, make him sit', not meshes and keyframes."</div>
+</section>
+
+<section id="motion">
+  <span class="num">Under the hood</span>
+  <h2>The motion library</h2>
+  <p>The model never moves joints. It picks an action by name, and <code>blender_worker/motion.py</code> (about 1,200 lines of
+    plain Python, no Blender, so it can be tested on its own) makes it move properly. <b>The model decides <i>what</i>
+    happens; the library decides <i>how</i> it moves.</b></p>
+
+  <h3>What "a motion" actually is</h3>
+  <p>The stick figure has <b>18 joints</b>: pelvis, chest, neck, top of the head, and left/right hip, knee, ankle, toe,
+    shoulder, elbow and wrist. A <b>pose</b> is where each joint is in 2D: (forward, up). A <b>motion</b> is a list of poses,
+    one per frame. Distances are in <b>leg lengths</b> (hip to ankle = 1), so the same motion fits a figure of any height.</p>
+
+  <h3>The 17 actions and where each comes from</h3>
+  <div class="tbl"><table>
+    <tr><th>Actions</th><th>Source</th><th>Stored as</th></tr>
+    <tr><td>walk, walk_happy, walk_sad, walk_worried</td><td>Project 3's recorded walk tracks</td><td>JSON files</td></tr>
+    <tr><td>wave</td><td>Project 3, taken from a video of me waving</td><td>JSON file</td></tr>
+    <tr><td>run, idle, look, look_down, react (fright), sigh, turn</td><td>Key poses I wrote in code, exaggerated for a stick figure</td><td>Code</td></tr>
+    <tr><td>pick_up, put_down, handshake, sit, stand_up</td><td>Worked out each time from the scene (IK)</td><td>Code</td></tr>
+  </table></div>
+
+  <h3>1. Recorded: JSON files in <code>motions/</code></h3>
+  <p>Five folders (<code>walk</code>, <code>walk_happy</code>, <code>walk_sad</code>, <code>walk_worried</code>, <code>wave</code>),
+    each with <code>motion.json</code> (the data) and <code>meta.json</code> (where it came from).</p>
+  <p><b>The walk</b> is 36 frames at 24 fps: one 1.5-second step cycle that loops.</p>
+<pre>"joints": {
+  "pelvis": [[0.0, 1.1536], [0.0333, 1.1598], [0.0667, 1.1613], ...],   36 (forward, up) pairs
+  "chest":  [...],  "l_knee": [...],  "r_ankle": [...],  ...            18 joints
+}
+"stats": { "stride_per_cycle": 1.2, "bounce": 0.046, ... }</pre>
+  <p><b>The wave</b> is 154 frames at about 30 fps from my phone video. It stores <b>angles</b> instead of positions: how
+    far the upper arm and forearm rotate on each frame (the forearm swings from about −5° to 138°). Its <code>meta.json</code>
+    notes it came from my own video, with 154 of 189 frames used and an average tracking score of 0.77.</p>
+
+  <h3>2. Keyed: a few poses in code, smoothed</h3>
+  <p>Like an animator setting keyframes, these are a handful of key poses with times. The sigh, roughly:</p>
+<pre>0 s stand  →  0.8 s chest up, breathe in  →  1.6 s slump, head down  →  2.6 s back to standing</pre>
+  <p>A function draws a <b>smooth curve</b> through the keys (a spline, the same idea as Blender's animation curves) to get
+    every frame in between, and it never overshoots a key.</p>
+
+  <h3>3. Computed: IK</h3>
+  <p><b>Inverse kinematics</b>: you say where the hand (or hip) should end up, and the code works out the shoulder and elbow
+    (or knee) angles to get it there. "The ball is <i>here</i>" gives the pick-up; "the seat is <i>this high</i>" gives
+    the sit; for a handshake, both hands meet in the middle.</p>
+
+  <h3>Clean-up tricks</h3>
+  <ul>
+    <li><b>Toe lock</b>: a planted foot stays exactly still, so walks don't slide</li>
+    <li><b>Braking</b>: a walk slows over its last step instead of stopping dead</li>
+    <li><b>Blending</b>: each action starts from where the last one ended, so there's no jump</li>
+    <li><b>Tempo</b>: Project 3's walk was a slow stroll, so it plays 1.3× faster; the arms swing a bit more for the stick style</li>
+  </ul>
+
+  <h3>From the library to Blender</h3>
+  <ol class="steps">
+    <li>The agent calls <code>play_action("walk", figure, to="table")</code>.</li>
+    <li><code>motion.py</code> returns a pose for every frame (the walk cycle repeated until he gets there, feet locked).</li>
+    <li><code>tools.py</code> scales the poses to the figure's size, places them at its position and facing, and writes
+      them as <b>Blender keyframes on every frame</b>, one for each point of the stick drawing.</li>
+    <li>Blender just plays the keyframes back, and the renderer draws them.</li>
+  </ol>
+  <div class="say"><b>Say it like this</b>"A motion is 18 joints times N frames of (forward, up) positions, in leg lengths.
+    The walks and the wave come from Project 3 and my own video, stored as JSON; the rest are key poses in code, smoothed with
+    a spline, or worked out with IK. <code>play_action</code> turns them into Blender keyframes on every frame."</div>
 </section>
 
 <section id="p3">
   <span class="num">Where it started</span>
   <h2>Project 3 in one minute</h2>
   <ul>
-    <li><b>Aim:</b> animate a drawn 2D character from a character sheet (~10 views), drift-free (no video-generation model).</li>
-    <li><b>How:</b> onboarding cut the drawing into body parts; a rig moved them with a motion library of 2D joint tracks; rendered on CPU.</li>
-    <li><b>What worked:</b> the motion transferred to a second character with zero new animation work.</li>
-    <li><b>What broke:</b> appearance. Flat drawings hide areas behind other parts; those had to be guessed, and the
-      guesses showed as seams (e.g. a sleeve seam on a dark t-shirt). Every new character needed tuning.</li>
-    <li><b>Carried into Project 5:</b> the walk tracks, the 18-joint skeleton, and the lesson that motion and appearance are separate.</li>
+    <li><b>What I tried:</b> animating a drawn 2D character from a character sheet (about 10 views), without using any video-generation AI.</li>
+    <li><b>How:</b> cut the drawing into body parts and moved them with recorded motions.</li>
+    <li><b>What worked:</b> the motion. It worked on a second character with no new animation work.</li>
+    <li><b>What broke:</b> the look. Parts hidden behind other parts had to be guessed, and those guesses showed as seams. Every new character needed fixing by hand.</li>
+    <li><b>What I kept for Project 5:</b> the walk motions, the skeleton, and the lesson that motion and look are separate.</li>
   </ul>
 </section>
 
-<section id="experiments">
+<section id="tested">
   <span class="num">Method</span>
-  <h2>Experiments: what was run, inputs and outputs</h2>
-  <div class="tbl"><table>
-    <tr><th>Study</th><th>Question</th><th>How</th></tr>
-    <tr><td>1. Which director?</td><td>How reliably do models of different sizes direct animation?</td><td>A0, A1, A2, A3 on the same 30 tasks, same tools and checks</td></tr>
-    <tr><td>3. Self-check loop</td><td>Does feeding the checker's report back help?</td><td>Success on the first try vs after up to 3 fix rounds (temperature 0 makes the first round a true no-fix run)</td></tr>
-    <tr><td>4. Failure analysis</td><td>Why do small models fail?</td><td>Count failing checks and call errors per agent</td></tr>
-    <tr><td>Stories</td><td>Can it direct long, multi-shot animation?</td><td>Story mode with Claude: 2 main stories + 3 test stories</td></tr>
-    <tr><td>Replays</td><td>Are results reproducible?</td><td>Rebuild all 120 runs from their logged calls; re-check</td></tr>
-  </table></div>
-  <p><b>Input</b> for each run: the request text. <b>Output</b>: <code>result.json</code> (pass/fail, every check's detail,
-    every tool call, timings, fix rounds), plus a clip rebuilt from the calls. Final runs: 25 Oct 2026, in
-    <code>results/final_2026-10-25</code>.</p>
-  <p><b>Metrics:</b> task success (all checks pass), success on the first try, tool calls per task, invalid calls
-    (rejected by validation), tool errors, time.</p>
-  <div class="callout"><b>Planned but not run:</b> Study 2 (remove the <code>scene_state</code> tool to measure scene feedback),
-    and reworded held-out requests (to test how brittle the rules are).</div>
+  <h2>What I tested</h2>
+  <ul>
+    <li><b>Which director is best?</b> All four on the same 30 tasks, same commands, same checks.</li>
+    <li><b>Does the "fix it" step help?</b> Compare how many tasks passed on the first try vs after fixing.</li>
+    <li><b>Why do the small models fail?</b> Count which checks failed and what mistakes they made in their commands.</li>
+    <li><b>Can it do whole stories?</b> Claude directed two main stories and three extra test stories, shot by shot.</li>
+    <li><b>Are the results repeatable?</b> I rebuilt all 120 runs from their saved commands; every one gave the same pass or fail.</li>
+  </ul>
+  <p><b>What goes in:</b> the request text. <b>What comes out:</b> a pass/fail for every check, every command the
+    director used, the time it took, and a video.</p>
+  <p class="code-note">Planned but not done: removing the "look at the scene" command to see how much it helps, and
+    testing the rules on reworded requests.</p>
 </section>
 
 <section id="results">
   <span class="num">Numbers</span>
-  <h2>Results</h2>
+  <h2>What I found</h2>
   <div class="kpi">
     <div><b>30/30</b><span>Claude (27 on the first try)</span></div>
-    <div><b>8/30</b><span>qwen2.5 7b</span></div>
-    <div><b>3/30</b><span>qwen2.5 3b</span></div>
-    <div><b>30/30</b><span>rules (tuned on these tasks)</span></div>
-    <div><b>120/120</b><span>replays match</span></div>
+    <div><b>8/30</b><span>qwen 7b</span></div>
+    <div><b>3/30</b><span>qwen 3b</span></div>
+    <div><b>30/30</b><span>rules (written for these tasks)</span></div>
   </div>
   <div class="tbl"><table>
-    <tr><th>Agent</th><th>Passed</th><th>First try</th><th>Calls / task</th><th>Invalid calls</th><th>Tool errors</th><th>Time / task</th></tr>
-    <tr><td>A0 rules</td><td>30/30</td><td>30</td><td>7.1</td><td>0%</td><td>0%</td><td>0.3 s</td></tr>
-    <tr><td>A1 qwen 3b</td><td>3/30</td><td>2</td><td>57.6</td><td>21%</td><td>23%</td><td>58 s</td></tr>
-    <tr><td>A2 qwen 7b</td><td>8/30</td><td>8</td><td>18.3</td><td>21%</td><td>26%</td><td>56 s</td></tr>
-    <tr><td>A3 Claude</td><td>30/30</td><td>27</td><td>6.2</td><td>0%</td><td>1%</td><td>18 s</td></tr>
+    <tr><th>Director</th><th>Passed</th><th>First try</th><th>Commands per task</th><th>Badly written commands</th></tr>
+    <tr><td>Rules</td><td>30/30</td><td>30</td><td>7</td><td>0%</td></tr>
+    <tr><td>qwen 3b</td><td>3/30</td><td>2</td><td>58</td><td>21%</td></tr>
+    <tr><td>qwen 7b</td><td>8/30</td><td>8</td><td>18</td><td>21%</td></tr>
+    <tr><td>Claude</td><td>30/30</td><td>27</td><td>6</td><td>0%</td></tr>
   </table></div>
-  <h3>By category</h3>
-  <div class="tbl"><table>
-    <tr><th>Category</th><th>A0</th><th>A1</th><th>A2</th><th>A3</th></tr>
-    <tr><td>Static layout</td><td>3/3</td><td>0/3</td><td>1/3</td><td>3/3</td></tr>
-    <tr><td>Object motion</td><td>5/5</td><td>0/5</td><td>0/5</td><td>5/5</td></tr>
-    <tr><td>Figure, single action</td><td>6/6</td><td>2/6</td><td>5/6</td><td>6/6</td></tr>
-    <tr><td>Figure, sequence</td><td>6/6</td><td>1/6</td><td>1/6</td><td>6/6</td></tr>
-    <tr><td>Figure with props</td><td>6/6</td><td>0/6</td><td>0/6</td><td>6/6</td></tr>
-    <tr><td>Two figures + camera</td><td>4/4</td><td>0/4</td><td>1/4</td><td>4/4</td></tr>
-  </table></div>
-  <h3>Self-check loop</h3>
-  <p>Claude: 3 first-try failures, <b>all 3 fixed</b> in one round each (a missing bounce, a tree out of view while
-    following, two figures too far apart). qwen 3b fixed 1 of 28; qwen 7b fixed 0 of 22.</p>
-  <h3>Why the small models fail</h3>
-  <div class="tbl"><table>
-    <tr><th>Call error</th><th>qwen 3b</th><th>qwen 7b</th><th>Claude</th></tr>
-    <tr><td>Repeat guard fired (same call again)</td><td>347</td><td>114</td><td>0</td></tr>
-    <tr><td>Missing a required argument</td><td>306</td><td>106</td><td>0</td></tr>
-    <tr><td>Refers to an object that doesn't exist yet</td><td>126</td><td>32</td><td>2</td></tr>
-    <tr><td>Tries to keyframe a stick figure directly</td><td>97</td><td>77</td><td>0</td></tr>
-  </table></div>
-  <p>Their failures are mostly <b>bookkeeping</b>, not animation: ordering, arguments, repetition, raw coordinates that
-    leave props floating, their own overlapping timing, even resetting their own scene.</p>
-  <h3>Stories (Claude)</h3>
-  <p>The Lost Ball: 7 shots, 44 calls, 0 errors, 54 s. The Ball That Goes Away: 6 shots, 64 calls, 0 errors.
-    Three new test stories (handshake, night fright and run, waiting on a chair): every beat in order; the one gap was
-    a pose the figure can't do (a sigh while sitting facing the front).</p>
+  <ul>
+    <li><b>The fix step:</b> Claude fixed all 3 of its first-try mistakes (a missing bounce, a tree out of view, two figures standing too far apart). qwen 3b fixed 1; qwen 7b fixed none.</li>
+    <li><b>Where small models break:</b> qwen 7b is fine with a single action but falls apart once a task needs several steps in order or things placed relative to each other.</li>
+    <li><b>Why they fail:</b> mostly bookkeeping, not animation: using objects before making them, leaving out information, repeating the same command over and over (347 times for qwen 3b), even wiping their own scene.</li>
+    <li><b>Stories:</b> "The Lost Ball" (7 shots, 54 s) and "The Ball That Goes Away" (6 shots) with no errors.</li>
+  </ul>
 </section>
 
 <section id="well">
   <span class="num">Strengths</span>
   <h2>What went well</h2>
   <ul>
-    <li><b>Checkable results:</b> because the world is 2D and built by tools, every claim ("feet planted", "walks then waves") is verified from data, not by eye.</li>
-    <li><b>Tool design:</b> placement helpers and targets turned hard geometry into simple choices; Claude needs ~6 calls per task.</li>
-    <li><b>Self-correction:</b> Claude turned every one-line failure report into the right fix.</li>
-    <li><b>Stories:</b> shot-by-shot directing scaled to 40–55 s animations with no errors.</li>
-    <li><b>Motion quality:</b> animator rules (easing, foot lock, settle steps, facing) came from reviewing clips; each fix became a rule.</li>
-    <li><b>Reproducibility:</b> all 120 runs replay to the same verdict; tests build broken scenes that must fail.</li>
-    <li><b>Cost:</b> about a cent per second of finished animation.</li>
+    <li>Every result is <b>checked from data</b>, not judged by eye.</li>
+    <li>Easy-to-use commands meant Claude needed only about <b>6 commands per task</b>.</li>
+    <li>Claude <b>fixed its own mistakes</b> from a one-line report.</li>
+    <li>Splitting stories into shots made <b>long animations</b> work.</li>
+    <li>The motion looks right because I added <b>animator rules</b> after watching every clip.</li>
+    <li>It's <b>cheap</b>: about a cent per second of animation.</li>
   </ul>
 </section>
 
 <section id="limits">
   <span class="num">Be honest</span>
-  <h2>Limitations</h2>
+  <h2>What's not perfect</h2>
   <ul>
-    <li>A0's rules were written while looking at the 30 tasks, so 30/30 is a ceiling, not a fair score.</li>
-    <li>Study 2 and reworded held-out requests were planned but not run.</li>
-    <li>Checks confirm what was asked but don't forbid extras (qwen 3b's one fix also sat down).</li>
-    <li>One run per agent per task; Claude isn't deterministic (its earlier full run also gave 30/30, 27 first try).</li>
-    <li>Human rating was informal (my own review), not scored by independent viewers.</li>
-    <li>2D only, side and front views; no physics, no faces on plain stick figures; a small prop library (the "lamp" is a table lamp).</li>
-    <li>Two changes after the feature freeze (rules learned new actions; a follow-camera bug fix), both re-checked against the eval.</li>
-    <li>Deployment is static; live directing needs my laptop (share link).</li>
+    <li>The rules scored 30/30 only because I wrote them while looking at these tasks; it's a best case, not a fair score.</li>
+    <li>Two planned tests weren't run (see "What I tested").</li>
+    <li>The checker confirms what was asked but doesn't stop extra actions.</li>
+    <li>Each director ran each task once.</li>
+    <li>The motion was rated by me, not by a group of viewers.</li>
+    <li>Only 2D, with a small set of props (the "lamp" is a table lamp).</li>
+    <li>The live demo needs my laptop running.</li>
   </ul>
 </section>
 
 <section id="learn">
   <span class="num">Takeaways</span>
-  <h2>Learnings</h2>
+  <h2>What I learned</h2>
   <ul>
-    <li><b>An animation agent needs animation knowledge built into its tools.</b> The quality came from animator rules, and most problems were spotted by watching clips.</li>
-    <li><b>Feedback only helps a model that can use it.</b> The same report fixed all of Claude's failures and almost none of qwen's.</li>
-    <li><b>Good tools beat clever prompts</b> for small models: every helper that removed arithmetic reduced errors.</li>
-    <li><b>Good characters need art made for rigging.</b> I tried a dressed stick figure and a Gemini-generated cut-out puppet: cutting, hidden-joint filling and joint chains worked, but generated art was inconsistent (a head 15% too big, nothing drawn under overlaps). Project 3's lesson, confirmed from the other side.</li>
-    <li><b>Directing beats generating</b> on control, editability and cost.</li>
+    <li><b>An animation agent needs animation knowledge built into its tools.</b> The good motion came from animator rules, and I found most problems by watching the clips.</li>
+    <li><b>Feedback only helps a model that can use it.</b> The same report fixed Claude's mistakes but not qwen's.</li>
+    <li><b>Good characters need art made for animation.</b> I tried dressed stick figures and a drawn puppet from AI-generated parts. The method worked, but the generated art didn't match itself and had nothing drawn under the overlaps, the same problem as Project 3.</li>
+    <li><b>Directing beats generating</b> for control, editing and cost.</li>
   </ul>
 </section>
 
-<section id="improve">
+<section id="next">
   <span class="num">Next time</span>
-  <h2>What could be improved or done better</h2>
+  <h2>What I'd do next</h2>
   <ul>
-    <li>Run Study 2 and held-out reworded requests; several runs per agent for variance.</li>
-    <li>A planner step for small models: list the story beats first, then make tool calls.</li>
-    <li>Checks that also forbid unrequested actions.</li>
-    <li>A scored human rating with several viewers.</li>
-    <li>More actions (jump, kick, push) and props (street lamp, house), each with its own check.</li>
-    <li>Drawn characters done properly: parts drawn whole on layers, matching side/front views, round overlapping joints.</li>
-    <li>A paid live server (Docker setup already built and tested) so live directing doesn't need my laptop.</li>
+    <li>Run the two missing tests, and run each task several times.</li>
+    <li>Help small models by having them plan the story steps first, then make commands.</li>
+    <li>Add more actions (jump, kick) and props (street lamp, house).</li>
+    <li>Proper drawn characters: parts drawn whole, with matching side and front views.</li>
+    <li>Let the model write the storyboard itself from a one-line idea (below).</li>
   </ul>
+
+  <h3>Automatic storyboards</h3>
+  <p>Today a person writes the shots. Next, the model could turn "two old friends meet in a park" into the shot list itself.</p>
+  <ul>
+    <li><b>Claude</b> can already do this with just a prompt: it knows how stories and storyboards work.</li>
+    <li><b>Small models</b>: splitting is a plain text task, much easier than directing (the many exact commands, positions and
+      frames is where qwen fails), so qwen 7b would likely write usable shots before it could act them out.</li>
+    <li><b>The real problem is shots the system can perform, not just nice ones.</b> "He remembers his childhood and smiles" is a
+      lovely beat, but there's no "remember" action and no face. So the prompt gives the vocabulary (the 17 actions, the props,
+      the 3 layers: "use only these"), simple rules (one or two actions per shot, name characters by colour, leave the camera
+      to the end), two or three example stories, and forces JSON output so it always parses.</li>
+    <li><b>Check the storyboard automatically</b>, like the commands: does every shot use only known actions and props? If not,
+      send it back ("there's no 'dance', use one of …"). The same validation idea, one level up.</li>
+    <li><b>Fine-tune only if prompting isn't enough</b>: have Claude write a few hundred idea → storyboard pairs and train qwen on
+      them (LoRA). A small model learning from a big one is called <b>distillation</b>.</li>
+    <li><b>How to measure "good shots"</b>: a storyboard is good if the director can perform it, meaning the checker passes on its
+      shots. That gives a score to compare prompting against fine-tuning.</li>
+  </ul>
+  <p>Order: prompt with the vocabulary and examples → automatic storyboard check → fine-tune only if needed.</p>
 </section>
 
 <section id="cost">
   <span class="num">Cost</span>
-  <h2>Directing vs generating video</h2>
+  <h2>Directing vs a video-generation model</h2>
   <div class="tbl"><table>
-    <tr><th>Job</th><th>Claude + Blender</th><th>Veo 3.1 Lite ($0.05/s)</th><th>Veo 3.1 Standard ($0.40/s)</th></tr>
-    <tr><td>30 task clips (221 s)</td><td>$1.77</td><td>$11</td><td>$88</td></tr>
-    <tr><td>The Lost Ball (54 s)</td><td>$0.48</td><td>$2.70</td><td>$21.60</td></tr>
+    <tr><th>Job</th><th>Claude + Blender</th><th>Google Veo 3.1 (cheapest)</th><th>Google Veo 3.1 (standard)</th></tr>
+    <tr><td>All 30 task videos (221 s)</td><td>$1.77</td><td>$11</td><td>$88</td></tr>
+    <tr><td>"The Lost Ball" (54 s)</td><td>$0.48</td><td>$2.70</td><td>$21.60</td></tr>
   </table></div>
-  <p>Video models charge per second whatever the content, so a stick figure costs as much as a film scene, before
-    retakes for consistency. Claude's figures are Claude Code's own API-equivalent estimates (on a subscription, no
-    per-run charge); video prices were published rates in October 2026 and change often.</p>
+  <p>Video models charge per second whatever is in the picture, so a stick figure costs as much as a film scene, and
+    that's before redoing clips that come out wrong. Claude can't make images or video at all; here it directs Blender,
+    and Blender draws.</p>
 </section>
 
 <section id="demo">
   <span class="num">Show it</span>
   <h2>Demo plan (about 5 minutes)</h2>
   <ol class="steps">
-    <li>Open the Space: The Lost Ball, then the run browser at <code>#A1.q05</code> (qwen's one fix) and <code>#A3.t02</code> (Claude's fix).</li>
-    <li>Start <code>run_demo.bat</code>. Direct tab, Claude: "a stick man walks to the table and waves" (~30 s).</li>
-    <li>Story tab: start "Old Friends"; talk through the progress log while it runs (2–3 min).</li>
-    <li>Task + checks tab: run one task and show each check's verdict.</li>
-    <li>Backup if anything fails live: everything is on the Space.</li>
+    <li>Open Project 3's website and play one clip: the motion worked, the look didn't.</li>
+    <li>Open Project 5's website: "The Lost Ball", then a run from the browser (e.g. Claude fixing a mistake).</li>
+    <li>Start <code>run_demo.bat</code>. Type "a stick man walks to the table and waves" with Claude (~30 s).</li>
+    <li>Start a story ("Old Friends") and explain while it runs.</li>
+    <li>End with the dressed versions: "the look is a separate layer; proper characters are next".</li>
   </ol>
 </section>
 
 <section id="qa">
   <span class="num">Practice</span>
-  <h2>Likely viva questions</h2>
-  <details><summary>What is your project, in one sentence?</summary><p>An AI agent that turns a plain-language request into a short stick-figure animation in Blender, through 16 checked tools, checks its own result from the scene data and fixes what fails; I compare four directors on 30 tasks.</p></details>
-  <details><summary>Why did you do this after Project 3?</summary><p>Project 3 showed that motion transferred between characters but appearance broke. So I separated them: real software (Blender) does the rendering, stick figures keep appearance trivial, and the agent focuses on motion, timing and staging.</p></details>
-  <details><summary>What is an agent? Is this really agentic?</summary><p>An LLM in a loop that acts through tools, observes results and continues until the goal is met. Yes: it chooses tool calls, reads results and errors, and after the checker's report it fixes the scene itself. The rules baseline (A0) is not agentic; it's a fixed pipeline.</p></details>
-  <details><summary>Why not use a video-generation model?</summary><p>No control, no editable file, drift between frames, and 6–45× the cost per second before retakes. Here every result is an editable .blend and is checked.</p></details>
-  <details><summary>Why not let the LLM write Blender Python directly?</summary><p>Safety and checkability: arbitrary code can do anything and fail in unpredictable ways. Fixed tools are validated, give clear errors, hide hard math (walk to a target), and make results comparable across models.</p></details>
-  <details><summary>How does the checker work? How do you know it's correct?</summary><p>The worker exports positions, joint tracks, the action timeline and camera per frame; Python checks them (grounded within 1.5 cm, foot slide ≤ 0.5 cm/frame, actions in order, in view…). Test scenes that are deliberately broken (moonwalk, floating figure, ball through a table) must each fail exactly the expected check, and all 120 replays give the same verdicts.</p></details>
-  <details><summary>Why do the qwen models fail?</summary><p>Mostly bookkeeping: referring to objects before making them, missing arguments, repeating calls (347 times for 3b), raw coordinates that leave props floating, their own overlapping start frames, even resetting their scene. They also can't turn a failure report into the right fix.</p></details>
-  <details><summary>Isn't the rules baseline's 30/30 unfair?</summary><p>Yes, and the report says so: the rules were written looking at these 30 tasks, so it's a ceiling. In the live demo it silently dropped words it had no rule for ("sits down") until I added them. Rules only work as far as someone wrote them.</p></details>
-  <details><summary>What is MCP and how does Claude talk to Blender?</summary><p>Model Context Protocol, an open standard for offering tools to a model. I wrote a small MCP server (JSON-RPC over stdio) exposing the same validated tools plus check_scene; it attaches to the evaluation's Blender worker. claude -p runs with only these tools enabled.</p></details>
-  <details><summary>How did you run qwen?</summary><p>Ollama with qwen2.5 3b and 7b, temperature 0, seed 0. On the laptop CPU a task took 3.5–9.5 minutes, so the final runs used a Kaggle T4 GPU through a Cloudflare tunnel; Blender and the checker stayed on the laptop.</p></details>
-  <details><summary>How is "first try vs after fixes" measured without a second run?</summary><p>qwen runs at temperature 0, so its first round is exactly what it would do without the loop. Claude's first check_scene result is its first-try verdict. Both are recorded in the same run.</p></details>
-  <details><summary>Where does the motion come from?</summary><p>Walks from Project 3's 2D joint tracks; the wave from my own video; other actions keyed or computed from the scene (reach the ball, bend to the seat height). Joining uses eased blends, a locked planted foot and a settle step.</p></details>
-  <details><summary>Why split stories into shots?</summary><p>A long story in one request makes the agent plan everything at once and an early mistake breaks later beats. Shots keep each request small, like a storyboard; the camera is directed at the end over the whole timeline.</p></details>
-  <details><summary>What would you do with more time?</summary><p>Held-out requests and Study 2, a planner step for small models, stricter checks, more actions and props, and properly drawn characters (parts drawn whole, matching views).</p></details>
-  <details><summary>How did you use Claude Code / AI in building this?</summary><p>As a pair programmer for most of the code. I made the design decisions (2D world, tool scope, story mode, the feature freeze, stopping the puppet work), directed the experiments, and reviewed every clip; that review caught real bugs (unnecessary turning, handshake hands passing through each other, the camera trailing behind).</p></details>
-  <details><summary>What was the hardest part?</summary><p>Making motion look right between actions (blends, turns, foot locking), and the drawn-character attempt, where generated art lacked the hidden parts and consistency a rig needs.</p></details>
-  <details><summary>What did you learn?</summary><p>An animation agent needs animation knowledge built into its tools; feedback only helps a capable model; and good characters need art made for rigging.</p></details>
+  <h2>Practice questions</h2>
+  <details><summary>What is your project, in one sentence?</summary><p>An AI agent that turns a plain request into a short stick-figure animation in Blender, using a set of checked commands, and checks and fixes its own work.</p></details>
+  <details><summary>Why did you build this after Project 3?</summary><p>Project 3 showed that motion works across characters but the look breaks. So I split the two: Blender handles the drawing, stick figures keep the look simple, and the agent focuses on the motion.</p></details>
+  <details><summary>How are requests routed?</summary><p>The browser sends the request to my app; the app sends it to the chosen model; every command the model makes is checked and then passed to Blender, which runs in the background; when it's done, the checker reads the same scene, and the video goes back to the browser.</p></details>
+  <details><summary>What's an agent, and is this really one?</summary><p>A model that works in a loop: it uses tools, looks at the result, and decides the next step. Yes: it chooses commands, reads the results and errors, and fixes the scene after the checker's report. The rules director is not an agent; it just follows a fixed recipe.</p></details>
+  <details><summary>Why not just use a video-generation model?</summary><p>You can't control it precisely, you can't edit the result, characters change between clips, and it costs much more per second. Here every result is an editable Blender file and is checked.</p></details>
+  <details><summary>Why not let the model write Blender code directly?</summary><p>Code can do anything and fail in unpredictable ways. A fixed set of checked commands is safe, gives clear errors, hides the hard maths, and makes models comparable.</p></details>
+  <details><summary>How do you know the checker is right?</summary><p>I built test scenes that are deliberately broken (a figure sliding, floating, a ball through a table), and each one must fail exactly the right check. And all 120 runs give the same result when rebuilt.</p></details>
+  <details><summary>Why do the small models fail?</summary><p>Mostly bookkeeping: using things before creating them, leaving out information, repeating commands, guessing coordinates so props float. They also can't turn the checker's report into the right fix.</p></details>
+  <details><summary>Isn't the rules director's 30/30 unfair?</summary><p>Yes. I wrote the rules looking at these tasks, so it's a best case. In the live demo it ignored words it had no rule for, like "sits down", until I added them.</p></details>
+  <details><summary>What happens when a command fails?</summary><p>If it's badly written, validation stops it before Blender and tells the model what's wrong. If it fails in Blender (e.g. "no object called bench"), that error goes back to the model too, and it tries again.</p></details>
+  <details><summary>Where does each part run?</summary><p>Blender, the app and the checker on my laptop; qwen on a free Kaggle GPU; Claude on Anthropic's servers through my subscription.</p></details>
+  <details><summary>What is MCP?</summary><p>A standard way to give an AI model a set of tools. I wrote a small MCP server that gives Claude my animation commands and connects them to Blender.</p></details>
+  <details><summary>Why split stories into shots?</summary><p>One long request makes the model plan everything at once, and an early mistake ruins the rest. Shots keep each step small, like a storyboard.</p></details>
+  <details><summary>How did you use AI to build this?</summary><p>I used Claude Code as a pair programmer for most of the code. I made the design decisions (the 2D world, the commands, story mode, when to stop adding features), ran the experiments, and watched every clip; that's how I caught bugs like unnecessary turning and hands passing through each other in the handshake.</p></details>
+  <details><summary>What was the hardest part?</summary><p>Making motions join smoothly between actions, and the drawn-character attempt, where the AI-generated art wasn't made for animation.</p></details>
+  <details><summary>What would you do next?</summary><p>Proper drawn characters on the same skeleton, more actions and props, and the two tests I didn't get to run.</p></details>
 </section>
 
 <section id="glossary">
   <span class="num">Terms</span>
-  <h2>Glossary</h2>
+  <h2>Words to know</h2>
   <div class="tbl"><table>
-    <tr><td><b>Agent</b></td><td>An LLM in a loop that acts through tools, observes results and continues toward a goal</td></tr>
-    <tr><td><b>Tool calling</b></td><td>The model outputs a structured call (name + JSON arguments) instead of free text</td></tr>
-    <tr><td><b>MCP</b></td><td>Model Context Protocol: open standard for exposing tools to a model</td></tr>
-    <tr><td><b>ReAct / Reflexion</b></td><td>Reason-act-observe loops / learning from verbal feedback on failures</td></tr>
-    <tr><td><b>Ollama</b></td><td>Runs open models (qwen) locally with an HTTP API</td></tr>
-    <tr><td><b>Temperature 0</b></td><td>Always pick the most likely token: repeatable outputs</td></tr>
-    <tr><td><b>bpy / headless</b></td><td>Blender's Python API / running Blender without a window</td></tr>
-    <tr><td><b>Workbench</b></td><td>Blender's fast flat renderer, used for the 2D look</td></tr>
-    <tr><td><b>Orthographic camera</b></td><td>No perspective: things don't shrink with distance (flat, like paper)</td></tr>
-    <tr><td><b>Keyframe / easing</b></td><td>A value set at a frame / how values move between keyframes (slow in, slow out)</td></tr>
-    <tr><td><b>Foot lock</b></td><td>Keeping the planted foot fixed on the ground so it doesn't slide</td></tr>
-    <tr><td><b>Pop</b></td><td>A sudden jump in a joint between frames</td></tr>
-    <tr><td><b>Cut-out rig</b></td><td>A character made of separate drawn parts pinned at joints (the Project 3 / puppet approach)</td></tr>
+    <tr><td><b>Agent</b></td><td>A language model that uses tools in a loop until the job is done</td></tr>
+    <tr><td><b>Tool call</b></td><td>A structured command the model writes instead of a sentence</td></tr>
+    <tr><td><b>MCP</b></td><td>A standard way to give a model a set of tools</td></tr>
+    <tr><td><b>Headless</b></td><td>Running a program without its window</td></tr>
+    <tr><td><b>Socket</b></td><td>A connection between two programs so they can send messages, like a phone line</td></tr>
+    <tr><td><b>Keyframe</b></td><td>A pose or position saved at a frame; the program fills in the frames between</td></tr>
+    <tr><td><b>Easing</b></td><td>Starting and stopping a movement gently instead of suddenly</td></tr>
+    <tr><td><b>Foot lock</b></td><td>Keeping the foot on the ground fixed so it doesn't slide</td></tr>
+    <tr><td><b>Validation</b></td><td>Checking each command is legal before Blender runs it</td></tr>
+    <tr><td><b>Binding</b></td><td>Matching the request's things ("the red ball") to scene objects by kind and colour, not name</td></tr>
+    <tr><td><b>bpy</b></td><td>Blender's Python interface: the raw functions my commands are built on</td></tr>
+    <tr><td><b>Pose</b></td><td>Where each of the 18 joints is on one frame</td></tr>
+    <tr><td><b>IK (inverse kinematics)</b></td><td>Say where the hand should be; the code works out the elbow and shoulder angles</td></tr>
+    <tr><td><b>Spline</b></td><td>A smooth curve drawn through key values, giving every frame in between</td></tr>
+    <tr><td><b>Distillation</b></td><td>Training a small model on examples written by a big one</td></tr>
+    <tr><td><b>Ollama</b></td><td>A program for running open models like qwen</td></tr>
+    <tr><td><b>Temperature 0</b></td><td>The model always gives the same answer to the same input</td></tr>
   </table></div>
 </section>
 </main>

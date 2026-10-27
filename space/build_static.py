@@ -36,7 +36,48 @@ BROWSER = """
   </section>
 """
 
+# The live demo runs on my laptop (`run_demo.bat`); while it runs, the app writes its public link to live.json
+# in this Space (demo_app.announce), and this section embeds it. live.json is not part of the built site, so
+# rebuilding the page never overwrites it.
+LIVE = """
+  <section id="live">
+    <div class="head">
+      <span class="eyebrow">Live demo</span>
+      <h2>Direct a scene yourself <span class="pill" id="liveState">checking…</span></h2>
+      <p id="liveNote" class="muted">The live demo runs on my laptop (Blender, Claude and the checker), so it is
+        online only while I run it, e.g. during the viva.</p>
+    </div>
+    <p id="liveLink" hidden><a id="liveA" href="#" target="_blank" rel="noopener">Open the live demo in a new tab →</a></p>
+    <iframe id="liveFrame" title="Live demo" hidden></iframe>
+  </section>
+  <script>
+  (function () {
+    var state = document.getElementById("liveState"), note = document.getElementById("liveNote");
+    function offline(msg) {
+      state.textContent = "offline"; state.className = "pill off";
+      if (msg) note.textContent = msg;
+    }
+    fetch("live.json?t=" + Date.now(), {cache: "no-store"}).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.url) { offline(); return; }
+        state.textContent = "live now"; state.className = "pill on";
+        var when = new Date(d.since);
+        note.textContent = "Running on my laptop since " + when.toLocaleString() + ". Type a request, pick a " +
+          "story or a task, and watch it direct the scene. If the frame below stays blank, the laptop has gone offline.";
+        document.getElementById("liveA").href = d.url;
+        document.getElementById("liveLink").hidden = false;
+        var f = document.getElementById("liveFrame"); f.src = d.url; f.hidden = false;
+      }).catch(function () { offline(); });
+  })();
+  </script>
+"""
+
 CSS = """
+.pill { font: 500 0.72rem var(--mono); padding: 2px 10px; border-radius: 999px; vertical-align: middle;
+  border: 1px solid var(--rule); color: var(--pencil); }
+.pill.on { background: var(--okTint); color: var(--ok); border-color: var(--ok); }
+.pill.off { color: var(--pencil); }
+#liveFrame { width: 100%; height: 900px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
 .agents { display: flex; flex-wrap: wrap; gap: 8px; }
 .agents button { font: 500 0.85rem var(--mono); padding: 7px 12px; border-radius: 999px; border: 1px solid var(--rule);
   background: var(--sheet); color: var(--ink); cursor: pointer; }
@@ -173,9 +214,19 @@ def build():
     page = page.replace("--tint: #2a1c1a; color-scheme: dark;", "--tint: #2a1c1a; " + TOKENS["dark"] + " color-scheme: dark;")
     page = page.replace("body {\n  background", "body { margin: 0;\n  background", 1)
     page = page.replace("  <footer>", BROWSER + "\n  <footer>", 1)
+    page = page.replace("  </header>", "  </header>\n" + LIVE, 1)
     page = page.replace("this table will be updated", "")
     page += SCRIPT % json.dumps(AGENTS) + "\n</body>\n</html>\n"
     (SITE / "index.html").write_text(page, encoding="utf-8")
+    extras = [f for f in ("transcript.html", "viva_prep.html") if (ROOT / f).exists()]
+    for f in extras:                           # the session transcript and the viva prep page, served alongside
+        shutil.copy2(ROOT / f, SITE / f)
+    if extras:
+        links = " · ".join(f'<a href="{f}">{"Transcript" if f.startswith("transcript") else "Viva prep"}</a>'
+                           for f in extras)
+        page = (SITE / "index.html").read_text(encoding="utf-8")
+        page = page.replace("<span>Blender · Python · Ollama · Claude Code</span>", f"<span>{links}</span>", 1)
+        (SITE / "index.html").write_text(page, encoding="utf-8")
     shutil.copy2(ROOT / "space" / "README_static.md", SITE / "README.md")
     (SITE / ".gitattributes").write_text("*.mp4 filter=lfs diff=lfs merge=lfs -text\n")
     files = [p for p in SITE.rglob("*") if p.is_file()]

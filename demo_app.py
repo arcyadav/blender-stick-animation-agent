@@ -324,13 +324,38 @@ with gr.Blocks(title="Stick Animation Agent", css=CSS, theme=gr.themes.Soft(prim
                 video3 = gr.Video(label="Clip", autoplay=True)
         go3.click(run_task, [task, director, ollama], [log3, report, video3])
 
+SPACE = "Arcyadav/stick-animation-agent"    # the static project page; its "Live demo" section reads live.json
+
+
+def announce(url):
+    """Write live.json to the project page, so its Live demo section points at this run (None = offline)."""
+    from datetime import datetime, timezone
+    from huggingface_hub import HfApi
+    info = {"url": url, "since": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    try:
+        HfApi().upload_file(path_or_fileobj=json.dumps(info).encode(), path_in_repo="live.json", repo_id=SPACE,
+                            repo_type="space", commit_message="live demo online" if url else "live demo offline")
+        print(f"project page now shows: {url or 'offline'}")
+    except Exception as e:                       # no login / no network: the demo itself still works
+        print(f"could not update {SPACE}/live.json: {e}")
+
+
 if __name__ == "__main__":
     if PUBLIC:
         app.queue(default_concurrency_limit=1).launch(server_name="0.0.0.0", server_port=7860,
                                                       allowed_paths=[str(CLIPS), str(OUT)])
     else:
-        # --share: a public link to this laptop's app (Blender, Claude and qwen still run here)
+        # --share: a public link to this laptop's app (Blender, Claude and qwen still run here), announced on
+        # the project page's Live demo section while it runs
         pw = os.environ.get("P5_PASSWORD")
-        app.queue(default_concurrency_limit=1).launch(inbrowser=True, share="--share" in sys.argv,
-                                                      auth=("viva", pw) if pw else None,
-                                                      allowed_paths=[str(CLIPS), str(OUT)])
+        _, _, share_url = app.queue(default_concurrency_limit=1).launch(
+            inbrowser=True, share="--share" in sys.argv, auth=("viva", pw) if pw else None,
+            allowed_paths=[str(CLIPS), str(OUT)], prevent_thread_lock=True)
+        if share_url:
+            print(f"public link: {share_url}")
+            announce(share_url)
+        try:
+            app.block_thread()
+        finally:
+            if share_url:
+                announce(None)
